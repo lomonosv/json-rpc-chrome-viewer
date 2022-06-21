@@ -1,0 +1,27 @@
+{
+  "name": "json-rpc-chrome-viewer",
+  "version": "0.0.1",
+  "description": "JSON RPC request dev tools",
+  "main": "src/index.jsx",
+  "scripts": {
+    "build": "rm -rf build && node scripts/build.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lomonosv/json-rpc-chrome-viewer.git"
+  },
+  "author": "lomonosv.developer@gmail.com, vasil@kramarenko.com.ua",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/lomonosv/json-rpc-chrome-viewer/issues"
+  },
+  "homepage": "https://github.com/lomonosv/json-rpc-chrome-viewer#readme",
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.14.47",
+    "esbuild-plugin-copy": "^1.3.0"
+  }
+}
