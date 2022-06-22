@@ -23,6 +23,7 @@
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
+    "@types/chrome": "^0.0.190",
     "esbuild": "^0.14.47",
     "esbuild-plugin-copy": "^1.3.0",
     "eslint": "^8.18.0",

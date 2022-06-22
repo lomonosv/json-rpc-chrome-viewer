@@ -15,5 +15,8 @@ module.exports = {
     react: {
       version: 'detect'
     }
+  },
+  rules: {
+    "import/no-named-as-default": "off"
   }
 };
