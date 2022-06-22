@@ -1,0 +1,6 @@
+.eslintrc.js
+.cache
+build
+static
+scripts
+node_modules
