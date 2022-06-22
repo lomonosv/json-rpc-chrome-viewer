@@ -1,7 +1,10 @@
 import React from 'react';
+import HttpArchiveContext from '../logic/HTTPArchive/HttpArchiveContext';
 
 const Viewer = () => (
-  <div>Viewer Test</div>
+  <HttpArchiveContext>
+    <div>Viewer Test</div>
+  </HttpArchiveContext>
 );
 
 export default Viewer;
