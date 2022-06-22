@@ -7,6 +7,9 @@ const useRequest = () => {
 
   useEffect(() => {
     chrome.devtools.network.onRequestFinished.addListener(handleRequest);
+    return () => {
+      chrome.devtools.network.onRequestFinished.removeListener(handleRequest);
+    };
   }, []);
 
   return {};
