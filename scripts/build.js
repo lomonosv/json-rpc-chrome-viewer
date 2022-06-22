@@ -3,10 +3,6 @@
     entryPoints: ['./src/index.jsx'],
     bundle: true,
     outfile: './build/application.js',
-    // loader: {
-    //   ".ts": "ts",
-    //   ".tsx": "ts"
-    // },
     plugins: [
       await require('esbuild-plugin-copy').copy({
         resolveFrom: 'cwd',
