@@ -1,7 +1,7 @@
 import React from 'react';
 
 const Viewer = () => (
-  <div>Viewer</div>
+  <div>Viewer Test</div>
 );
 
 export default Viewer;
