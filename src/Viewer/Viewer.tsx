@@ -3,7 +3,7 @@ import HttpArchiveContext from '../logic/HTTPArchive/HttpArchiveContext';
 
 const Viewer = () => (
   <HttpArchiveContext>
-    <div>Viewer Test</div>
+    <div>Viewer</div>
   </HttpArchiveContext>
 );
 
