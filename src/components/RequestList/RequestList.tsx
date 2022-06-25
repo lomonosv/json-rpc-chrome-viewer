@@ -6,9 +6,10 @@ const RequestList = () => {
   const { requests } = useRequestContext();
 
   return requests.map((data, index) => (
-    <div key={ `${ data.request.url } - ${ index }` }>
-      <Request data={ data }/>
-    </div>
+    <Request
+      key={ `${ data.request.url } - ${ index }` }
+      data={ data }
+    />
   ));
 };
 
