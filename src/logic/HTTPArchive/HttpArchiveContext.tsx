@@ -34,8 +34,6 @@ const useRequest = () => {
     };
   }, []);
 
-  console.log(requests);
-
   return {
     requests
   };
