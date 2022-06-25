@@ -1,3 +1,19 @@
 .layoutContainer {
   display: flex;
 }
+
+.leftSideContainer {
+  font-weight: normal;
+}
+
+.rightSideContainer {
+  display: none;
+}
+
+.requestSideContainer {
+  font-weight: normal;
+}
+
+.responseSideContainer {
+  font-weight: normal;
+}

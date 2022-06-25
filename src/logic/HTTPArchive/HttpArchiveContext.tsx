@@ -1,15 +1,19 @@
 import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
 import { useSettingsContext } from '../SettingsContext';
-import { isJsonRpcRequest } from './filters';
+import { isJsonRpcRequest, getPreparedRequest } from './filters';
+import { IRequest } from './IRequest';
 
 const useRequest = () => {
-  const [requests, setRequests] = useState<chrome.devtools.network.Request[]>([]);
-  const requestsRef = useRef<chrome.devtools.network.Request[]>([]);
+  const [requests, setRequests] = useState<IRequest[]>([]);
+  const requestsRef = useRef<IRequest[]>([]);
 
   const { preserveLog } = useSettingsContext();
 
-  const handleInitialRequestsData = (e: CustomEvent<chrome.devtools.network.Request[]>) => {
-    requestsRef.current = e.detail.filter(isJsonRpcRequest);
+  const handleInitialRequestsData = async (e: CustomEvent<chrome.devtools.network.Request[]>) => {
+    const requests = await Promise.all(
+      e.detail.filter(isJsonRpcRequest).map((item) => getPreparedRequest(item))
+    );
+    requestsRef.current = requests.flat();
     setRequests(requestsRef.current);
   };
 
@@ -18,9 +22,12 @@ const useRequest = () => {
     setRequests(requestsRef.current);
   };
 
-  const handleRequest = (request: chrome.devtools.network.Request) => {
+  const handleRequest = async (request: chrome.devtools.network.Request) => {
     if (isJsonRpcRequest(request)) {
-      requestsRef.current.push(request);
+      requestsRef.current = [
+        ...requestsRef.current,
+        ...await getPreparedRequest(request)
+      ];
       setRequests(requestsRef.current);
     }
   };
@@ -36,6 +43,8 @@ const useRequest = () => {
       window.removeEventListener('INITIAL_REQUESTS_DATA', handleInitialRequestsData);
     };
   }, []);
+
+  console.log(requests);
 
   return {
     requests
