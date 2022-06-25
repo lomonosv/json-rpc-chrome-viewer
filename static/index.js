@@ -1,7 +1,8 @@
 const panels = chrome && chrome.devtools && chrome.devtools.panels;
 
 const callback = (panel) => {
-  const httpArchiveRequests = [];
+  let httpArchiveRequests = [];
+
   const handleRequest = (httpArchiveRequest) => {
     httpArchiveRequests.push(httpArchiveRequest);
   };
@@ -11,8 +12,10 @@ const callback = (panel) => {
   panel.onShown.addListener(function handlePanelShown(panelWindow) {
     panel.onShown.removeListener(handlePanelShown); // Run once only
     chrome.devtools.network.onRequestFinished.removeListener(handleRequest);
-    panelWindow.INITIAL_REQUESTS_DATA = httpArchiveRequests;
-    panelWindow.dispatchEvent(new Event('INITIAL_REQUESTS_DATA'));
+
+    panelWindow.dispatchEvent(new CustomEvent('INITIAL_REQUESTS_DATA', {
+      detail: httpArchiveRequests
+    }));
   });
 }
 

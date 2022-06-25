@@ -1,30 +1,35 @@
 import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
-
-declare global {
-  interface Window {
-    INITIAL_REQUESTS_DATA: chrome.devtools.network.Request[];
-  }
-}
+import { isJsonRpcRequest } from '../filters';
 
 const useRequest = () => {
   const [requests, setRequests] = useState<chrome.devtools.network.Request[]>([]);
   const requestsRef = useRef<chrome.devtools.network.Request[]>([]);
 
-  const handleInitialRequestsData = () => {
-    requestsRef.current = window.INITIAL_REQUESTS_DATA;
+  const handleInitialRequestsData = (e: CustomEvent<chrome.devtools.network.Request[]>) => {
+    requestsRef.current = e.detail.filter(isJsonRpcRequest);
+    setRequests(requestsRef.current);
+  };
+
+  const handleNavigation = () => {
+    requestsRef.current = [];
     setRequests(requestsRef.current);
   };
 
   const handleRequest = (request: chrome.devtools.network.Request) => {
-    requestsRef.current.push(request);
-    setRequests(requestsRef.current);
+    if (isJsonRpcRequest(request)) {
+      requestsRef.current.push(request);
+      setRequests(requestsRef.current);
+    }
   };
 
   useEffect(() => {
     chrome.devtools.network.onRequestFinished.addListener(handleRequest);
+    chrome.devtools.network.onNavigated.addListener(handleNavigation);
     window.addEventListener('INITIAL_REQUESTS_DATA', handleInitialRequestsData);
+
     return () => {
       chrome.devtools.network.onRequestFinished.removeListener(handleRequest);
+      chrome.devtools.network.onNavigated.removeListener(handleNavigation);
       window.removeEventListener('INITIAL_REQUESTS_DATA', handleInitialRequestsData);
     };
   }, []);
