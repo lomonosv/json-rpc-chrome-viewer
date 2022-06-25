@@ -3,12 +3,13 @@ import { Resizable } from 're-resizable';
 import { useRequestContext } from '../../logic/HTTPArchive/HttpArchiveContext';
 import Button from '../common/Button';
 import Header from '../common/Header';
+import JsonViewer from '../common/JsonViewer';
 import styles from './requestInfo.scss';
 
 const minRequestInfoHeight = 100;
 
 const RequestInfo = () => {
-  const { clearSelection } = useRequestContext();
+  const { selected, clearSelection } = useRequestContext();
 
   return (
     <Resizable
@@ -24,7 +25,7 @@ const RequestInfo = () => {
       } }
       className={ styles.requestInfoWrapper }
       minHeight={ minRequestInfoHeight }
-      maxHeight="70%"
+      maxHeight="50%"
       defaultSize={ {
         width: '100%',
         height: 'auto'
@@ -38,9 +39,7 @@ const RequestInfo = () => {
         />
       </Header>
       <div className={ styles.requestInfoContainer }>
-        <div className={ styles.requestInfo }>
-          Tree
-        </div>
+        <JsonViewer src={ selected.requestJSON } />
       </div>
     </Resizable>
   );
