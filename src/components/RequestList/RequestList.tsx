@@ -24,6 +24,13 @@ const RequestList = ({ className }: IComponentProps) => {
     });
   }, [selected]);
 
+  useEffect(() => {
+    resizableRef.current.updateSize({
+      width: selected ? widthCache.current : '100%',
+      height: '100%'
+    });
+  }, [selected]);
+
   const handleResize = () => {
     widthCache.current = resizableRef.current.size.width;
   };

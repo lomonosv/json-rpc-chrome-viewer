@@ -1,3 +1,5 @@
+@import "../common/variables";
+
 .responseInfoWrapper {
   display: flex;
   flex-direction: column;
@@ -6,6 +8,11 @@
 
 .responseInfoContainer {
   height: 0;
-  overflow: auto;
   flex-grow: 1;
+  border-bottom: 1px solid $borderColor;
+  display: flex;
+
+  :global(.isDark) & {
+    border-bottom: 1px solid $darkBorderColor;
+  }
 }

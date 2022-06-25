@@ -12,6 +12,7 @@ module.exports = {
       ignoreAtRules: ['mixin', 'include']
     }],
     'block-closing-brace-newline-before': 'always-multi-line',
-    'selector-class-pattern': null
+    'selector-class-pattern': null,
+    'no-descending-specificity': null
   }
 }

@@ -1,24 +1,29 @@
 import React from 'react';
-import ReactJsonView from 'react-json-view';
+import ReactJsonView, { ThemeKeys } from 'react-json-view';
+import { JSONValue } from '../../../logic/HTTPArchive/IRequest';
+import { useSettingsContext } from '../../../logic/SettingsContext';
 import styles from './jsonViewer.scss';
 
 interface IComponentProps {
-  src: object
+  src: JSONValue,
+  openNodeDepth?: number
 }
 
-const JsonViewer = ({ src }: IComponentProps) => {
-  const theme = chrome.devtools.panels.themeName === 'dark' ? 'summerfruit' : 'summerfruit:inverted';
-
+const JsonViewer = ({ src, openNodeDepth = 1 }: IComponentProps) => {
+  const { jsonViewerTheme } = useSettingsContext();
   return (
     <div className={ styles.jsonViewer }>
       <ReactJsonView
-        src={ src }
-        theme={ theme }
-        collapsed={ 2 }
+        name={ false }
+        src={ src as object }
+        theme={ jsonViewerTheme as ThemeKeys }
+        collapsed={ openNodeDepth }
         enableClipboard={ false }
         indentWidth={ 2 }
         displayDataTypes={ false }
         iconStyle="square"
+        quotesOnKeys={ false }
+        displayObjectSize={ false }
       />
     </div>
   );

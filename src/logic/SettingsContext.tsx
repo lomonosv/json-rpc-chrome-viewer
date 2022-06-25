@@ -1,5 +1,13 @@
 import React, { createContext, useContext, useState } from 'react';
 
+const isDevtoolsDarkTheme = (): boolean => (
+  chrome.devtools.panels.themeName === 'dark'
+);
+
+const getJsonViewerTheme = (): string => (
+  isDevtoolsDarkTheme() ? 'summerfruit' : 'summerfruit:inverted'
+);
+
 const useSettings = () => {
   const [preserveLog, setPreserveLog] = useState<boolean>(true);
 
@@ -13,6 +21,8 @@ const useSettings = () => {
 
   return {
     preserveLog,
+    isDarkTheme: isDevtoolsDarkTheme(),
+    jsonViewerTheme: getJsonViewerTheme(),
     save
   };
 };

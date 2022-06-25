@@ -1,13 +1,26 @@
+@import "../common/variables";
+
 .layoutContainer {
   display: flex;
   height: 100%;
+  background: $background;
+  color: $color;
+
+  &:global(.isDark) {
+    background: $darkBackground;
+    color: $darkColor;
+  }
 }
 
 .leftSideContainer {
   font-weight: normal;
-  border-right: 1px solid #000;
+  border-right: 1px solid $borderColor;
   display: flex;
   flex-direction: column;
+
+  :global(.isDark) & {
+    border-right: 1px solid $darkBorderColor;
+  }
 }
 
 .rightSideContainer {

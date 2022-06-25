@@ -7,13 +7,18 @@ import styles from './responseInfo.scss';
 const ResponseInfo = () => {
   const { selected } = useRequestContext();
 
+  const json = selected.responseJSON?.result || selected.responseJSON?.error || {};
+
   return (
     <div className={ styles.responseInfoWrapper }>
       <Header>
         <>Response</>
       </Header>
       <div className={ styles.responseInfoContainer }>
-        <JsonViewer src={ selected.responseJSON } />
+        <JsonViewer
+          src={ json }
+          openNodeDepth={ 2 }
+        />
       </div>
     </div>
   );
