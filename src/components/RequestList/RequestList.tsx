@@ -66,6 +66,15 @@ const RequestList = ({ className }: IComponentProps) => {
         </Header>
       ) }
       <div className={ styles.requestList }>
+        <div className={ styles.requestsHeaderWrapper }>
+          <Header className={ styles.requestsHeader }>
+            <div className={ styles.methodHeader }>Method</div>
+            <div className={ styles.sizeTimeHeaders }>
+              <div>Size</div>
+              <div>Time</div>
+            </div>
+          </Header>
+        </div>
         {
           requests.map((item, index) => (
             <Request

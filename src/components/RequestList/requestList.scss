@@ -2,3 +2,29 @@
   flex-grow: 1;
   overflow: auto;
 }
+
+.requestsHeaderWrapper {
+  display: inline-block;
+  min-width: 100%;
+}
+
+.requestsHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.methodHeader {
+  min-width: 300px;
+}
+
+.sizeTimeHeaders {
+  display: flex;
+  align-items: center;
+
+  > div {
+    width: 100px;
+    text-align: center;
+  }
+}

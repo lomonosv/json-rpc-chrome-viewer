@@ -19,10 +19,16 @@ export const getPreparedRequest = async (
     const requestJSON = JSON.parse(request.request.postData.text);
     const isBatch = Array.isArray(requestJSON) && Array.isArray(responseJSON);
 
+    const origin = request.request.headers.find(({ name }) => name === 'origin');
+    const host = origin ? origin.value : '';
+
+    const isCors = !request.request.url.includes(host);
+
     if (!isBatch) {
       requests.push({
         uuid: uuid(),
         ...request,
+        isCors,
         requestJSON,
         responseJSON
       });
@@ -37,6 +43,7 @@ export const getPreparedRequest = async (
         requests.push({
           uuid: uuid(),
           ...request,
+          isCors,
           requestJSON: requestJSONItem,
           responseJSON: responseJSONIndex[requestJSONItem.id]
         });

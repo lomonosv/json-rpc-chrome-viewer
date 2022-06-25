@@ -1,22 +1,8 @@
 @import "../../common/variables";
 
-.request {
-  display: block;
-  cursor: pointer;
-  white-space: nowrap;
-  padding: 7px;
-
-  :global(.isDark) & {
-    color: #bdc4cc;
-  }
-
-  &.error .method {
-    color: $error;
-  }
-
-  &.responseNotParsed .method {
-    color: $warning;
-  }
+.requestWrapper {
+  display: inline-block;
+  min-width: 100%;
 
   &:nth-child(2n) {
     background: $evenRowBackground;
@@ -32,6 +18,39 @@
     :global(.isDark) & {
       background: $darkOddRowBackground;
     }
+  }
+}
+
+.request {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  white-space: nowrap;
+  padding: 7px;
+  width: 100%;
+  height: 100%;
+
+  .sizeTime {
+    display: flex;
+    align-items: center;
+
+    > div {
+      width: 100px;
+      text-align: center;
+    }
+  }
+
+  :global(.isDark) & {
+    color: #bdc4cc;
+  }
+
+  &.error .method {
+    color: $error;
+  }
+
+  &.responseNotParsed .method {
+    color: $warning;
   }
 
   &:not(.isSelected):hover {
@@ -51,11 +70,30 @@
   }
 }
 
+.methodWrapper {
+  min-width: 300px;
+
+  .method,
+  .url {
+    text-overflow: ellipsis;
+    overflow: hidden;
+  }
+}
+
 .method {
   display: block;
 }
 
 .url {
   display: block;
-  opacity: 0.4;
+
+  &.isCors::before {
+    content: "CORS: ";
+    color: $error;
+    opacity: 0.7;
+  }
+
+  > span {
+    opacity: 0.4;
+  }
 }
