@@ -1,9 +1,12 @@
 .layoutContainer {
   display: flex;
+  height: 100%;
 }
 
 .leftSideContainer {
   font-weight: normal;
+  border-right: 1px solid #000;
+  overflow: auto;
 }
 
 .rightSideContainer {
