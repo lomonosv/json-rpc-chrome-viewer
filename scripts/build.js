@@ -1,3 +1,5 @@
+const { sassPlugin, postcssModules } = require('esbuild-sass-plugin');
+
 (async () => {
   await require('esbuild').build({
     entryPoints: ['./src/index.jsx'],
@@ -11,6 +13,10 @@
           to: ['./build'],
           keepStructure: true
         }
+      }),
+      sassPlugin({
+        type: 'style',
+        transform: postcssModules({})
       })
     ]
   }).catch(() => process.exit(1));
