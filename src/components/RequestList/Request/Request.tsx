@@ -3,10 +3,7 @@ import { IRequest } from '../../../logic/HTTPArchive/IRequest';
 
 const Request = ({ data }: { data: IRequest }) => (
   <div>
-    {
-      // @ts-ignore
-      data.requestJSON.method
-    }
+    { data.requestJSON.method }
   </div>
 );
 
