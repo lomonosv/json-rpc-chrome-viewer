@@ -7,10 +7,10 @@ const RequestList = () => {
 
   return (
     <>{
-      requests.map((data, index) => (
+      requests.map((item, index) => (
         <Request
-          key={ `${ data.request.url } - ${ index }` }
-          data={ data }
+          key={ `${ item.request.url } - ${ index }` }
+          item={ item }
         />
       ))
     }</>
