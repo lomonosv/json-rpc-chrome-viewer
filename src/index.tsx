@@ -1,10 +1,13 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import Layout from './components/Layout';
+import SettingsContext from './logic/SettingsContext';
 import HttpArchiveContext from './logic/HTTPArchive/HttpArchiveContext';
 
 ReactDOM.createRoot(document.getElementById('application')).render(
-  <HttpArchiveContext>
-    <Layout />
-  </HttpArchiveContext>
+  <SettingsContext>
+    <HttpArchiveContext>
+      <Layout />
+    </HttpArchiveContext>
+  </SettingsContext>
 );

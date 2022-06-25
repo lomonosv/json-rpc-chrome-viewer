@@ -1,9 +1,12 @@
 import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
-import { isJsonRpcRequest } from '../filters';
+import { useSettingsContext } from '../SettingsContext';
+import { isJsonRpcRequest } from './filters';
 
 const useRequest = () => {
   const [requests, setRequests] = useState<chrome.devtools.network.Request[]>([]);
   const requestsRef = useRef<chrome.devtools.network.Request[]>([]);
+
+  const { preserveLog } = useSettingsContext();
 
   const handleInitialRequestsData = (e: CustomEvent<chrome.devtools.network.Request[]>) => {
     requestsRef.current = e.detail.filter(isJsonRpcRequest);
@@ -24,12 +27,12 @@ const useRequest = () => {
 
   useEffect(() => {
     chrome.devtools.network.onRequestFinished.addListener(handleRequest);
-    chrome.devtools.network.onNavigated.addListener(handleNavigation);
+    !preserveLog && chrome.devtools.network.onNavigated.addListener(handleNavigation);
     window.addEventListener('INITIAL_REQUESTS_DATA', handleInitialRequestsData);
 
     return () => {
       chrome.devtools.network.onRequestFinished.removeListener(handleRequest);
-      chrome.devtools.network.onNavigated.removeListener(handleNavigation);
+      !preserveLog && chrome.devtools.network.onNavigated.removeListener(handleNavigation);
       window.removeEventListener('INITIAL_REQUESTS_DATA', handleInitialRequestsData);
     };
   }, []);
