@@ -1,3 +1,4 @@
+import { v4 as uuid } from 'uuid';
 import { IRequest } from './IRequest';
 
 export const isJsonRpcRequest = (request: chrome.devtools.network.Request) => (
@@ -20,6 +21,7 @@ export const getPreparedRequest = async (
 
     if (!isBatch) {
       requests.push({
+        uuid: uuid(),
         ...request,
         requestJSON,
         responseJSON
@@ -33,6 +35,7 @@ export const getPreparedRequest = async (
 
       requestJSON.forEach((requestJSONItem) => {
         requests.push({
+          uuid: uuid(),
           ...request,
           requestJSON: requestJSONItem,
           responseJSON: responseJSONIndex[requestJSONItem.id]

@@ -1,4 +1,19 @@
+@import "../variables";
+
 .button {
   display: inline-block;
   cursor: pointer;
+  color: $color;
+
+  :global(.isDark) & {
+    color: $darkColor;
+  }
+
+  &:hover {
+    color: #000;
+
+    :global(.isDark) & {
+      color: #fff;
+    }
+  }
 }

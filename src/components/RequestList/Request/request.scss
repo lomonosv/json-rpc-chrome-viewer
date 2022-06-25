@@ -1,7 +1,54 @@
+@import "../../common/variables";
+
 .request {
   display: block;
   cursor: pointer;
   white-space: nowrap;
+  padding: 7px;
+
+  :global(.isDark) & {
+    color: #bdc4cc;
+  }
+
+  &.error .method {
+    color: $error;
+  }
+
+  &.responseNotParsed .method {
+    color: $warning;
+  }
+
+  &:nth-child(2n) {
+    background: $evenRowBackground;
+
+    :global(.isDark) & {
+      background: $darkEvenRowBackground;
+    }
+  }
+
+  &:nth-child(2n + 1) {
+    background: $oddRowBackground;
+
+    :global(.isDark) & {
+      background: $darkOddRowBackground;
+    }
+  }
+
+  &:not(.isSelected):hover {
+    background: $hoverBackground;
+
+    :global(.isDark) & {
+      background: $darkHoverBackground;
+    }
+  }
+}
+
+.isSelected {
+  background: $selectedBackground !important;
+
+  :global(.isDark) & {
+    background: $darkSelectedBackground !important;
+  }
 }
 
 .method {
@@ -10,4 +57,5 @@
 
 .url {
   display: block;
+  opacity: 0.4;
 }

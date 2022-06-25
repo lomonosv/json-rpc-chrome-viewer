@@ -1,4 +1,4 @@
-type JSONValue =
+export type JSONValue =
   string |
   number |
   boolean |
@@ -12,6 +12,7 @@ interface IJSONObject {
 interface IJSONArray extends Array<JSONValue> { }
 
 export interface IRequest extends chrome.devtools.network.Request {
+  uuid: string,
   requestJSON: {
     id: string,
     jsonrpc: string,
