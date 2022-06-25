@@ -1,5 +1,10 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import Viewer from './Viewer/Viewer';
+import Layout from './components/Layout';
+import HttpArchiveContext from './logic/HTTPArchive/HttpArchiveContext';
 
-ReactDOM.createRoot(document.getElementById('application')).render(<Viewer />);
+ReactDOM.createRoot(document.getElementById('application')).render(
+  <HttpArchiveContext>
+    <Layout />
+  </HttpArchiveContext>
+);
