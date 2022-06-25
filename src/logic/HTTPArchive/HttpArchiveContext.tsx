@@ -10,6 +10,16 @@ const useRequest = () => {
 
   const { preserveLog } = useSettingsContext();
 
+  const clear = () => {
+    requestsRef.current = [];
+    setRequests(requestsRef.current);
+    setSelected(null);
+  };
+
+  const clearSelection = () => {
+    setSelected(null);
+  };
+
   const handleInitialRequestsData = async (e: CustomEvent<chrome.devtools.network.Request[]>) => {
     const requests = await Promise.all(
       e.detail.filter(isJsonRpcRequest).map((item) => getPreparedRequest(item))
@@ -48,7 +58,9 @@ const useRequest = () => {
   return {
     requests,
     selected,
-    setSelected
+    setSelected,
+    clear,
+    clearSelection
   };
 };
 

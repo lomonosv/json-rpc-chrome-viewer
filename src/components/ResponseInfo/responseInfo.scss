@@ -1,0 +1,12 @@
+.responseInfoWrapper {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.responseInfoContainer {
+  height: 0;
+  overflow: auto;
+  flex-grow: 1;
+  padding: 7px;
+}
