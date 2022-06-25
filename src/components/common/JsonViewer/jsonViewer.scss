@@ -1,0 +1,10 @@
+.jsonViewer {
+  height: 100%;
+
+  :global(.react-json-view) {
+    font-size: 13px;
+    padding: 7px;
+    width: 100%;
+    min-height: 100%;
+  }
+}
