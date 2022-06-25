@@ -24,7 +24,7 @@ const RequestInfo = () => {
       } }
       className={ styles.requestInfoWrapper }
       minHeight={ minRequestInfoHeight }
-      maxHeight="50%"
+      maxHeight="70%"
       defaultSize={ {
         width: '100%',
         height: 'auto'
@@ -38,36 +38,9 @@ const RequestInfo = () => {
         />
       </Header>
       <div className={ styles.requestInfoContainer }>
-        <div>TreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTree</div>
-        <div>Tree</div>
-        <div>Tree</div>
-        <div>Tree</div>
-        <div>Tree</div>
-        <div>Tree</div>
-        <div>Tree</div>
-        <div>Tree</div>
-        <div>Tree</div>
-        <div>Tree</div>
-        <div>Tree</div>
-        <div>Tree</div>
-        <div>Tree</div>
-        <div>Tree</div>
-        <div>Tree</div>
-        <div>Tree</div>
-        <div>Tree</div>
-        <div>Tree</div>
-        <div>Tree</div>
-        <div>Tree</div>
-        <div>Tree</div>
-        <div>Tree</div>
-        <div>Tree</div>
-        <div>Tree</div>
-        <div>Tree</div>
-        <div>Tree</div>
-        <div>Tree</div>
-        <div>Tree</div>
-        <div>Tree</div>
-        <div>Tree</div>
+        <div className={ styles.requestInfo }>
+          Tree
+        </div>
       </div>
     </Resizable>
   );

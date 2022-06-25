@@ -8,36 +8,9 @@ const ResponseInfo = () => (
       <>Response</>
     </Header>
     <div className={ styles.responseInfoContainer }>
-      <div>TreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTreeTree</div>
-      <div>Tree</div>
-      <div>Tree</div>
-      <div>Tree</div>
-      <div>Tree</div>
-      <div>Tree</div>
-      <div>Tree</div>
-      <div>Tree</div>
-      <div>Tree</div>
-      <div>Tree</div>
-      <div>Tree</div>
-      <div>Tree</div>
-      <div>Tree</div>
-      <div>Tree</div>
-      <div>Tree</div>
-      <div>Tree</div>
-      <div>Tree</div>
-      <div>Tree</div>
-      <div>Tree</div>
-      <div>Tree</div>
-      <div>Tree</div>
-      <div>Tree</div>
-      <div>Tree</div>
-      <div>Tree</div>
-      <div>Tree</div>
-      <div>Tree</div>
-      <div>Tree</div>
-      <div>Tree</div>
-      <div>Tree</div>
-      <div>Tree</div>
+      <div className={ styles.responseInfo }>
+        Tree
+      </div>
     </div>
   </div>
 );
