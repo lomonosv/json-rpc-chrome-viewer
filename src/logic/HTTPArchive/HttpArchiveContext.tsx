@@ -4,6 +4,7 @@ import { isJsonRpcRequest, getPreparedRequest } from './filters';
 import { IRequest } from './IRequest';
 
 const useRequest = () => {
+  const [selected, setSelected] = useState<IRequest>(null);
   const [requests, setRequests] = useState<IRequest[]>([]);
   const requestsRef = useRef<IRequest[]>([]);
 
@@ -44,10 +45,10 @@ const useRequest = () => {
     };
   }, []);
 
-  console.log(requests);
-
   return {
-    requests
+    requests,
+    selected,
+    setSelected
   };
 };
 
