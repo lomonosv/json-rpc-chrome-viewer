@@ -13,6 +13,7 @@ interface IJSONArray extends Array<JSONValue> { }
 
 export interface IRequest extends chrome.devtools.network.Request {
   uuid: string,
+  isCors: boolean,
   requestJSON: {
     id: string,
     jsonrpc: string,

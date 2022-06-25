@@ -12,20 +12,34 @@ const Request = ({ item }: { item: IRequest }) => {
   };
 
   return (
-    <div
-      className={ cn(styles.request, {
-        [styles.isSelected]: item.uuid === selected?.uuid,
-        [styles.error]: !!item.responseJSON?.error,
-        [styles.responseNotParsed]: !item.responseJSON
-      }) }
-      onClick={ handleClick }
-    >
-      <div>
-        <div className={ styles.method }>
-          { item.requestJSON.method }
+    <div className={ styles.requestWrapper }>
+      <div
+        className={ cn(styles.request, {
+          [styles.isSelected]: item.uuid === selected?.uuid,
+          [styles.error]: !!item.responseJSON?.error,
+          [styles.responseNotParsed]: !item.responseJSON
+        }) }
+        onClick={ handleClick }
+      >
+        <div className={ styles.methodWrapper }>
+          <div className={ styles.method }>
+            { item.requestJSON.method }
+          </div>
+          <div
+            className={ cn(styles.url, {
+              [styles.isCors]: item.isCors
+            }) }
+          >
+            <span>{ item.request.url }</span>
+          </div>
         </div>
-        <div className={ styles.url }>
-          { item.request.url }
+        <div className={ styles.sizeTime }>
+          <div>
+            { Math.ceil(item.response.content.size) }
+          </div>
+          <div>
+            { Math.ceil(item.time) }
+          </div>
         </div>
       </div>
     </div>
