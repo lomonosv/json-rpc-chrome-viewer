@@ -4,6 +4,7 @@ import { useRequestContext } from '../../logic/HTTPArchive/HttpArchiveContext';
 import Request from './Request';
 import Header from '../common/Header';
 import Button from '../common/Button';
+import styles from './requestList.scss';
 
 const minLeftSideWidth = 200;
 
@@ -57,7 +58,7 @@ const RequestList = ({ className }: IComponentProps) => {
           />
         </Header>
       ) }
-      <div>
+      <div className={ styles.requestList }>
         {
           requests.map((item, index) => (
             <Request
