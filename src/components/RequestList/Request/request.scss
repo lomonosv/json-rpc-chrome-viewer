@@ -80,6 +80,12 @@
   }
 }
 
+.methodContainer {
+  display: table;
+  table-layout: fixed;
+  width: 100%;
+}
+
 .method {
   display: block;
 }

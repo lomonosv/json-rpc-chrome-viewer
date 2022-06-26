@@ -22,15 +22,17 @@ const Request = ({ item }: { item: IRequest }) => {
         onClick={ handleClick }
       >
         <div className={ styles.methodWrapper }>
-          <div className={ styles.method }>
-            { item.requestJSON.method }
-          </div>
-          <div
-            className={ cn(styles.url, {
-              [styles.isCors]: item.isCors
-            }) }
-          >
-            <span>{ item.request.url }</span>
+          <div className={ styles.methodContainer }>
+            <div className={ styles.method }>
+              { item.requestJSON.method }
+            </div>
+            <div
+              className={ cn(styles.url, {
+                [styles.isCors]: item.isCors
+              }) }
+            >
+              <span>{ item.request.url }</span>
+            </div>
           </div>
         </div>
         <div className={ styles.sizeTime }>
