@@ -23,7 +23,11 @@ module.exports = {
   'plugins': {
     '@release-it/bumper': {
       'in': 'static/manifest.json',
-      'out': 'static/manifest.json'
+      'out': [
+        'static/manifest.json',
+        'build/manifest.json',
+        'package.json'
+      ]
     }
   }
 };
