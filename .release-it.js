@@ -19,5 +19,11 @@ module.exports = {
   },
   'npm': {
     'publish': false
+  },
+  'plugins': {
+    '@release-it/bumper': {
+      'in': 'static/manifest.json',
+      'out': 'static/manifest.json'
+    }
   }
 };
