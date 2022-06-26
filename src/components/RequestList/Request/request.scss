@@ -7,7 +7,7 @@
   &:nth-child(2n) .request {
     background: $evenRowBackground;
 
-    :global(.isDark) & .request {
+    :global(.isDark) & {
       background: $darkEvenRowBackground;
     }
   }
@@ -15,7 +15,7 @@
   &:nth-child(2n + 1) .request {
     background: $oddRowBackground;
 
-    :global(.isDark) & .request {
+    :global(.isDark) & {
       background: $darkOddRowBackground;
     }
   }
