@@ -25,8 +25,7 @@ module.exports = {
       'in': 'static/manifest.json',
       'out': [
         'static/manifest.json',
-        'build/manifest.json',
-        'package.json'
+        'build/manifest.json'
       ]
     }
   }
