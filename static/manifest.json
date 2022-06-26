@@ -3,8 +3,6 @@
   "version": "1.0.0",
   "description": "JSON-RPC requests Chrome dev tools",
   "manifest_version": 3,
-  "permissions": [
-
-  ],
+  "permissions": [],
   "devtools_page": "index.html"
 }
