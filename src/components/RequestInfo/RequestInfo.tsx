@@ -32,12 +32,15 @@ const RequestInfo = () => {
         topLeft: false
       } }
       className={ styles.requestInfoWrapper }
-      minHeight={ 25 }
+      minHeight={ 24 }
       defaultSize={ {
         width: '100%',
         height: requestSectionHeight
       } }
       onResizeStop={ handleResize }
+      handleClasses={ {
+        bottom: styles.resizableBottomHandlerWrapper
+      } }
     >
       <Header className={ styles.header }>
         <span>Request</span>
