@@ -87,15 +87,33 @@
 
 .method {
   display: block;
+  margin-bottom: 3px;
 }
 
 .url {
-  display: block;
+  display: flex;
+  align-items: center;
+  height: 14px;
 
   &.isCors::before {
-    content: "CORS: ";
-    color: $error;
-    opacity: 0.7;
+    content: "CORS";
+    opacity: 0.4;
+    background: $headerBackground;
+    border: 1px solid $borderColor;
+    color: $color;
+    padding: 1px 5px;
+    margin-right: 5px;
+    border-radius: 2px;
+    font-size: 9px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    :global(.isDark) & {
+      background: $darkHeaderBackground;
+      border: 1px solid $darkBorderColor;
+      color: $darkColor;
+    }
   }
 
   > span {

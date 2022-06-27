@@ -23,3 +23,9 @@
     border-bottom: 1px solid $darkBorderColor;
   }
 }
+
+.resizableBottomHandlerWrapper {
+  height: 23px !important;
+  bottom: -23px !important;
+  z-index: 2;
+}
