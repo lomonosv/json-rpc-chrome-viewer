@@ -4,6 +4,7 @@ const { sassPlugin, postcssModules } = require('esbuild-sass-plugin');
   await require('esbuild').build({
     entryPoints: ['./src/index.jsx'],
     bundle: true,
+    minify: true,
     outfile: './build/application.js',
     plugins: [
       await require('esbuild-plugin-copy').copy({
