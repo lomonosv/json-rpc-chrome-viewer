@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState } from 'react';
 
 const useCache = () => {
-  const [requestSectionHeight, setRequestSectionHeight] = useState<number>(110);
+  const [requestSectionHeight, setRequestSectionHeight] = useState<number>(115);
 
   return {
     requestSectionHeight,
