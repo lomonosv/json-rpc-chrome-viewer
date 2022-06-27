@@ -10,12 +10,12 @@ import styles from './requestInfo.scss';
 const RequestInfo = () => {
   const resizableRef = useRef<Resizable>(null);
   const { selected, clearSelection } = useRequestContext();
-  const { requestSectionHeight, setRequestSectionHeight } = useCacheContext();
+  const { requestSectionHeight, updateRequestSectionHeight } = useCacheContext();
 
   const json = selected.requestJSON.params || {};
 
   const handleResize = () => {
-    setRequestSectionHeight(resizableRef.current.size.height);
+    updateRequestSectionHeight(resizableRef.current.size.height);
   };
 
   return (
@@ -42,13 +42,13 @@ const RequestInfo = () => {
         bottom: styles.resizableBottomHandlerWrapper
       } }
     >
-      <Header className={ styles.header }>
-        <span>Request</span>
+      <Header>
         <Button
           text="✕"
           onClick={ clearSelection }
           className={ styles.closeButton }
         />
+        <span>Request</span>
       </Header>
       <div className={ styles.requestInfoContainer }>
         <JsonViewer src={ json } />

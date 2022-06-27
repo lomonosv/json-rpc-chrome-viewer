@@ -1,11 +1,47 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+
+const defaultRequestSectionHeight = 115;
+const defaultRequestListSectionWidth = 200;
 
 const useCache = () => {
-  const [requestSectionHeight, setRequestSectionHeight] = useState<number>(115);
+  const [requestSectionHeight, setRequestSectionHeight] = useState<number>(defaultRequestSectionHeight);
+  const [requestListSectionWidth, setRequestListSectionWidth] = useState<number>(defaultRequestListSectionWidth);
+
+  useEffect(() => {
+    chrome.storage.local.get(['requestSectionHeight'], ({ requestSectionHeight }) => {
+      if (requestSectionHeight) {
+        setRequestSectionHeight(requestSectionHeight);
+      } else {
+        chrome.storage.local.set({ requestSectionHeight: defaultRequestSectionHeight });
+        setRequestSectionHeight(defaultRequestSectionHeight);
+      }
+    });
+
+    chrome.storage.local.get(['requestListSectionWidth'], ({ requestListSectionWidth }) => {
+      if (requestListSectionWidth) {
+        setRequestListSectionWidth(requestListSectionWidth);
+      } else {
+        chrome.storage.local.set({ requestListSectionWidth: defaultRequestListSectionWidth });
+        setRequestListSectionWidth(defaultRequestListSectionWidth);
+      }
+    });
+  }, []);
+
+  const updateRequestSectionHeight = (requestSectionHeight) => {
+    setRequestSectionHeight(requestSectionHeight);
+    chrome.storage.local.set({ requestSectionHeight });
+  };
+
+  const updateRequestListSectionWidth = (requestListSectionWidth) => {
+    setRequestListSectionWidth(requestListSectionWidth);
+    chrome.storage.local.set({ requestListSectionWidth });
+  };
 
   return {
     requestSectionHeight,
-    setRequestSectionHeight
+    updateRequestSectionHeight,
+    requestListSectionWidth,
+    updateRequestListSectionWidth
   };
 };
 

@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { Resizable } from 're-resizable';
 import { useRequestContext } from '../../logic/HTTPArchive/HttpArchiveContext';
+import { useCacheContext } from '../../logic/CacheContext';
 import Request from './Request';
 import Header from '../common/Header';
 import Button from '../common/Button';
@@ -14,25 +15,25 @@ interface IComponentProps {
 
 const RequestList = ({ className }: IComponentProps) => {
   const resizableRef = useRef<Resizable>(null);
-  const widthCache = useRef<number>(minLeftSideWidth);
   const { requests, selected, clear } = useRequestContext();
+  const { requestListSectionWidth, updateRequestListSectionWidth } = useCacheContext();
 
   useEffect(() => {
     resizableRef.current.updateSize({
-      width: selected ? widthCache.current : '100%',
+      width: selected ? requestListSectionWidth : '100%',
       height: '100%'
     });
   }, [selected]);
 
   useEffect(() => {
     resizableRef.current.updateSize({
-      width: selected ? widthCache.current : '100%',
+      width: selected ? requestListSectionWidth : '100%',
       height: '100%'
     });
   }, [selected]);
 
   const handleResize = () => {
-    widthCache.current = resizableRef.current.size.width;
+    updateRequestListSectionWidth(resizableRef.current.size.width);
   };
 
   return (
@@ -52,7 +53,7 @@ const RequestList = ({ className }: IComponentProps) => {
       minWidth={ minLeftSideWidth }
       maxWidth={ selected ? '80%' : '100%' }
       defaultSize={ {
-        width: selected ? minLeftSideWidth : '100%',
+        width: selected ? requestListSectionWidth : '100%',
         height: '100%'
       } }
       onResizeStop={ handleResize }
