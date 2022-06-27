@@ -4,7 +4,6 @@ import { useRequestContext } from '../../logic/HTTPArchive/HttpArchiveContext';
 import { useCacheContext } from '../../logic/CacheContext';
 import Request from './Request';
 import Header from '../common/Header';
-import Button from '../common/Button';
 import styles from './requestList.scss';
 
 const minLeftSideWidth = 200;
@@ -15,7 +14,7 @@ interface IComponentProps {
 
 const RequestList = ({ className }: IComponentProps) => {
   const resizableRef = useRef<Resizable>(null);
-  const { requests, selected, clear } = useRequestContext();
+  const { requests, selected } = useRequestContext();
   const { requestListSectionWidth, updateRequestListSectionWidth } = useCacheContext();
 
   useEffect(() => {
@@ -58,14 +57,6 @@ const RequestList = ({ className }: IComponentProps) => {
       } }
       onResizeStop={ handleResize }
     >
-      { !!requests.length && (
-        <Header>
-          <Button
-            text="Clear"
-            onClick={ clear }
-          />
-        </Header>
-      ) }
       <div className={ styles.requestList }>
         <div className={ styles.requestsHeaderWrapper }>
           <Header className={ styles.requestsHeader }>
