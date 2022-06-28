@@ -20,4 +20,4 @@ const callback = (panel) => {
 }
 
 // TODO: Add images for extension and update path here and in manifest.json file
-panels.create('JSON-RPC Chrome Viewer', 'images/get_started16.png', 'application.html', callback);
+panels.create('JSON-RPC Chrome Viewer', './images/16.png', 'application.html', callback);
