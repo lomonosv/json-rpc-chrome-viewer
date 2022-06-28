@@ -87,13 +87,13 @@
 
 .method {
   display: block;
-  margin-bottom: 3px;
 }
 
 .url {
   display: flex;
   align-items: center;
   height: 14px;
+  margin-top: 3px;
 
   &.isCors::before {
     content: "CORS";
