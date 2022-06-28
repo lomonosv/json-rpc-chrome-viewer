@@ -1,0 +1,20 @@
+@import "../../common/variables";
+
+.zeroCase {
+  display: flex;
+  flex-grow: 1;
+  align-items: center;
+  justify-content: center;
+  color: $color;
+  font-size: 14px;
+  text-align: center;
+
+  :global(.isDark) & {
+    color: $darkColor;
+  }
+
+  a {
+    font-weight: bold;
+    cursor: pointer;
+  }
+}

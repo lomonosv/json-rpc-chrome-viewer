@@ -22,8 +22,6 @@ export const getPreparedRequest = async (
     const referer = request.request.headers.find(({ name }) => name.toLowerCase() === 'referer');
     const host = referer ? referer.value.replace(/(.+:\/\/)([^/]+)(\/?.*)/, '$2') : '';
 
-    console.log(host, request);
-
     const isCors = !request.request.url.includes(host);
 
     if (!isBatch) {

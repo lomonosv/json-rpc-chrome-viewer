@@ -2,15 +2,16 @@ import React from 'react';
 import cn from 'classnames';
 import { useRequestContext } from '../../logic/HTTPArchive/HttpArchiveContext';
 import { useSettingsContext } from '../../logic/SettingsContext';
+import ZeroCase from './ZeroCase';
 import RequestList from '../RequestList';
 import RequestInfo from '../RequestInfo';
 import ResponseInfo from '../ResponseInfo';
-import Button from '../common/Button';
+import Toolbar from '../Toolbar';
 import Header from '../common/Header';
 import styles from './layout.scss';
 
 const Layout = () => {
-  const { selected, clear } = useRequestContext();
+  const { selected, requests } = useRequestContext();
   const { isDarkTheme } = useSettingsContext();
 
   return (
@@ -20,18 +21,20 @@ const Layout = () => {
       }) }
     >
       <Header>
-        <Button
-          text="Clear"
-          onClick={ clear }
-        />
+        <Toolbar />
       </Header>
       <div className={ styles.layoutContainer }>
-        <RequestList className={ styles.leftSideContainer } />
-        { !!selected && (
-          <div className={ styles.rightSideContainer }>
-            <RequestInfo />
-            <ResponseInfo />
-          </div>
+        { !requests.length && <ZeroCase /> }
+        { !!requests.length && (
+          <>
+            <RequestList className={ styles.leftSideContainer } />
+            { !!selected && (
+              <div className={ styles.rightSideContainer }>
+                <RequestInfo />
+                <ResponseInfo />
+              </div>
+            ) }
+          </>
         ) }
       </div>
     </div>

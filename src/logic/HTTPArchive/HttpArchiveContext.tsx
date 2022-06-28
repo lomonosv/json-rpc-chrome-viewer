@@ -5,7 +5,9 @@ import { IRequest } from './IRequest';
 
 const useRequest = () => {
   const [selected, setSelected] = useState<IRequest>(null);
+  const [filter, setFilter] = useState<string>('');
   const [requests, setRequests] = useState<IRequest[]>([]);
+  const [filteredRequests, setFilteredRequests] = useState<IRequest[]>([]);
   const requestsRef = useRef<IRequest[]>([]);
 
   const { preserveLog } = useSettingsContext();
@@ -25,7 +27,7 @@ const useRequest = () => {
       return;
     }
 
-    let index = requests.findIndex(({ uuid }) => selected.uuid === uuid);
+    let index = filteredRequests.findIndex(({ uuid }) => selected.uuid === uuid);
 
     if (e.key === 'ArrowUp') {
       index -= 1;
@@ -34,13 +36,13 @@ const useRequest = () => {
     }
 
     if (index < 0) {
-      setSelected(requests[requests.length - 1]);
-    } else if (index > requests.length - 1) {
-      setSelected(requests[0]);
+      setSelected(filteredRequests[filteredRequests.length - 1]);
+    } else if (index > filteredRequests.length - 1) {
+      setSelected(filteredRequests[0]);
     } else {
-      setSelected(requests[index]);
+      setSelected(filteredRequests[index]);
     }
-  }, [requests, selected]);
+  }, [filteredRequests, selected]);
 
   const handleInitialRequestsData = useCallback(async (e: CustomEvent<chrome.devtools.network.Request[]>) => {
     const requests = await Promise.all(
@@ -94,10 +96,21 @@ const useRequest = () => {
     };
   }, [requests, selected]);
 
+  useEffect(() => {
+    setFilteredRequests(requests.filter((request) => (
+      request.requestJSON
+        ? request.requestJSON.method.toLowerCase().includes(filter.toLowerCase())
+        : true
+    )));
+    clearSelection();
+  }, [requests, filter]);
+
   return {
-    requests,
+    requests: filteredRequests,
     selected,
+    filter,
     setSelected,
+    setFilter,
     clear,
     clearSelection
   };

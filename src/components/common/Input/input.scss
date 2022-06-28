@@ -1,0 +1,30 @@
+@import "../variables";
+
+.input {
+  background: $background;
+  color: $color;
+  padding: 1px 4px;
+  width: 200px;
+  outline: none;
+  border: 1px solid transparent;
+  vertical-align: middle;
+  font-family: system-ui, sans-serif;
+  font-size: 12px;
+
+  :global(.isDark) & {
+    background: $darkBackground;
+    color: $darkColor;
+  }
+
+  &:focus {
+    outline: 1px solid #4d90fe;
+  }
+
+  &:hover {
+    border: 1px solid $borderColor;
+
+    :global(.isDark) & {
+      border: 1px solid $darkBorderColor;
+    }
+  }
+}
