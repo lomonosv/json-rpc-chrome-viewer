@@ -32,7 +32,7 @@ const RequestInfo = () => {
         topLeft: false
       } }
       className={ styles.requestInfoWrapper }
-      minHeight={ 24 }
+      minHeight={ 28 }
       defaultSize={ {
         width: '100%',
         height: requestSectionHeight

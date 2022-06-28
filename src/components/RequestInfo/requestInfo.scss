@@ -3,6 +3,7 @@
 .requestInfoWrapper {
   display: flex;
   flex-direction: column;
+  max-height: calc(100% - 28px);
 }
 
 .closeButton {
@@ -22,7 +23,7 @@
 }
 
 .resizableBottomHandlerWrapper {
-  height: 23px !important;
-  bottom: -23px !important;
+  height: 27px !important;
+  bottom: -27px !important;
   z-index: 2;
 }
