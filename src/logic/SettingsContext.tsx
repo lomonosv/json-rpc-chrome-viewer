@@ -1,29 +1,30 @@
 import React, { createContext, useContext, useState } from 'react';
+import { Theme, JsonViewerTheme } from './Theme';
 
 const isDevtoolsDarkTheme = (): boolean => (
-  chrome.devtools.panels.themeName === 'dark'
+  chrome.devtools.panels.themeName === Theme.Dark
 );
 
-const getJsonViewerTheme = (): string => (
-  isDevtoolsDarkTheme() ? 'summerfruit' : 'summerfruit:inverted'
+const getJsonViewerTheme = (): JsonViewerTheme => (
+  isDevtoolsDarkTheme() ? JsonViewerTheme.Dark : JsonViewerTheme.Light
 );
 
 const useSettings = () => {
   const [preserveLog, setPreserveLog] = useState<boolean>(true);
-
-  const save = ({
-    preserveLog
-  }: {
-    preserveLog: boolean
-  }) => {
-    setPreserveLog(preserveLog);
-  };
+  const [showRequestUrl, setShowRequestUrl] = useState<boolean>(true);
+  const [showCorsBadge, setShowCorsBadge] = useState<boolean>(true);
+  const [jsonViewerTheme, setJsonViewerTheme] = useState<JsonViewerTheme>(getJsonViewerTheme());
 
   return {
     preserveLog,
+    showRequestUrl,
+    showCorsBadge,
+    jsonViewerTheme,
     isDarkTheme: isDevtoolsDarkTheme(),
-    jsonViewerTheme: getJsonViewerTheme(),
-    save
+    setPreserveLog,
+    setShowRequestUrl,
+    setShowCorsBadge,
+    setJsonViewerTheme
   };
 };
 

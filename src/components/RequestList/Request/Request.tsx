@@ -1,11 +1,13 @@
 import React from 'react';
 import cn from 'classnames';
 import { useRequestContext } from '../../../logic/HTTPArchive/HttpArchiveContext';
+import { useSettingsContext } from '../../../logic/SettingsContext';
 import { IRequest } from '../../../logic/HTTPArchive/IRequest';
 import styles from './request.scss';
 
 const Request = ({ item }: { item: IRequest }) => {
   const { selected, setSelected } = useRequestContext();
+  const { showCorsBadge, showRequestUrl } = useSettingsContext();
 
   const handleClick = () => {
     setSelected(item);
@@ -26,13 +28,15 @@ const Request = ({ item }: { item: IRequest }) => {
             <div className={ styles.method }>
               { item.requestJSON.method }
             </div>
-            <div
-              className={ cn(styles.url, {
-                [styles.isCors]: item.isCors
-              }) }
-            >
-              <span>{ item.request.url }</span>
-            </div>
+            { showRequestUrl && (
+              <div
+                className={ cn(styles.url, {
+                  [styles.isCors]: item.isCors && showCorsBadge
+                }) }
+              >
+                <span>{ item.request.url }</span>
+              </div>
+            ) }
           </div>
         </div>
         <div className={ styles.sizeTime }>

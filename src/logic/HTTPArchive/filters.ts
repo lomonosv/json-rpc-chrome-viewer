@@ -19,8 +19,10 @@ export const getPreparedRequest = async (
     const requestJSON = JSON.parse(request.request.postData.text);
     const isBatch = Array.isArray(requestJSON) && Array.isArray(responseJSON);
 
-    const origin = request.request.headers.find(({ name }) => name === 'origin');
-    const host = origin ? origin.value : '';
+    const referer = request.request.headers.find(({ name }) => name.toLowerCase() === 'referer');
+    const host = referer ? referer.value.replace(/(.+:\/\/)([^/]+)(\/?.*)/, '$2') : '';
+
+    console.log(host, request);
 
     const isCors = !request.request.url.includes(host);
 
