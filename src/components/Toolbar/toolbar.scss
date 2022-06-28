@@ -1,3 +1,28 @@
+@import "../common/variables";
+
+.toolbarContainer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.toolbarSection {
+  display: flex;
+  align-items: center;
+}
+
 .filter {
   margin-left: 10px;
+  padding: 1px 4px;
+  width: 200px;
+  vertical-align: middle;
+
+  &:focus {
+    outline: 1px solid #4d90fe;
+  }
+}
+
+.settingsItemWrapper:not(:last-child) {
+  margin-right: 10px;
 }

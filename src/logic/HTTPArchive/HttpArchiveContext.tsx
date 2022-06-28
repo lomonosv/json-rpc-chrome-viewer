@@ -87,7 +87,7 @@ const useRequest = () => {
       window.removeEventListener('INITIAL_REQUESTS_DATA', handleInitialRequestsData);
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, []);
+  }, [preserveLog]);
 
   useEffect(() => {
     document.addEventListener('keydown', handleKeyDown);

@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { getConfig } from './helpers';
 
 const defaultRequestSectionHeight = 115;
 const defaultRequestListSectionWidth = 200;
@@ -8,23 +9,8 @@ const useCache = () => {
   const [requestListSectionWidth, setRequestListSectionWidth] = useState<number>(defaultRequestListSectionWidth);
 
   useEffect(() => {
-    chrome.storage.local.get(['requestSectionHeight'], ({ requestSectionHeight }) => {
-      if (requestSectionHeight) {
-        setRequestSectionHeight(requestSectionHeight);
-      } else {
-        chrome.storage.local.set({ requestSectionHeight: defaultRequestSectionHeight });
-        setRequestSectionHeight(defaultRequestSectionHeight);
-      }
-    });
-
-    chrome.storage.local.get(['requestListSectionWidth'], ({ requestListSectionWidth }) => {
-      if (requestListSectionWidth) {
-        setRequestListSectionWidth(requestListSectionWidth);
-      } else {
-        chrome.storage.local.set({ requestListSectionWidth: defaultRequestListSectionWidth });
-        setRequestListSectionWidth(defaultRequestListSectionWidth);
-      }
-    });
+    getConfig('requestSectionHeight', defaultRequestSectionHeight).then(setRequestSectionHeight);
+    getConfig('requestListSectionWidth', defaultRequestListSectionWidth).then(setRequestListSectionWidth);
   }, []);
 
   const updateRequestSectionHeight = (requestSectionHeight) => {
