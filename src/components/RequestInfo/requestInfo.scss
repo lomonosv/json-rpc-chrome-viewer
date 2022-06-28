@@ -6,9 +6,17 @@
   max-height: calc(100% - 28px);
 }
 
+.requestInfoHeader {
+  justify-content: space-between;
+}
+
 .closeButton {
-  font-size: 14px;
+  font-size: 19px;
+  line-height: 12px;
+  font-weight: 300;
   margin-right: 10px;
+  vertical-align: middle;
+  margin-top: -5px;
 }
 
 .requestInfoContainer {
@@ -25,5 +33,6 @@
 .resizableBottomHandlerWrapper {
   height: 27px !important;
   bottom: -27px !important;
+  width: calc(100% - 50px) !important;
   z-index: 2;
 }

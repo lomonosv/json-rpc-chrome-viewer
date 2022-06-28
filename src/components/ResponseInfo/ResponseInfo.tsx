@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { } from 'react';
 import Header from '../common/Header';
 import JsonViewer from '../common/JsonViewer';
+import CopyButton from '../common/CopyButton';
 import { useRequestContext } from '../../logic/HTTPArchive/HttpArchiveContext';
 import styles from './responseInfo.scss';
 
@@ -11,8 +12,9 @@ const ResponseInfo = () => {
 
   return (
     <div className={ styles.responseInfoWrapper }>
-      <Header>
-        <>Response</>
+      <Header className={ styles.responseInfoHeader }>
+        <span>Response</span>
+        <CopyButton text={ JSON.stringify(json, null, 2) } />
       </Header>
       <div className={ styles.responseInfoContainer }>
         <JsonViewer

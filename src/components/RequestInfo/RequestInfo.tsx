@@ -3,6 +3,7 @@ import { Resizable } from 're-resizable';
 import { useRequestContext } from '../../logic/HTTPArchive/HttpArchiveContext';
 import { useCacheContext } from '../../logic/CacheContext';
 import Button from '../common/Button';
+import CopyButton from '../common/CopyButton';
 import Header from '../common/Header';
 import JsonViewer from '../common/JsonViewer';
 import styles from './requestInfo.scss';
@@ -42,13 +43,16 @@ const RequestInfo = () => {
         bottom: styles.resizableBottomHandlerWrapper
       } }
     >
-      <Header>
-        <Button
-          text="✕"
-          onClick={ clearSelection }
-          className={ styles.closeButton }
-        />
-        <span>Request</span>
+      <Header className={ styles.requestInfoHeader }>
+        <div>
+          <Button
+            text={ <>&times;</> }
+            onClick={ clearSelection }
+            className={ styles.closeButton }
+          />
+          <span>Request</span>
+        </div>
+        <CopyButton text={ JSON.stringify(json, null, 2) } />
       </Header>
       <div className={ styles.requestInfoContainer }>
         <JsonViewer src={ json } />

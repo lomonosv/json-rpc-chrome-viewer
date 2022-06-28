@@ -23,6 +23,25 @@
   }
 }
 
+.filterClearIcon {
+  background: $borderColor;
+  padding: 1px 3px;
+  border-radius: 50%;
+  color: #fff;
+  line-height: 12px;
+  position: absolute;
+  right: 4px;
+  cursor: pointer;
+
+  :global(.isDark) & {
+    background: $darkBorderColor;
+  }
+
+  &:hover {
+    background: $darkColor;
+  }
+}
+
 .settingsItemWrapper:not(:last-child) {
   margin-right: 10px;
 }

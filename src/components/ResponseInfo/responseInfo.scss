@@ -5,6 +5,10 @@
   overflow: hidden;
 }
 
+.responseInfoHeader {
+  justify-content: space-between;
+}
+
 .responseInfoContainer {
   height: 0;
   flex-grow: 1;
