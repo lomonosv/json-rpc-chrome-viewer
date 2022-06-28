@@ -1,3 +1,4 @@
 export enum Type {
-  Text = 'text'
+  Text = 'text',
+  Checkbox = 'checkbox'
 }
