@@ -51,6 +51,14 @@ const Toolbar = () => {
             className={ styles.filter }
             value={ filter }
             onChange={ handleFilterChange }
+            clearComponent={ (
+              <div
+                className={ styles.filterClearIcon }
+                onClick={ () => setFilter('') }
+              >
+                &times;
+              </div>
+            ) }
           />
         </div>
         <div className={ styles.toolbarSection }>

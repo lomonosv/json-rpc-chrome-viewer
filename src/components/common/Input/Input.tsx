@@ -13,7 +13,8 @@ interface IComponentProps {
   value?: string,
   checked?: boolean,
   onChange: ChangeEventHandler<HTMLInputElement>,
-  isDisabled?: boolean
+  isDisabled?: boolean,
+  clearComponent?: React.ReactElement
 }
 
 const Input = ({
@@ -27,7 +28,8 @@ const Input = ({
   checked = false,
   onChange,
   isDisabled = false,
-  inputRef
+  inputRef,
+  clearComponent
 }: IComponentProps & {
   inputRef: ForwardedRef<HTMLInputElement>
 }) => (
@@ -49,6 +51,7 @@ const Input = ({
       { ...(type === Type.Text ? { value } : {}) }
       { ...(type === Type.Checkbox ? { checked } : {}) }
     />
+    { !!value && clearComponent }
     { label && <span className={ styles.label }>{ label }</span> }
   </label>
 );

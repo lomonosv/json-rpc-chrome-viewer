@@ -3,14 +3,14 @@ import cn from 'classnames';
 import styles from './button.scss';
 
 interface IComponentProps {
-  onClick: () => void,
-  text: string,
+  text: string | React.ReactElement,
+  onClick?: () => void,
   className?: string
 }
 
 const Button = ({
-  onClick,
   text,
+  onClick,
   className
 }: IComponentProps) => (
   <a
