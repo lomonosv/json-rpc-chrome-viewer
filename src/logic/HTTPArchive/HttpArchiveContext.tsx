@@ -94,7 +94,7 @@ const useRequest = () => {
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [requests, selected]);
+  }, [requests, filteredRequests, selected]);
 
   useEffect(() => {
     const filteredRequests = requests.filter((request) => (
