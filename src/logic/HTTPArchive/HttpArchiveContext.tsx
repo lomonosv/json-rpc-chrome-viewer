@@ -97,12 +97,17 @@ const useRequest = () => {
   }, [requests, selected]);
 
   useEffect(() => {
-    setFilteredRequests(requests.filter((request) => (
+    const filteredRequests = requests.filter((request) => (
       request.requestJSON
         ? request.requestJSON.method.toLowerCase().includes(filter.toLowerCase())
         : true
-    )));
-    clearSelection();
+    ));
+
+    setFilteredRequests(filteredRequests);
+
+    if (!filteredRequests.some(({ uuid }) => uuid === selected?.uuid)) {
+      clearSelection();
+    }
   }, [requests, filter]);
 
   return {
