@@ -6,6 +6,7 @@ const { sassPlugin, postcssModules } = require('esbuild-sass-plugin');
     bundle: true,
     minify: true,
     outfile: './build/application.js',
+    loader: { '.svg': 'text' },
     plugins: [
       await require('esbuild-plugin-copy').copy({
         resolveFrom: 'cwd',
