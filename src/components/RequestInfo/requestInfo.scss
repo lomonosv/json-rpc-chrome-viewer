@@ -17,6 +17,13 @@
   margin-right: 10px;
   vertical-align: middle;
   margin-top: -5px;
+  fill: $color;
+  width: 12px;
+  height: 12px;
+
+  :global(.isDark) & {
+    fill: $darkColor;
+  }
 }
 
 .requestInfoContainer {

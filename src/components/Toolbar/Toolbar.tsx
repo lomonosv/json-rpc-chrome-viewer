@@ -1,8 +1,9 @@
-import React, { useRef, useEffect, ChangeEvent } from 'react';
+import React, { ChangeEventHandler, useEffect, useRef } from 'react';
 import { useRequestContext } from '../../logic/HTTPArchive/HttpArchiveContext';
 import { useSettingsContext } from '../../logic/SettingsContext';
 import Button from '../common/Button';
 import Input, { Type } from '../common/Input';
+import Icon, { IconType } from '../common/Icon';
 import styles from './toolbar.scss';
 
 const Toolbar = () => {
@@ -17,19 +18,19 @@ const Toolbar = () => {
     setShowCorsBadge
   } = useSettingsContext();
 
-  const handleFilterChange = (e: ChangeEvent<{ value: string }>) => {
+  const handleFilterChange: ChangeEventHandler<HTMLInputElement> = (e) => {
     setFilter(e.target.value);
   };
 
-  const handlePreserveLogChange = (e: ChangeEvent<{ checked: boolean }>) => {
+  const handlePreserveLogChange: ChangeEventHandler<HTMLInputElement> = (e) => {
     setPreserveLog(e.target.checked);
   };
 
-  const handleShowRequestUrlChange = (e: ChangeEvent<{ checked: boolean }>) => {
+  const handleShowRequestUrlChange: ChangeEventHandler<HTMLInputElement> = (e) => {
     setShowRequestUrl(e.target.checked);
   };
 
-  const handleShowCorsBadgeChange = (e: ChangeEvent<{ checked: boolean }>) => {
+  const handleShowCorsBadgeChange: ChangeEventHandler<HTMLInputElement> = (e) => {
     setShowCorsBadge(e.target.checked);
   };
 
@@ -41,7 +42,7 @@ const Toolbar = () => {
       <div className={ styles.toolbarContainer }>
         <div className={ styles.toolbarSection }>
           <Button
-            text="Clear"
+            content="Clear"
             onClick={ clear }
           />
           <Input
@@ -56,7 +57,7 @@ const Toolbar = () => {
                 className={ styles.filterClearIcon }
                 onClick={ () => setFilter('') }
               >
-                &times;
+                <Icon type={ IconType.Close } />
               </div>
             ) }
           />

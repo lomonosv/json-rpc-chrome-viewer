@@ -21,7 +21,7 @@ const CopyButton = ({ text }: IComponentProps) => {
   if (isCopied) {
     return (
       <Button
-        text="Copied"
+        content="Copied"
         className={ styles.infoDisabledButton }
       />
     );
@@ -32,7 +32,7 @@ const CopyButton = ({ text }: IComponentProps) => {
       text={ text }
       onCopy={ handleCopy }
     >
-      <Button text="Copy" />
+      <Button content="Copy" />
     </CopyToClipboard>
   );
 };
