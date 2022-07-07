@@ -3,13 +3,15 @@ import cn from 'classnames';
 import styles from './button.scss';
 
 interface IComponentProps {
-  text: string | React.ReactElement,
+  content?: string | React.ReactElement,
+  children?: string | React.ReactElement,
   onClick?: () => void,
   className?: string
 }
 
 const Button = ({
-  text,
+  content,
+  children,
   onClick,
   className
 }: IComponentProps) => (
@@ -17,7 +19,7 @@ const Button = ({
     className={ cn(styles.button, className) }
     onClick={ onClick }
   >
-    { text }
+    { children || content }
   </a>
 );
 

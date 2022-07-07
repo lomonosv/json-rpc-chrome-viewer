@@ -3,6 +3,7 @@ import { Resizable } from 're-resizable';
 import { useRequestContext } from '../../logic/HTTPArchive/HttpArchiveContext';
 import { useCacheContext } from '../../logic/CacheContext';
 import Button from '../common/Button';
+import Icon, { IconType } from '../common/Icon';
 import CopyButton from '../common/CopyButton';
 import Header from '../common/Header';
 import JsonViewer from '../common/JsonViewer';
@@ -46,7 +47,7 @@ const RequestInfo = () => {
       <Header className={ styles.requestInfoHeader }>
         <div>
           <Button
-            text={ <>&times;</> }
+            content={ <Icon type={ IconType.Close } /> }
             onClick={ clearSelection }
             className={ styles.closeButton }
           />
