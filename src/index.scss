@@ -7,3 +7,13 @@ body,
   margin: 0;
   min-width: 650px;
 }
+
+:global(#application) {
+  position: relative;
+  z-index: 1;
+}
+
+:global(#portal) {
+  position: relative;
+  z-index: 2;
+}
