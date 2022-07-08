@@ -1,5 +1,4 @@
-import React from 'react';
-import cn from 'classnames';
+import React, { useEffect } from 'react';
 import { useRequestContext } from '../../logic/HTTPArchive/HttpArchiveContext';
 import { useSettingsContext } from '../../logic/SettingsContext';
 import ZeroCase from './ZeroCase';
@@ -14,11 +13,18 @@ const Layout = () => {
   const { selected, requests } = useRequestContext();
   const { isDarkTheme } = useSettingsContext();
 
+  useEffect(() => {
+    const body = document.getElementsByTagName('body')[0];
+    body.classList.remove('isDark');
+
+    if (isDarkTheme) {
+      body.classList.add('isDark');
+    }
+  }, []);
+
   return (
     <div
-      className={ cn(styles.layoutWrapper, {
-        isDark: isDarkTheme
-      }) }
+      className={ styles.layoutWrapper }
     >
       <Header>
         <Toolbar />

@@ -1,12 +1,14 @@
-import React, { ChangeEventHandler, useEffect, useRef } from 'react';
+import React, { ChangeEventHandler, useEffect, useRef, useState } from 'react';
 import { useRequestContext } from '../../logic/HTTPArchive/HttpArchiveContext';
 import { useSettingsContext } from '../../logic/SettingsContext';
+import Settings from '../Settings';
 import Button from '../common/Button';
 import Input, { Type } from '../common/Input';
 import Icon, { IconType } from '../common/Icon';
 import styles from './toolbar.scss';
 
 const Toolbar = () => {
+  const [isSettingsModalVisible, setIsSettingsModalVisible] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const { filter, clear, setFilter } = useRequestContext();
   const {
@@ -97,7 +99,9 @@ const Toolbar = () => {
                 <Icon type={ IconType.Settings }/>
               </div>
             ) }
+            onClick={ () => setIsSettingsModalVisible(true) }
           />
+          { isSettingsModalVisible && <Settings /> }
         </div>
       </div>
   );
