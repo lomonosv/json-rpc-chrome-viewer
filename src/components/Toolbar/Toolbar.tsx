@@ -54,10 +54,13 @@ const Toolbar = () => {
             onChange={ handleFilterChange }
             clearComponent={ (
               <div
-                className={ styles.filterClearIcon }
+                className={ styles.filterClearIconWrapper }
                 onClick={ () => setFilter('') }
               >
-                <Icon type={ IconType.Close } />
+                <Icon
+                  className={ styles.filterClearIcon }
+                  type={ IconType.Close }
+                />
               </div>
             ) }
           />
@@ -87,6 +90,13 @@ const Toolbar = () => {
             checked={ showCorsBadge }
             isDisabled={ !showRequestUrl }
             onChange={ handleShowCorsBadgeChange }
+          />
+          <Button
+            content={ (
+              <div>
+                <Icon type={ IconType.Settings }/>
+              </div>
+            ) }
           />
         </div>
       </div>
