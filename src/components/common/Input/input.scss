@@ -4,10 +4,17 @@
   position: relative;
   display: flex;
   align-items: center;
+
+  &:hover input:not([disabled]) ~ .label {
+    color: $highLightedColor;
+
+    :global(.isDark) & {
+      color: $darkHighLightedColor;
+    }
+  }
 }
 
 .checkboxWrapper {
-  cursor: pointer;
   user-select: none;
 }
 

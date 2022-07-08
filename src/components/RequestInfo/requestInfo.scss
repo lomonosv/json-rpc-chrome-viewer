@@ -14,16 +14,15 @@
   font-size: 19px;
   line-height: 12px;
   font-weight: 300;
-  margin-right: 10px;
+  padding: 2px;
+  margin-right: 6px;
   vertical-align: middle;
   margin-top: -5px;
-  fill: $color;
+}
+
+.closeButtonIcon {
   width: 12px;
   height: 12px;
-
-  :global(.isDark) & {
-    fill: $darkColor;
-  }
 }
 
 .requestInfoContainer {

@@ -47,7 +47,12 @@ const RequestInfo = () => {
       <Header className={ styles.requestInfoHeader }>
         <div>
           <Button
-            content={ <Icon type={ IconType.Close } /> }
+            content={ (
+              <Icon
+                className={ styles.closeButtonIcon }
+                type={ IconType.Close }
+              />
+            ) }
             onClick={ clearSelection }
             className={ styles.closeButton }
           />

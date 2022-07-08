@@ -23,19 +23,18 @@
   }
 }
 
-.filterClearIcon {
+.filterClearIconWrapper {
   background: $borderColor;
   border-radius: 50%;
-  color: #fff;
   position: absolute;
   right: 4px;
-  cursor: pointer;
   height: 14px;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
   width: 14px;
   font-size: 14px;
+  fill: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
   :global(.isDark) & {
     background: $darkBorderColor;
@@ -44,6 +43,12 @@
   &:hover {
     background: $darkColor;
   }
+}
+
+.filterClearIcon {
+  width: 8px;
+  height: 8px;
+  font-size: 8px;
 }
 
 .settingsItemWrapper:not(:last-child) {
