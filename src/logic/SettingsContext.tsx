@@ -62,11 +62,11 @@ export const useSettingsContext = (): SettingsContextType => (
   useContext<SettingsContextType>(SettingsContext)
 );
 
-interface IProps {
+interface IComponentProps {
   children: React.ReactElement
 }
 
-const SettingsContextProvider: React.FC<IProps> = ({ children }) => (
+const SettingsContextProvider: React.FC<IComponentProps> = ({ children }) => (
   <SettingsContext.Provider value={ useSettings() }>
     { children }
   </SettingsContext.Provider>

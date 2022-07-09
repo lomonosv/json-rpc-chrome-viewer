@@ -129,11 +129,11 @@ export const useRequestContext = (): RequestContextType => (
   useContext<RequestContextType>(RequestContext)
 );
 
-interface IProps {
+interface IComponentProps {
   children: React.ReactElement
 }
 
-const RequestContextProvider: React.FC<IProps> = ({ children }) => (
+const RequestContextProvider: React.FC<IComponentProps> = ({ children }) => (
   <RequestContext.Provider value={ useRequest() }>
     { children }
   </RequestContext.Provider>

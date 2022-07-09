@@ -101,7 +101,7 @@ const Toolbar = () => {
             ) }
             onClick={ () => setIsSettingsModalVisible(true) }
           />
-          { isSettingsModalVisible && <Settings /> }
+          { isSettingsModalVisible && <Settings onClose={ () => setIsSettingsModalVisible(false) }/> }
         </div>
       </div>
   );
