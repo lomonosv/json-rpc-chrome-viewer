@@ -2,22 +2,29 @@ import React from 'react';
 import ReactJsonView, { ThemeKeys } from 'react-json-view';
 import { JSONValue } from '../../../logic/HTTPArchive/IRequest';
 import { useSettingsContext } from '../../../logic/SettingsContext/SettingsContext';
+import { ExpandTreeState } from './ExpandTreeState';
 import styles from './jsonViewer.scss';
 
 interface IComponentProps {
   src: JSONValue,
-  openNodeDepth?: number
+  defaultOpenNodesDepth?: number,
+  expandTreeState: ExpandTreeState
 }
 
-const JsonViewer = ({ src, openNodeDepth = 1 }: IComponentProps) => {
+const JsonViewer = ({ src, defaultOpenNodesDepth = 1, expandTreeState }: IComponentProps) => {
   const { jsonViewerTheme } = useSettingsContext();
+
+  const collapsed = expandTreeState === ExpandTreeState.Default
+    ? defaultOpenNodesDepth
+    : expandTreeState === ExpandTreeState.Collapsed;
+
   return (
     <div className={ styles.jsonViewer }>
       <ReactJsonView
         name={ false }
         src={ src as object }
         theme={ jsonViewerTheme as ThemeKeys }
-        collapsed={ openNodeDepth }
+        collapsed={ collapsed }
         enableClipboard={ false }
         indentWidth={ 2 }
         displayDataTypes={ false }

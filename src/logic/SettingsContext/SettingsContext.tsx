@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Theme, JsonViewerTheme } from './Theme';
-import { ExpandTreeState } from './ExpandTreeState';
+import { ExpandTreeState } from '../../components/common/JsonViewer/ExpandTreeState';
 import { getConfig } from '../common/helpers';
 
 const defaultPreserveLogValue = false;
