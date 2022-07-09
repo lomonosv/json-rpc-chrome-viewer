@@ -1,6 +1,6 @@
 {
   "name": "JSON RPC Chrome Viewer",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "JSON-RPC requests Chrome dev tools viewer",
   "manifest_version": 3,
   "permissions": [
