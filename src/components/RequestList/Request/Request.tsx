@@ -1,7 +1,7 @@
 import React from 'react';
 import cn from 'classnames';
 import { useRequestContext } from '../../../logic/HTTPArchive/HttpArchiveContext';
-import { useSettingsContext } from '../../../logic/SettingsContext';
+import { useSettingsContext } from '../../../logic/SettingsContext/SettingsContext';
 import { IRequest } from '../../../logic/HTTPArchive/IRequest';
 import styles from './request.scss';
 

@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import { Resizable } from 're-resizable';
 import { useRequestContext } from '../../logic/HTTPArchive/HttpArchiveContext';
-import { useCacheContext } from '../../logic/CacheContext';
+import { useCacheContext } from '../../logic/CacheContext/CacheContext';
 import Button from '../common/Button';
 import Icon, { IconType } from '../common/Icon';
 import CopyButton from '../common/CopyButton';

@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useRequestContext } from '../../logic/HTTPArchive/HttpArchiveContext';
-import { useSettingsContext } from '../../logic/SettingsContext';
+import { useSettingsContext } from '../../logic/SettingsContext/SettingsContext';
 import ZeroCase from './ZeroCase';
 import RequestList from '../RequestList';
 import RequestInfo from '../RequestInfo';
