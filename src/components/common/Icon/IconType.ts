@@ -5,13 +5,16 @@
 
 import settings from './icons/settings.svg';
 import close from './icons/close.svg';
+import clear from './icons/clear.svg';
 
 export enum IconType {
   Settings,
-  Close
+  Close,
+  Clear
 }
 
 export const IconMap = {
   [IconType.Settings]: settings,
-  [IconType.Close]: close
+  [IconType.Close]: close,
+  [IconType.Clear]: clear
 };

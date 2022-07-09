@@ -15,3 +15,28 @@
     color: $darkColor;
   }
 }
+
+.settingsContainer {
+  padding: 10px;
+}
+
+.settingsItem {
+  > * {
+    display: inline-block;
+  }
+
+  &:not(:last-of-type) {
+    padding-bottom: 10px;
+  }
+}
+
+.closeButton {
+  position: absolute;
+  right: 9px;
+  top: 6px;
+
+  > i {
+    width: 13px;
+    height: 13px;
+  }
+}
