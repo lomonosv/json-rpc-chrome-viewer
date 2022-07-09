@@ -78,6 +78,7 @@ const Settings = ({ onClose }: IComponentProps) => {
             <span>JSON tree open state: </span>
             <Select<ExpandTreeState>
               name="expandedTreeState"
+              className={ styles.select }
               options={ expandedTreeStateOptions }
               value={ expandTreeState }
               onChange={ handleExpandTreeStateChange }

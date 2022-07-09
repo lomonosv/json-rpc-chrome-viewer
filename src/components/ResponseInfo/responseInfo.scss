@@ -9,9 +9,18 @@
   justify-content: space-between;
 }
 
+.responseInfoHeaderLeftSide {
+  display: flex;
+  align-items: center;
+}
+
 .responseInfoContainer {
   height: 0;
   flex-grow: 1;
   border-bottom-width: 0;
   display: flex;
+}
+
+.expandButton {
+  margin-right: 10px;
 }

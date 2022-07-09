@@ -6,15 +6,24 @@
 import settings from './icons/settings.svg';
 import close from './icons/close.svg';
 import clear from './icons/clear.svg';
+import expand from './icons/expand.svg';
+import collapse from './icons/collapse.svg';
+import copy from './icons/copy.svg';
 
 export enum IconType {
   Settings,
   Close,
-  Clear
+  Clear,
+  Expand,
+  Collapse,
+  Copy
 }
 
 export const IconMap = {
   [IconType.Settings]: settings,
   [IconType.Close]: close,
-  [IconType.Clear]: clear
+  [IconType.Clear]: clear,
+  [IconType.Expand]: expand,
+  [IconType.Collapse]: collapse,
+  [IconType.Copy]: copy
 };

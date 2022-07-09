@@ -25,7 +25,10 @@ const Request = ({ item }: { item: IRequest }) => {
       >
         <div className={ styles.methodWrapper }>
           <div className={ styles.methodContainer }>
-            <div className={ styles.method }>
+            <div
+              className={ styles.method }
+              title={ item.requestJSON.method }
+            >
               { item.requestJSON.method }
             </div>
             { showRequestUrl && (
