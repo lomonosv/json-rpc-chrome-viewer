@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { getConfig } from './helpers';
+import { getConfig } from '../common/helpers';
 
 const defaultRequestSectionHeight = 115;
 const defaultRequestListSectionWidth = 200;
@@ -39,11 +39,11 @@ export const useCacheContext = (): CacheContextType => (
   useContext<CacheContextType>(CacheContext)
 );
 
-interface IProps {
+interface IComponentProps {
   children: React.ReactElement
 }
 
-const CacheContextProvider: React.FC<IProps> = ({ children }) => (
+const CacheContextProvider: React.FC<IComponentProps> = ({ children }) => (
   <CacheContext.Provider value={ useCache() }>
     { children }
   </CacheContext.Provider>

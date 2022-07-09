@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState, useRef, useCallback } from 'react';
-import { useSettingsContext } from '../SettingsContext';
+import { useSettingsContext } from '../SettingsContext/SettingsContext';
 import { isJsonRpcRequest, getPreparedRequest } from './filters';
 import { IRequest } from './IRequest';
 
@@ -129,11 +129,11 @@ export const useRequestContext = (): RequestContextType => (
   useContext<RequestContextType>(RequestContext)
 );
 
-interface IProps {
+interface IComponentProps {
   children: React.ReactElement
 }
 
-const RequestContextProvider: React.FC<IProps> = ({ children }) => (
+const RequestContextProvider: React.FC<IComponentProps> = ({ children }) => (
   <RequestContext.Provider value={ useRequest() }>
     { children }
   </RequestContext.Provider>

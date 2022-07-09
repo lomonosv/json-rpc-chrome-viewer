@@ -10,13 +10,20 @@
   justify-content: space-between;
 }
 
-.closeButton {
-  font-size: 19px;
-  line-height: 12px;
-  font-weight: 300;
+.requestInfoHeaderLeftSide {
+  display: flex;
+  align-items: center;
+}
+
+.expandButton {
   margin-right: 10px;
-  vertical-align: middle;
-  margin-top: -5px;
+}
+
+.closeButton {
+  line-height: 12px;
+  padding: 2px;
+  margin-left: -2px;
+  margin-right: 6px;
 }
 
 .requestInfoContainer {
@@ -33,6 +40,7 @@
 .resizableBottomHandlerWrapper {
   height: 27px !important;
   bottom: -27px !important;
+  left: 30px !important;
   width: calc(100% - 50px) !important;
   z-index: 2;
 }

@@ -7,7 +7,7 @@
   background: $background;
   color: $color;
 
-  &:global(.isDark) {
+  :global(.isDark) & {
     background: $darkBackground;
     color: $darkColor;
   }
