@@ -1,6 +1,6 @@
 import React, { ChangeEventHandler, useEffect, useRef } from 'react';
 import { useRequestContext } from '../../logic/HTTPArchive/HttpArchiveContext';
-import { useSettingsContext } from '../../logic/SettingsContext';
+import { useSettingsContext } from '../../logic/SettingsContext/SettingsContext';
 import Button from '../common/Button';
 import SettingsButton from '../common/SettingsButton';
 import Input, { Type } from '../common/Input';

@@ -4,7 +4,7 @@ import Button from '../common/Button';
 import Icon, { IconType } from '../common/Icon';
 import Portal from '../common/Portal';
 import Input, { Type } from '../common/Input';
-import { useSettingsContext } from '../../logic/SettingsContext';
+import { useSettingsContext } from '../../logic/SettingsContext/SettingsContext';
 import styles from './settings.scss';
 
 interface IComponentProps {
@@ -60,6 +60,9 @@ const Settings = ({ onClose }: IComponentProps) => {
               isDisabled={ !showRequestUrl }
               onChange={ handleShowCorsBadgeChange }
             />
+          </div>
+          <div className={ styles.settingsItem }>
+            JSON tree open state:
           </div>
         </div>
       </div>
