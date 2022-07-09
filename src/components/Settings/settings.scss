@@ -1,0 +1,47 @@
+@import "../common/variables";
+
+.settingsWrapper {
+  background: $background;
+  color: $color;
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 2;
+
+  :global(.isDark) & {
+    background: $darkBackground;
+    color: $darkColor;
+  }
+}
+
+.settingsContainer {
+  padding: 10px;
+}
+
+.settingsItem {
+  > * {
+    display: inline-block;
+  }
+
+  &:not(:last-of-type) {
+    padding-bottom: 10px;
+  }
+}
+
+.select {
+  margin-left: 10px;
+  width: 100px;
+}
+
+.closeButton {
+  position: absolute;
+  right: 9px;
+  top: 6px;
+
+  > i {
+    width: 13px;
+    height: 13px;
+  }
+}

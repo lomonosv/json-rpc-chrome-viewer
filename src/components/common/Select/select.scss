@@ -1,0 +1,17 @@
+@import "../variables";
+
+.select {
+  background: $background;
+  color: $color;
+  outline: none;
+  font-family: system-ui, sans-serif;
+  font-size: 12px;
+  border: 1px solid $borderColor;
+  padding: 2px 3px;
+
+  :global(.isDark) & {
+    border: 1px solid $darkBorderColor;
+    background: $darkBackground;
+    color: $darkColor;
+  }
+}

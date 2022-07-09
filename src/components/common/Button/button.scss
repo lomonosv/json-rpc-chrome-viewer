@@ -2,18 +2,21 @@
 
 .button {
   display: inline-block;
-  cursor: pointer;
   color: $color;
+  fill: $iconColor;
 
   :global(.isDark) & {
     color: $darkColor;
+    fill: $darkColor;
   }
 
   &:hover {
-    color: #000;
+    color: $highLightedColor;
+    fill: $highLightedColor;
 
     :global(.isDark) & {
-      color: #fff;
+      color: $darkHighLightedColor;
+      fill: $darkHighLightedColor;
     }
   }
 }

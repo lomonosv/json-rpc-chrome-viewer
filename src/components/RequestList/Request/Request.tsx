@@ -1,7 +1,7 @@
 import React from 'react';
 import cn from 'classnames';
 import { useRequestContext } from '../../../logic/HTTPArchive/HttpArchiveContext';
-import { useSettingsContext } from '../../../logic/SettingsContext';
+import { useSettingsContext } from '../../../logic/SettingsContext/SettingsContext';
 import { IRequest } from '../../../logic/HTTPArchive/IRequest';
 import styles from './request.scss';
 
@@ -25,7 +25,10 @@ const Request = ({ item }: { item: IRequest }) => {
       >
         <div className={ styles.methodWrapper }>
           <div className={ styles.methodContainer }>
-            <div className={ styles.method }>
+            <div
+              className={ styles.method }
+              title={ item.requestJSON.method }
+            >
               { item.requestJSON.method }
             </div>
             { showRequestUrl && (

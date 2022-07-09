@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { Resizable } from 're-resizable';
 import { useRequestContext } from '../../logic/HTTPArchive/HttpArchiveContext';
-import { useCacheContext } from '../../logic/CacheContext';
+import { useCacheContext } from '../../logic/CacheContext/CacheContext';
 import Request from './Request';
 import Header from '../common/Header';
 import styles from './requestList.scss';
@@ -62,8 +62,8 @@ const RequestList = ({ className }: IComponentProps) => {
           <Header className={ styles.requestsHeader }>
             <div className={ styles.methodHeader }>Method</div>
             <div className={ styles.sizeTimeHeaders }>
-              <div>Size</div>
-              <div>Time</div>
+              <div>Size (B)</div>
+              <div>Time (ms)</div>
             </div>
           </Header>
         </div>

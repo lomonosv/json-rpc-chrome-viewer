@@ -1,8 +1,10 @@
-import React, { useRef, useEffect, ChangeEvent } from 'react';
+import React, { ChangeEventHandler, useEffect, useRef } from 'react';
 import { useRequestContext } from '../../logic/HTTPArchive/HttpArchiveContext';
-import { useSettingsContext } from '../../logic/SettingsContext';
+import { useSettingsContext } from '../../logic/SettingsContext/SettingsContext';
 import Button from '../common/Button';
+import SettingsButton from '../common/SettingsButton';
 import Input, { Type } from '../common/Input';
+import Icon, { IconType } from '../common/Icon';
 import styles from './toolbar.scss';
 
 const Toolbar = () => {
@@ -10,27 +12,15 @@ const Toolbar = () => {
   const { filter, clear, setFilter } = useRequestContext();
   const {
     preserveLog,
-    setPreserveLog,
-    showRequestUrl,
-    setShowRequestUrl,
-    showCorsBadge,
-    setShowCorsBadge
+    setPreserveLog
   } = useSettingsContext();
 
-  const handleFilterChange = (e: ChangeEvent<{ value: string }>) => {
+  const handleFilterChange: ChangeEventHandler<HTMLInputElement> = (e) => {
     setFilter(e.target.value);
   };
 
-  const handlePreserveLogChange = (e: ChangeEvent<{ checked: boolean }>) => {
+  const handlePreserveLogChange: ChangeEventHandler<HTMLInputElement> = (e) => {
     setPreserveLog(e.target.checked);
-  };
-
-  const handleShowRequestUrlChange = (e: ChangeEvent<{ checked: boolean }>) => {
-    setShowRequestUrl(e.target.checked);
-  };
-
-  const handleShowCorsBadgeChange = (e: ChangeEvent<{ checked: boolean }>) => {
-    setShowCorsBadge(e.target.checked);
   };
 
   useEffect(() => {
@@ -41,9 +31,15 @@ const Toolbar = () => {
       <div className={ styles.toolbarContainer }>
         <div className={ styles.toolbarSection }>
           <Button
-            text="Clear"
             onClick={ clear }
-          />
+            className={ styles.clearButton }
+            title="Clear list"
+          >
+            <Icon
+              className={ styles.clearIcon }
+              type={ IconType.Clear }
+            />
+          </Button>
           <Input
             name="filter"
             ref={ inputRef }
@@ -53,15 +49,16 @@ const Toolbar = () => {
             onChange={ handleFilterChange }
             clearComponent={ (
               <div
-                className={ styles.filterClearIcon }
+                className={ styles.filterClearIconWrapper }
                 onClick={ () => setFilter('') }
               >
-                &times;
+                <Icon
+                  className={ styles.filterClearIcon }
+                  type={ IconType.Close }
+                />
               </div>
             ) }
           />
-        </div>
-        <div className={ styles.toolbarSection }>
           <Input
             name="preserveLog"
             label="Preserve log"
@@ -70,23 +67,9 @@ const Toolbar = () => {
             checked={ preserveLog }
             onChange={ handlePreserveLogChange }
           />
-          <Input
-            name="showRequestUrl"
-            label="Show request url"
-            wrapperClassName={ styles.settingsItemWrapper }
-            type={ Type.Checkbox }
-            checked={ showRequestUrl }
-            onChange={ handleShowRequestUrlChange }
-          />
-          <Input
-            name="showCorsBadge"
-            label="Show CORS badge"
-            wrapperClassName={ styles.settingsItemWrapper }
-            type={ Type.Checkbox }
-            checked={ showCorsBadge }
-            isDisabled={ !showRequestUrl }
-            onChange={ handleShowCorsBadgeChange }
-          />
+        </div>
+        <div className={ styles.toolbarSection }>
+          <SettingsButton />
         </div>
       </div>
   );
