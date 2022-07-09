@@ -4,7 +4,9 @@ import Button from '../common/Button';
 import Icon, { IconType } from '../common/Icon';
 import Portal from '../common/Portal';
 import Input, { Type } from '../common/Input';
+import Select from '../common/Select';
 import { useSettingsContext } from '../../logic/SettingsContext/SettingsContext';
+import { ExpandTreeState, ExpandTreeStateTitlesMap } from '../common/JsonViewer/ExpandTreeState';
 import styles from './settings.scss';
 
 interface IComponentProps {
@@ -16,7 +18,9 @@ const Settings = ({ onClose }: IComponentProps) => {
     showRequestUrl,
     setShowRequestUrl,
     showCorsBadge,
-    setShowCorsBadge
+    setShowCorsBadge,
+    expandTreeState,
+    setExpandTreeState
   } = useSettingsContext();
 
   const handleShowRequestUrlChange: ChangeEventHandler<HTMLInputElement> = (e) => {
@@ -26,6 +30,15 @@ const Settings = ({ onClose }: IComponentProps) => {
   const handleShowCorsBadgeChange: ChangeEventHandler<HTMLInputElement> = (e) => {
     setShowCorsBadge(e.target.checked);
   };
+
+  const handleExpandTreeStateChange: ChangeEventHandler<HTMLSelectElement> = (e) => {
+    setExpandTreeState(+e.target.value);
+  };
+
+  const expandedTreeStateOptions = Object.keys(ExpandTreeStateTitlesMap).map((id) => ({
+    key: +id,
+    value: ExpandTreeStateTitlesMap[id]
+  }));
 
   return (
     <Portal>
@@ -62,7 +75,13 @@ const Settings = ({ onClose }: IComponentProps) => {
             />
           </div>
           <div className={ styles.settingsItem }>
-            JSON tree open state:
+            <span>JSON tree open state: </span>
+            <Select<ExpandTreeState>
+              name="expandedTreeState"
+              options={ expandedTreeStateOptions }
+              value={ expandTreeState }
+              onChange={ handleExpandTreeStateChange }
+            />
           </div>
         </div>
       </div>

@@ -2,6 +2,7 @@ import React, { useRef } from 'react';
 import { Resizable } from 're-resizable';
 import { useRequestContext } from '../../logic/HTTPArchive/HttpArchiveContext';
 import { useCacheContext } from '../../logic/CacheContext/CacheContext';
+import { useSettingsContext } from '../../logic/SettingsContext/SettingsContext';
 import Button from '../common/Button';
 import Icon, { IconType } from '../common/Icon';
 import CopyButton from '../common/CopyButton';
@@ -13,6 +14,7 @@ const RequestInfo = () => {
   const resizableRef = useRef<Resizable>(null);
   const { selected, clearSelection } = useRequestContext();
   const { requestSectionHeight, updateRequestSectionHeight } = useCacheContext();
+  const { expandTreeState } = useSettingsContext();
 
   const json = selected.requestJSON.params || {};
 
@@ -60,7 +62,10 @@ const RequestInfo = () => {
         <CopyButton text={ JSON.stringify(json, null, 2) } />
       </Header>
       <div className={ styles.requestInfoContainer }>
-        <JsonViewer src={ json } />
+        <JsonViewer
+          src={ json }
+          expandTreeState={ expandTreeState }
+        />
       </div>
     </Resizable>
   );

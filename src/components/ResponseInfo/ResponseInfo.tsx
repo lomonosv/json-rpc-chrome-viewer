@@ -3,10 +3,12 @@ import Header from '../common/Header';
 import JsonViewer from '../common/JsonViewer';
 import CopyButton from '../common/CopyButton';
 import { useRequestContext } from '../../logic/HTTPArchive/HttpArchiveContext';
+import { useSettingsContext } from '../../logic/SettingsContext/SettingsContext';
 import styles from './responseInfo.scss';
 
 const ResponseInfo = () => {
   const { selected } = useRequestContext();
+  const { expandTreeState } = useSettingsContext();
 
   const json = selected.responseJSON?.result || selected.responseJSON?.error || {};
 
@@ -19,7 +21,8 @@ const ResponseInfo = () => {
       <div className={ styles.responseInfoContainer }>
         <JsonViewer
           src={ json }
-          openNodeDepth={ 2 }
+          expandTreeState={ expandTreeState }
+          defaultOpenNodesDepth={ 2 }
         />
       </div>
     </div>
