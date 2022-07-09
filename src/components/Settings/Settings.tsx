@@ -1,10 +1,27 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
+import Button from '../common/Button';
+import Icon, { IconType } from '../common/Icon';
+import Portal from '../common/Portal';
 import styles from './settings.scss';
 
-const Settings = () => ReactDOM.createPortal(
-  <div className={ styles.settingsWrapper }>Settings</div>,
-  document.getElementById('portal')
+interface IComponentProps {
+  onClose: () => void
+}
+
+const Settings = ({ onClose }: IComponentProps) => (
+  <Portal>
+    <div className={ styles.settingsWrapper }>
+      Settings
+      <Button
+        content={ (
+          <Icon
+            type={ IconType.Close }
+          />
+        ) }
+        onClick={ onClose }
+      />
+    </div>
+  </Portal>
 );
 
 export default Settings;
