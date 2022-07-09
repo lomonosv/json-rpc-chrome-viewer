@@ -47,15 +47,14 @@ const RequestInfo = () => {
       <Header className={ styles.requestInfoHeader }>
         <div>
           <Button
-            content={ (
-              <Icon
-                className={ styles.closeButtonIcon }
-                type={ IconType.Close }
-              />
-            ) }
             onClick={ clearSelection }
             className={ styles.closeButton }
-          />
+          >
+            <Icon
+              className={ styles.closeButtonIcon }
+              type={ IconType.Close }
+            />
+          </Button>
           <span>Request</span>
         </div>
         <CopyButton text={ JSON.stringify(json, null, 2) } />

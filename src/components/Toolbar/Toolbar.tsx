@@ -1,23 +1,18 @@
-import React, { ChangeEventHandler, useEffect, useRef, useState } from 'react';
+import React, { ChangeEventHandler, useEffect, useRef } from 'react';
 import { useRequestContext } from '../../logic/HTTPArchive/HttpArchiveContext';
 import { useSettingsContext } from '../../logic/SettingsContext';
-import Settings from '../Settings';
 import Button from '../common/Button';
+import SettingsButton from '../common/SettingsButton';
 import Input, { Type } from '../common/Input';
 import Icon, { IconType } from '../common/Icon';
 import styles from './toolbar.scss';
 
 const Toolbar = () => {
-  const [isSettingsModalVisible, setIsSettingsModalVisible] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const { filter, clear, setFilter } = useRequestContext();
   const {
     preserveLog,
-    setPreserveLog,
-    showRequestUrl,
-    setShowRequestUrl,
-    showCorsBadge,
-    setShowCorsBadge
+    setPreserveLog
   } = useSettingsContext();
 
   const handleFilterChange: ChangeEventHandler<HTMLInputElement> = (e) => {
@@ -28,14 +23,6 @@ const Toolbar = () => {
     setPreserveLog(e.target.checked);
   };
 
-  const handleShowRequestUrlChange: ChangeEventHandler<HTMLInputElement> = (e) => {
-    setShowRequestUrl(e.target.checked);
-  };
-
-  const handleShowCorsBadgeChange: ChangeEventHandler<HTMLInputElement> = (e) => {
-    setShowCorsBadge(e.target.checked);
-  };
-
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
@@ -44,9 +31,11 @@ const Toolbar = () => {
       <div className={ styles.toolbarContainer }>
         <div className={ styles.toolbarSection }>
           <Button
-            content="Clear"
             onClick={ clear }
-          />
+            className={ styles.clearButton }
+          >
+            <Icon type={ IconType.Clear } />
+          </Button>
           <Input
             name="filter"
             ref={ inputRef }
@@ -66,8 +55,6 @@ const Toolbar = () => {
               </div>
             ) }
           />
-        </div>
-        <div className={ styles.toolbarSection }>
           <Input
             name="preserveLog"
             label="Preserve log"
@@ -76,32 +63,9 @@ const Toolbar = () => {
             checked={ preserveLog }
             onChange={ handlePreserveLogChange }
           />
-          <Input
-            name="showRequestUrl"
-            label="Show request url"
-            wrapperClassName={ styles.settingsItemWrapper }
-            type={ Type.Checkbox }
-            checked={ showRequestUrl }
-            onChange={ handleShowRequestUrlChange }
-          />
-          <Input
-            name="showCorsBadge"
-            label="Show CORS badge"
-            wrapperClassName={ styles.settingsItemWrapper }
-            type={ Type.Checkbox }
-            checked={ showCorsBadge }
-            isDisabled={ !showRequestUrl }
-            onChange={ handleShowCorsBadgeChange }
-          />
-          <Button
-            content={ (
-              <div>
-                <Icon type={ IconType.Settings }/>
-              </div>
-            ) }
-            onClick={ () => setIsSettingsModalVisible(true) }
-          />
-          { isSettingsModalVisible && <Settings onClose={ () => setIsSettingsModalVisible(false) }/> }
+        </div>
+        <div className={ styles.toolbarSection }>
+          <SettingsButton />
         </div>
       </div>
   );
