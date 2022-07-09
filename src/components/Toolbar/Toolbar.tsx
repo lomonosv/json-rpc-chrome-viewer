@@ -33,8 +33,12 @@ const Toolbar = () => {
           <Button
             onClick={ clear }
             className={ styles.clearButton }
+            title="Clear list"
           >
-            <Icon type={ IconType.Clear } />
+            <Icon
+              className={ styles.clearIcon }
+              type={ IconType.Clear }
+            />
           </Button>
           <Input
             name="filter"

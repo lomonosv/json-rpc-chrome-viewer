@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Resizable } from 're-resizable';
 import { useRequestContext } from '../../logic/HTTPArchive/HttpArchiveContext';
 import { useCacheContext } from '../../logic/CacheContext/CacheContext';
@@ -6,8 +6,10 @@ import { useSettingsContext } from '../../logic/SettingsContext/SettingsContext'
 import Button from '../common/Button';
 import Icon, { IconType } from '../common/Icon';
 import CopyButton from '../common/CopyButton';
+import ExpandButton from '../common/ExpandButton';
 import Header from '../common/Header';
 import JsonViewer from '../common/JsonViewer';
+import { ExpandTreeState } from '../common/JsonViewer/ExpandTreeState';
 import styles from './requestInfo.scss';
 
 const RequestInfo = () => {
@@ -15,6 +17,11 @@ const RequestInfo = () => {
   const { selected, clearSelection } = useRequestContext();
   const { requestSectionHeight, updateRequestSectionHeight } = useCacheContext();
   const { expandTreeState } = useSettingsContext();
+  const [expandTreeStateValue, setExpandTreeStateValue] = useState<ExpandTreeState>(expandTreeState);
+
+  useEffect(() => {
+    setExpandTreeStateValue(expandTreeState);
+  }, [expandTreeState, selected]);
 
   const json = selected.requestJSON.params || {};
 
@@ -47,16 +54,18 @@ const RequestInfo = () => {
       } }
     >
       <Header className={ styles.requestInfoHeader }>
-        <div>
+        <div className={ styles.requestInfoHeaderLeftSide }>
           <Button
             onClick={ clearSelection }
             className={ styles.closeButton }
           >
-            <Icon
-              className={ styles.closeButtonIcon }
-              type={ IconType.Close }
-            />
+            <Icon type={ IconType.Close } />
           </Button>
+          <ExpandButton
+            className={ styles.expandButton }
+            expandedState={ expandTreeStateValue }
+            onChangeState={ setExpandTreeStateValue }
+          />
           <span>Request</span>
         </div>
         <CopyButton text={ JSON.stringify(json, null, 2) } />
@@ -64,7 +73,7 @@ const RequestInfo = () => {
       <div className={ styles.requestInfoContainer }>
         <JsonViewer
           src={ json }
-          expandTreeState={ expandTreeState }
+          expandTreeState={ expandTreeStateValue }
         />
       </div>
     </Resizable>

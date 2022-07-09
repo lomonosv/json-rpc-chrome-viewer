@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import Button from '../Button';
+import Icon, { IconType } from '../Icon';
 import styles from './copyButton.scss';
 
 interface IComponentProps {
@@ -31,7 +32,9 @@ const CopyButton = ({ text }: IComponentProps) => {
       text={ text }
       onCopy={ handleCopy }
     >
-      <Button>Copy</Button>
+      <Button title="Copy to clipboard">
+        <Icon type={ IconType.Copy } />
+      </Button>
     </CopyToClipboard>
   );
 };
