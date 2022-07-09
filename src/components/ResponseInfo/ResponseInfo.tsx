@@ -6,18 +6,21 @@ import ExpandButton from '../common/ExpandButton';
 import { useRequestContext } from '../../logic/HTTPArchive/HttpArchiveContext';
 import { useSettingsContext } from '../../logic/SettingsContext/SettingsContext';
 import { ExpandTreeState } from '../common/JsonViewer/ExpandTreeState';
+import { IRequest } from '../../logic/HTTPArchive/IRequest';
 import styles from './responseInfo.scss';
 
 const ResponseInfo = () => {
   const { selected } = useRequestContext();
   const { expandTreeState } = useSettingsContext();
   const [expandTreeStateValue, setExpandTreeStateValue] = useState<ExpandTreeState>(expandTreeState);
+  const [selectedRequest, setSelectedRequest] = useState<IRequest>(selected);
 
   useEffect(() => {
     setExpandTreeStateValue(expandTreeState);
+    setSelectedRequest(selected);
   }, [expandTreeState, selected]);
 
-  const json = selected.responseJSON?.result || selected.responseJSON?.error || {};
+  const json = selectedRequest.responseJSON?.result || selectedRequest.responseJSON?.error || {};
 
   return (
     <div className={ styles.responseInfoWrapper }>

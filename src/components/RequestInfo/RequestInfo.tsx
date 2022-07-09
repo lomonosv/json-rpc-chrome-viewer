@@ -10,6 +10,7 @@ import ExpandButton from '../common/ExpandButton';
 import Header from '../common/Header';
 import JsonViewer from '../common/JsonViewer';
 import { ExpandTreeState } from '../common/JsonViewer/ExpandTreeState';
+import { IRequest } from '../../logic/HTTPArchive/IRequest';
 import styles from './requestInfo.scss';
 
 const RequestInfo = () => {
@@ -18,12 +19,14 @@ const RequestInfo = () => {
   const { requestSectionHeight, updateRequestSectionHeight } = useCacheContext();
   const { expandTreeState } = useSettingsContext();
   const [expandTreeStateValue, setExpandTreeStateValue] = useState<ExpandTreeState>(expandTreeState);
+  const [selectedRequest, setSelectedRequest] = useState<IRequest>(selected);
 
   useEffect(() => {
     setExpandTreeStateValue(expandTreeState);
+    setSelectedRequest(selected);
   }, [expandTreeState, selected]);
 
-  const json = selected.requestJSON.params || {};
+  const json = selectedRequest.requestJSON.params || {};
 
   const handleResize = () => {
     updateRequestSectionHeight(resizableRef.current.size.height);
