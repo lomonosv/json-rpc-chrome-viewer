@@ -1,4 +1,5 @@
 import React, { ChangeEventHandler } from 'react';
+import cn from 'classnames';
 import Header from '../common/Header';
 import Button from '../common/Button';
 import Icon, { IconType } from '../common/Icon';
@@ -7,6 +8,7 @@ import Input, { Type } from '../common/Input';
 import Select from '../common/Select';
 import { useSettingsContext } from '../../logic/SettingsContext/SettingsContext';
 import { ExpandTreeState, ExpandTreeStateTitlesMap } from '../common/JsonViewer/ExpandTreeState';
+import { JsonViewerTheme } from '../../logic/SettingsContext/Theme';
 import styles from './settings.scss';
 
 interface IComponentProps {
@@ -20,7 +22,9 @@ const Settings = ({ onClose }: IComponentProps) => {
     showCorsBadge,
     setShowCorsBadge,
     expandTreeState,
-    setExpandTreeState
+    setExpandTreeState,
+    jsonViewerTheme,
+    setJsonViewerTheme
   } = useSettingsContext();
 
   const handleShowRequestUrlChange: ChangeEventHandler<HTMLInputElement> = (e) => {
@@ -35,9 +39,18 @@ const Settings = ({ onClose }: IComponentProps) => {
     setExpandTreeState(+e.target.value);
   };
 
+  const handleJsonViewerThemeChange: ChangeEventHandler<HTMLSelectElement> = (e) => {
+    setJsonViewerTheme(e.target.value as JsonViewerTheme);
+  };
+
   const expandedTreeStateOptions = Object.keys(ExpandTreeStateTitlesMap).map((id) => ({
     key: +id,
     value: ExpandTreeStateTitlesMap[id]
+  }));
+
+  const jsonViewerThemeOptions = Object.values(JsonViewerTheme).map((key) => ({
+    key,
+    value: key
   }));
 
   return (
@@ -82,6 +95,16 @@ const Settings = ({ onClose }: IComponentProps) => {
               options={ expandedTreeStateOptions }
               value={ expandTreeState }
               onChange={ handleExpandTreeStateChange }
+            />
+          </div>
+          <div className={ styles.settingsItem }>
+            <span>JSON tree Theme: </span>
+            <Select<JsonViewerTheme>
+              name="jsonViewerTheme"
+              className={ cn(styles.select, styles.themeSelect) }
+              options={ jsonViewerThemeOptions }
+              value={ jsonViewerTheme }
+              onChange={ handleJsonViewerThemeChange }
             />
           </div>
         </div>

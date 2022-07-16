@@ -12,7 +12,7 @@ interface IComponentProps {
 }
 
 const JsonViewer = ({ src, defaultOpenNodesDepth = 1, expandTreeState }: IComponentProps) => {
-  const { jsonViewerTheme } = useSettingsContext();
+  const { systemJsonViewerTheme } = useSettingsContext();
 
   const collapsed = expandTreeState === ExpandTreeState.Default
     ? defaultOpenNodesDepth
@@ -23,7 +23,7 @@ const JsonViewer = ({ src, defaultOpenNodesDepth = 1, expandTreeState }: ICompon
       <ReactJsonView
         name={ false }
         src={ src as object }
-        theme={ jsonViewerTheme as ThemeKeys }
+        theme={ systemJsonViewerTheme.toLowerCase() as ThemeKeys }
         collapsed={ collapsed }
         enableClipboard={ false }
         indentWidth={ 2 }
