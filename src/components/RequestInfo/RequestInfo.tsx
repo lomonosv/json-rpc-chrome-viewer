@@ -61,6 +61,7 @@ const RequestInfo = () => {
           <Button
             onClick={ clearSelection }
             className={ styles.closeButton }
+            title="Close"
           >
             <Icon type={ IconType.Close } />
           </Button>
