@@ -10,12 +10,13 @@ export const isJsonRpcRequest = (request: chrome.devtools.network.Request) => (
 );
 
 export const getPreparedRequest = async (
-  request: chrome.devtools.network.Request
+  request: chrome.devtools.network.Request,
+  responseContent?: string
 ): Promise<IRequest[]> => new Promise((resolve) => {
   const requests: IRequest[] = [];
 
   request.getContent((body) => {
-    const responseJSON = JSON.parse(body);
+    const responseJSON = JSON.parse(responseContent || body);
     const requestJSON = JSON.parse(request.request.postData.text);
     const isBatch = Array.isArray(requestJSON) && Array.isArray(responseJSON);
 
