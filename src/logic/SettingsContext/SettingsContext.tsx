@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { Theme, JsonViewerTheme } from './Theme';
+import { JsonViewerTheme, DevToolsTheme } from './Theme';
 import { ExpandTreeState } from '../../components/common/JsonViewer/ExpandTreeState';
 import { getConfig } from '../common/helpers';
 
@@ -7,13 +7,10 @@ const defaultPreserveLogValue = false;
 const defaultShowRequestUrlValue = true;
 const defaultShowCorsBadgeValue = true;
 const defaultExpandTreeStateValue = ExpandTreeState.Default;
+const defaultJsonViewerThemeValue = JsonViewerTheme.System;
 
 const isDevtoolsDarkTheme = (): boolean => (
-  chrome.devtools.panels.themeName === Theme.Dark
-);
-
-const getJsonViewerTheme = (): JsonViewerTheme => (
-  isDevtoolsDarkTheme() ? JsonViewerTheme.Dark : JsonViewerTheme.Light
+  chrome.devtools.panels.themeName === DevToolsTheme.Dark
 );
 
 const useSettings = () => {
@@ -21,13 +18,14 @@ const useSettings = () => {
   const [showRequestUrl, setShowRequestUrl] = useState<boolean>(defaultShowRequestUrlValue);
   const [showCorsBadge, setShowCorsBadge] = useState<boolean>(defaultShowCorsBadgeValue);
   const [expandTreeState, setExpandTreeState] = useState<ExpandTreeState>(defaultExpandTreeStateValue);
-  const [jsonViewerTheme, setJsonViewerTheme] = useState<JsonViewerTheme>(getJsonViewerTheme());
+  const [jsonViewerTheme, setJsonViewerTheme] = useState<JsonViewerTheme>(defaultJsonViewerThemeValue);
 
   useEffect(() => {
     getConfig('settings_preserveLog', defaultPreserveLogValue).then(setPreserveLog);
     getConfig('settings_showRequestUrl', defaultShowRequestUrlValue).then(setShowRequestUrl);
     getConfig('settings_showCorsBadge', defaultShowCorsBadgeValue).then(setShowCorsBadge);
     getConfig('settings_expandTreeState', defaultExpandTreeStateValue).then(setExpandTreeState);
+    getConfig('settings_jsonViewerTheme', defaultJsonViewerThemeValue).then(setJsonViewerTheme);
   }, []);
 
   const handlePreserveLogChange = (settings_preserveLog: boolean) => {
@@ -50,18 +48,28 @@ const useSettings = () => {
     chrome.storage.local.set({ settings_expandTreeState });
   };
 
+  const handleJsonViewerThemeChange = (settings_jsonViewerTheme: JsonViewerTheme) => {
+    setJsonViewerTheme(settings_jsonViewerTheme);
+    chrome.storage.local.set({ settings_jsonViewerTheme });
+  };
+
+  const getSystemJsonViewerTheme = (): JsonViewerTheme => (
+    isDevtoolsDarkTheme() ? JsonViewerTheme.SummerFruit : JsonViewerTheme.SummerFruitInverted
+  );
+
   return {
     preserveLog,
     showRequestUrl,
     showCorsBadge,
     expandTreeState,
     jsonViewerTheme,
+    systemJsonViewerTheme: jsonViewerTheme === JsonViewerTheme.System ? getSystemJsonViewerTheme() : jsonViewerTheme,
     isDarkTheme: isDevtoolsDarkTheme(),
     setPreserveLog: handlePreserveLogChange,
     setShowRequestUrl: handleShowRequestUrlChange,
     setShowCorsBadge: handleShowCorsBadgeChange,
     setExpandTreeState: handleExpandTreeStateChange,
-    setJsonViewerTheme
+    setJsonViewerTheme: handleJsonViewerThemeChange
   };
 };
 
