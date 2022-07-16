@@ -44,9 +44,14 @@ const useRequest = () => {
     }
   }, [filteredRequests, selected]);
 
-  const handleInitialRequestsData = useCallback(async (e: CustomEvent<chrome.devtools.network.Request[]>) => {
+  const handleInitialRequestsData = useCallback(async (e: CustomEvent<{
+    request: chrome.devtools.network.Request,
+    responseContent: string
+  }[]>) => {
     const requests = await Promise.all(
-      e.detail.filter(isJsonRpcRequest).map((item) => getPreparedRequest(item))
+      e.detail.filter(({ request }) => isJsonRpcRequest(request)).map(
+        ({ request, responseContent }) => getPreparedRequest(request, responseContent)
+      )
     );
 
     requestsRef.current = [
