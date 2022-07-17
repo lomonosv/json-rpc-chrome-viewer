@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import Button from '../Button';
-import Icon, { IconType } from '../Icon';
-import { ExpandTreeState } from '../JsonViewer/ExpandTreeState';
+import Button from '~/components/common/Button';
+import Icon, { IconType } from '~/components/common/Icon';
+import { ExpandTreeState } from '~/components/common/JsonViewer/ExpandTreeState';
 import styles from './expandButton.scss';
 
 interface IComponentProps {

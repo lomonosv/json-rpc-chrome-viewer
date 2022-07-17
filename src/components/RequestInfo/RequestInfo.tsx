@@ -1,16 +1,16 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Resizable } from 're-resizable';
-import { useRequestContext } from '../../logic/HTTPArchive/HttpArchiveContext';
-import { useCacheContext } from '../../logic/CacheContext/CacheContext';
-import { useSettingsContext } from '../../logic/SettingsContext/SettingsContext';
-import Button from '../common/Button';
-import Icon, { IconType } from '../common/Icon';
-import CopyButton from '../common/CopyButton';
-import ExpandButton from '../common/ExpandButton';
-import Header from '../common/Header';
-import JsonViewer from '../common/JsonViewer';
-import { ExpandTreeState } from '../common/JsonViewer/ExpandTreeState';
-import { IRequest } from '../../logic/HTTPArchive/IRequest';
+import { useRequestContext } from '~/logic/HTTPArchive/HttpArchiveContext';
+import { useCacheContext } from '~/logic/CacheContext/CacheContext';
+import { useSettingsContext } from '~/logic/SettingsContext/SettingsContext';
+import { IRequest } from '~/logic/HTTPArchive/IRequest';
+import Button from '~/components/common/Button';
+import Icon, { IconType } from '~/components/common/Icon';
+import CopyButton from '~/components/common/CopyButton';
+import ExpandButton from '~/components/common/ExpandButton';
+import Header from '~/components/common/Header';
+import JsonViewer from '~/components/common/JsonViewer';
+import { ExpandTreeState } from '~/components/common/JsonViewer/ExpandTreeState';
 import styles from './requestInfo.scss';
 
 const RequestInfo = () => {

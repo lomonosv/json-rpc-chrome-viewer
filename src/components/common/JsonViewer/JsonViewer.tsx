@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactJsonView, { ThemeKeys } from 'react-json-view';
-import { JSONValue } from '../../../logic/HTTPArchive/IRequest';
-import { useSettingsContext } from '../../../logic/SettingsContext/SettingsContext';
+import { JSONValue } from '~/logic/HTTPArchive/IRequest';
+import { useSettingsContext } from '~/logic/SettingsContext/SettingsContext';
 import { ExpandTreeState } from './ExpandTreeState';
 import styles from './jsonViewer.scss';
 

@@ -1,5 +1,5 @@
 import { v4 as uuid } from 'uuid';
-import { IRequest } from './IRequest';
+import { IRequest } from '~/logic/HTTPArchive/IRequest';
 
 export const isJsonRpcRequest = (request: chrome.devtools.network.Request) => (
   request.request &&

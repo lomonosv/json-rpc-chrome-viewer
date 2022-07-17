@@ -12,6 +12,10 @@
     "allowJs": true,
     "moduleResolution": "node",
     "baseUrl": "./",
+    "paths": {
+      "~/logic/*": ["src/logic/*"],
+      "~/components/*": ["src/components/*"]
+    },
     "esModuleInterop": true
   },
   "include": [

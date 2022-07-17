@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
-import Button from '../Button';
-import Icon, { IconType } from '../Icon';
+import Button from '~/components/common/Button';
+import Icon, { IconType } from '~/components/common/Icon';
 import styles from './copyButton.scss';
 
 interface IComponentProps {

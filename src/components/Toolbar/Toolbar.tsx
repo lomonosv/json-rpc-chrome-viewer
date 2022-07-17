@@ -1,10 +1,10 @@
 import React, { ChangeEventHandler, useEffect, useRef } from 'react';
-import { useRequestContext } from '../../logic/HTTPArchive/HttpArchiveContext';
-import { useSettingsContext } from '../../logic/SettingsContext/SettingsContext';
-import Button from '../common/Button';
-import SettingsButton from '../common/SettingsButton';
-import Input, { Type } from '../common/Input';
-import Icon, { IconType } from '../common/Icon';
+import { useRequestContext } from '~/logic/HTTPArchive/HttpArchiveContext';
+import { useSettingsContext } from '~/logic/SettingsContext/SettingsContext';
+import Button from '~/components/common/Button';
+import SettingsButton from '~/components/common/SettingsButton';
+import Input, { Type } from '~/components/common/Input';
+import Icon, { IconType } from '~/components/common/Icon';
 import styles from './toolbar.scss';
 
 const Toolbar = () => {

@@ -1,14 +1,14 @@
 import React, { ChangeEventHandler } from 'react';
 import cn from 'classnames';
-import Header from '../common/Header';
-import Button from '../common/Button';
-import Icon, { IconType } from '../common/Icon';
-import Portal from '../common/Portal';
-import Input, { Type } from '../common/Input';
-import Select from '../common/Select';
-import { useSettingsContext } from '../../logic/SettingsContext/SettingsContext';
-import { ExpandTreeState, ExpandTreeStateTitlesMap } from '../common/JsonViewer/ExpandTreeState';
-import { JsonViewerTheme } from '../../logic/SettingsContext/Theme';
+import Header from '~/components/common/Header';
+import Button from '~/components/common/Button';
+import Icon, { IconType } from '~/components/common/Icon';
+import Portal from '~/components/common/Portal';
+import Input, { Type } from '~/components/common/Input';
+import Select from '~/components/common/Select';
+import { useSettingsContext } from '~/logic/SettingsContext/SettingsContext';
+import { ExpandTreeState, ExpandTreeStateTitlesMap } from '~/components/common/JsonViewer/ExpandTreeState';
+import { JsonViewerTheme } from '~/logic/SettingsContext/Theme';
 import styles from './settings.scss';
 
 interface IComponentProps {

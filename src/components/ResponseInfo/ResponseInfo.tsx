@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import Header from '../common/Header';
-import JsonViewer from '../common/JsonViewer';
-import CopyButton from '../common/CopyButton';
-import ExpandButton from '../common/ExpandButton';
-import { useRequestContext } from '../../logic/HTTPArchive/HttpArchiveContext';
-import { useSettingsContext } from '../../logic/SettingsContext/SettingsContext';
-import { ExpandTreeState } from '../common/JsonViewer/ExpandTreeState';
-import { IRequest } from '../../logic/HTTPArchive/IRequest';
+import Header from '~/components/common/Header';
+import JsonViewer from '~/components/common/JsonViewer';
+import CopyButton from '~/components/common/CopyButton';
+import ExpandButton from '~/components/common/ExpandButton';
+import { ExpandTreeState } from '~/components/common/JsonViewer/ExpandTreeState';
+import { useRequestContext } from '~/logic/HTTPArchive/HttpArchiveContext';
+import { useSettingsContext } from '~/logic/SettingsContext/SettingsContext';
+import { IRequest } from '~/logic/HTTPArchive/IRequest';
 import styles from './responseInfo.scss';
 
 const ResponseInfo = () => {
