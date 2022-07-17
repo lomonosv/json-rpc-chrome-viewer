@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, useRef, useCallback } from 'react';
-import { useSettingsContext } from '../SettingsContext/SettingsContext';
-import { isJsonRpcRequest, getPreparedRequest } from './filters';
-import { IRequest } from './IRequest';
+import { useSettingsContext } from '~/logic/SettingsContext/SettingsContext';
+import { isJsonRpcRequest, getPreparedRequest } from '~/logic/HTTPArchive/filters';
+import { IRequest } from '~/logic/HTTPArchive/IRequest';
 
 const useRequest = () => {
   const [selected, setSelected] = useState<IRequest>(null);

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { getConfig } from '../common/helpers';
+import { getConfig } from '~/logic/common/helpers';
 
 const defaultRequestSectionHeight = 115;
 const defaultRequestListSectionWidth = 200;

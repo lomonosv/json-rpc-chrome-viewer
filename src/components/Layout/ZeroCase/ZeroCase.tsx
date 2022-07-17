@@ -1,5 +1,5 @@
 import React, { MouseEventHandler } from 'react';
-import { useRequestContext } from '../../../logic/HTTPArchive/HttpArchiveContext';
+import { useRequestContext } from '~/logic/HTTPArchive/HttpArchiveContext';
 import styles from './zeroCase.scss';
 
 const ZeroCase = () => {

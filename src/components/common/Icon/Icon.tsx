@@ -1,6 +1,6 @@
 import React from 'react';
 import cn from 'classnames';
-import { IconType, IconMap } from './IconType';
+import { IconType, IconMap } from '~/components/common/Icon/IconType';
 import styles from './icon.scss';
 
 interface IComponentProps {

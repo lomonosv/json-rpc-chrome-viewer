@@ -1,9 +1,9 @@
 import React, { useEffect, useRef } from 'react';
 import { Resizable } from 're-resizable';
-import { useRequestContext } from '../../logic/HTTPArchive/HttpArchiveContext';
-import { useCacheContext } from '../../logic/CacheContext/CacheContext';
+import { useRequestContext } from '~/logic/HTTPArchive/HttpArchiveContext';
+import { useCacheContext } from '~/logic/CacheContext/CacheContext';
+import Header from '~/components/common/Header';
 import Request from './Request';
-import Header from '../common/Header';
 import styles from './requestList.scss';
 
 const minLeftSideWidth = 200;

@@ -1,12 +1,12 @@
 import React, { useEffect } from 'react';
-import { useRequestContext } from '../../logic/HTTPArchive/HttpArchiveContext';
-import { useSettingsContext } from '../../logic/SettingsContext/SettingsContext';
+import { useRequestContext } from '~/logic/HTTPArchive/HttpArchiveContext';
+import { useSettingsContext } from '~/logic/SettingsContext/SettingsContext';
+import RequestList from '~/components/RequestList';
+import RequestInfo from '~/components/RequestInfo';
+import ResponseInfo from '~/components/ResponseInfo';
+import Toolbar from '~/components/Toolbar';
+import Header from '~/components/common/Header';
 import ZeroCase from './ZeroCase';
-import RequestList from '../RequestList';
-import RequestInfo from '../RequestInfo';
-import ResponseInfo from '../ResponseInfo';
-import Toolbar from '../Toolbar';
-import Header from '../common/Header';
 import styles from './layout.scss';
 
 const Layout = () => {

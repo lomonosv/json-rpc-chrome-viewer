@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { JsonViewerTheme, DevToolsTheme } from './Theme';
-import { ExpandTreeState } from '../../components/common/JsonViewer/ExpandTreeState';
-import { getConfig } from '../common/helpers';
+import { JsonViewerTheme, DevToolsTheme } from '~/logic/SettingsContext/Theme';
+import { ExpandTreeState } from '~/components/common/JsonViewer/ExpandTreeState';
+import { getConfig } from '~/logic/common/helpers';
 
 const defaultPreserveLogValue = false;
 const defaultShowRequestUrlValue = true;

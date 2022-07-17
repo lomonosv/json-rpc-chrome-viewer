@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import Button from '../Button';
-import Icon, { IconType } from '../Icon';
-import Settings from '../../Settings';
+import Button from '~/components/common/Button';
+import Icon, { IconType } from '~/components/common/Icon';
+import Settings from '~/components/Settings';
 import styles from './settingsButton.scss';
 
 const SettingsButton = () => {
