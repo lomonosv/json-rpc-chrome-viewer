@@ -13,6 +13,7 @@ module.exports = {
     }],
     'block-closing-brace-newline-before': 'always-multi-line',
     'selector-class-pattern': null,
-    'no-descending-specificity': null
+    'no-descending-specificity': null,
+    'import-notation': 'string'
   }
 }
