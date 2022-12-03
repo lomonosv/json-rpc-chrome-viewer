@@ -30,18 +30,24 @@ const JsonViewer = ({ src, defaultOpenNodesDepth = 1, expandTreeState }: ICompon
   return (
     <div className={ styles.jsonViewer }>
       { isInitialized && (
-        <ReactJsonView
-          name={ false }
-          src={ src as object }
-          theme={ systemJsonViewerTheme.toLowerCase() as ThemeKeys }
-          collapsed={ collapsed }
-          enableClipboard={ false }
-          indentWidth={ 2 }
-          displayDataTypes={ false }
-          iconStyle="square"
-          quotesOnKeys={ false }
-          displayObjectSize={ false }
-        />
+        typeof src === 'object' ? (
+          <ReactJsonView
+            name={ false }
+            src={ src as object }
+            theme={ systemJsonViewerTheme.toLowerCase() as ThemeKeys }
+            collapsed={ collapsed }
+            enableClipboard={ false }
+            indentWidth={ 2 }
+            displayDataTypes={ false }
+            iconStyle="square"
+            quotesOnKeys={ false }
+            displayObjectSize={ false }
+          />
+        ) : (
+          <div className="react-json-view">
+            { src }
+          </div>
+        )
       ) }
     </div>
   );
