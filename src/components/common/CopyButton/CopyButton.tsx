@@ -5,10 +5,18 @@ import Icon, { IconType } from '~/components/common/Icon';
 import styles from './copyButton.scss';
 
 interface IComponentProps {
-  text: string
+  text: string,
+  className?: string,
+  hint?: string,
+  iconType?: IconType
 }
 
-const CopyButton = ({ text }: IComponentProps) => {
+const CopyButton = ({
+  text,
+  className,
+  hint = 'Copy to clipboard',
+  iconType = IconType.Copy
+}: IComponentProps) => {
   const [isCopied, setIsCopied] = useState<boolean>(false);
 
   const handleCopy = () => {
@@ -32,8 +40,11 @@ const CopyButton = ({ text }: IComponentProps) => {
       text={ text }
       onCopy={ handleCopy }
     >
-      <Button title="Copy to clipboard">
-        <Icon type={ IconType.Copy } />
+      <Button
+        title={ hint }
+        className={ className }
+      >
+        <Icon type={ iconType } />
       </Button>
     </CopyToClipboard>
   );
