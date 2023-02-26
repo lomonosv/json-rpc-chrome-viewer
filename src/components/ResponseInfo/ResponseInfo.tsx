@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { Json2Ts } from 'json2ts/src/json2ts';
 import Header from '~/components/common/Header';
 import JsonViewer from '~/components/common/JsonViewer';
 import CopyButton from '~/components/common/CopyButton';
+import { IconType } from '~/components/common/Icon';
 import ExpandButton from '~/components/common/ExpandButton';
 import { ExpandTreeState } from '~/components/common/JsonViewer/ExpandTreeState';
 import { useRequestContext } from '~/logic/HTTPArchive/HttpArchiveContext';
@@ -33,7 +35,15 @@ const ResponseInfo = () => {
           />
           <span>Response</span>
         </div>
-        <CopyButton text={ JSON.stringify(json, null, 2) } />
+        <div className={ styles.responseInfoHeaderRightSide }>
+          <CopyButton
+              text={ new Json2Ts().convert(JSON.stringify(json)) }
+              className={ styles.convertToTSButton }
+              hint="Convert to TS and Copy to clipboard"
+              iconType={ IconType.Typescript }
+          />
+          <CopyButton text={ JSON.stringify(json, null, 2) } />
+        </div>
       </Header>
       <div className={ styles.responseInfoContainer }>
         <JsonViewer
