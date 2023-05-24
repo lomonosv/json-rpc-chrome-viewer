@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { Json2Ts } from 'json2ts/src/json2ts';
 import Header from '~/components/common/Header';
 import JsonViewer from '~/components/common/JsonViewer';
 import CopyButton from '~/components/common/CopyButton';
@@ -9,6 +8,7 @@ import { ExpandTreeState } from '~/components/common/JsonViewer/ExpandTreeState'
 import { useRequestContext } from '~/logic/HTTPArchive/HttpArchiveContext';
 import { useSettingsContext } from '~/logic/SettingsContext/SettingsContext';
 import { IRequest } from '~/logic/HTTPArchive/IRequest';
+import { formatJson, convertJsonToTS } from '~/logic/common/helpers';
 import styles from './responseInfo.scss';
 
 const ResponseInfo = () => {
@@ -23,6 +23,7 @@ const ResponseInfo = () => {
   }, [expandTreeState, selected]);
 
   const json = selectedRequest.responseJSON?.result || selectedRequest.responseJSON?.error || {};
+  const jsonTSRepresentation = convertJsonToTS(json);
 
   return (
     <div className={ styles.responseInfoWrapper }>
@@ -36,13 +37,15 @@ const ResponseInfo = () => {
           <span>Response</span>
         </div>
         <div className={ styles.responseInfoHeaderRightSide }>
-          <CopyButton
-              text={ new Json2Ts().convert(JSON.stringify(json)) }
+          { jsonTSRepresentation && (
+            <CopyButton
+              text={ convertJsonToTS(json) }
               className={ styles.convertToTSButton }
               hint="Convert to TS and Copy to clipboard"
               iconType={ IconType.Typescript }
-          />
-          <CopyButton text={ JSON.stringify(json, null, 2) } />
+            />
+          ) }
+          <CopyButton text={ formatJson(json) } />
         </div>
       </Header>
       <div className={ styles.responseInfoContainer }>
