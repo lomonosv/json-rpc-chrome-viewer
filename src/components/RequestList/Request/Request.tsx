@@ -47,6 +47,7 @@ const Request = ({ item }: { item: IRequest }) => {
               <Button
                 title="Resend Request"
                 onClick={ handleResendButtonClick }
+                className={ styles.resendRequestButton }
               >
                 <Icon type={ IconType.Update }></Icon>
               </Button>
