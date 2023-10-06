@@ -3,6 +3,8 @@ import cn from 'classnames';
 import { useRequestContext } from '~/logic/HTTPArchive/HttpArchiveContext';
 import { useSettingsContext } from '~/logic/SettingsContext/SettingsContext';
 import useEditRequestModal from './EditRequestModal/useEditRequestModal';
+import Button from '~/components/common/Button';
+import Icon, { IconType } from '~/components/common/Icon';
 import { IRequest } from '~/logic/HTTPArchive/IRequest';
 import styles from './request.scss';
 
@@ -18,6 +20,11 @@ const Request = ({ item }: { item: IRequest }) => {
 
   const handleClick = () => {
     setSelected(item);
+  };
+
+  const handleResendButtonClick = (e: React.MouseEvent<HTMLElement>) => {
+    e.stopPropagation();
+    showEditRequestModal();
   };
 
   return (
@@ -37,6 +44,12 @@ const Request = ({ item }: { item: IRequest }) => {
               title={ item.requestJSON.method }
             >
               { item.requestJSON.method }
+              <Button
+                title="Resend Request"
+                onClick={ handleResendButtonClick }
+              >
+                <Icon type={ IconType.Update }></Icon>
+              </Button>
             </div>
             { showRequestUrl && (
               <div
@@ -47,7 +60,6 @@ const Request = ({ item }: { item: IRequest }) => {
                 <span>{ item.request.url }</span>
               </div>
             ) }
-            <span onClick={ showEditRequestModal }>Resend</span>
           </div>
         </div>
         <div className={ styles.sizeTime }>

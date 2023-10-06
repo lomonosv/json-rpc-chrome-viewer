@@ -85,7 +85,8 @@
 }
 
 .method {
-  display: block;
+  display: flex;
+  align-items: center;
   font-family: monospace;
   font-size: 12px;
 }
