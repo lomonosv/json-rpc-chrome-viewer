@@ -10,6 +10,7 @@ import expand from './icons/expand.svg';
 import collapse from './icons/collapse.svg';
 import copy from './icons/copy.svg';
 import typescript from './icons/typescript.svg';
+import update from './icons/update.svg';
 
 export enum IconType {
   Settings,
@@ -18,7 +19,8 @@ export enum IconType {
   Expand,
   Collapse,
   Copy,
-  Typescript
+  Typescript,
+  Update
 }
 
 export const IconMap = {
@@ -28,5 +30,6 @@ export const IconMap = {
   [IconType.Expand]: expand,
   [IconType.Collapse]: collapse,
   [IconType.Copy]: copy,
-  [IconType.Typescript]: typescript
+  [IconType.Typescript]: typescript,
+  [IconType.Update]: update
 };
