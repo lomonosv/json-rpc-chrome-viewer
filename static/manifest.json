@@ -4,7 +4,13 @@
   "description": "JSON RPC requests Chrome developer tools viewer. More convenient way to manage your rpc requests.",
   "manifest_version": 3,
   "permissions": [
-    "storage"
+    "storage",
+    "tabs",
+    "scripting"
+  ],
+  "host_permissions": [
+    "https://*/*",
+    "http://*/*"
   ],
   "icons": {
     "16": "icons/16.png",
