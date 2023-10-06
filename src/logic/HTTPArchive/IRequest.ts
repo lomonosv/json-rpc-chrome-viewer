@@ -1,3 +1,5 @@
+import { Request, Response } from 'har-format';
+
 export type JSONValue =
   string |
   number |
@@ -14,6 +16,9 @@ interface IJSONArray extends Array<JSONValue> { }
 export interface IRequest extends chrome.devtools.network.Request {
   uuid: string,
   isCors: boolean,
+  request: Request,
+  response: Response,
+  time: number,
   requestJSON: {
     id: string,
     jsonrpc: string,
