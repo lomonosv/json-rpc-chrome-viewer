@@ -7,7 +7,7 @@ export type JSONValue =
   IJSONObject |
   IJSONArray;
 
-interface IJSONObject {
+export interface IJSONObject {
   [k: string]: JSONValue
 }
 

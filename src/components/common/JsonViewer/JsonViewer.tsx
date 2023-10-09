@@ -8,10 +8,16 @@ import styles from './jsonViewer.scss';
 interface IComponentProps {
   src: JSONValue,
   defaultOpenNodesDepth?: number,
-  expandTreeState: ExpandTreeState
+  expandTreeState: ExpandTreeState,
+  onEdit?: (edit: any) => void
 }
 
-const JsonViewer = ({ src, defaultOpenNodesDepth = 1, expandTreeState }: IComponentProps) => {
+const JsonViewer = ({
+  src,
+  defaultOpenNodesDepth = 1,
+  expandTreeState,
+  onEdit
+}: IComponentProps) => {
   const [isInitialized, setIsInitialized] = useState(false);
   const { systemJsonViewerTheme } = useSettingsContext();
 
@@ -42,6 +48,7 @@ const JsonViewer = ({ src, defaultOpenNodesDepth = 1, expandTreeState }: ICompon
             iconStyle="square"
             quotesOnKeys={ false }
             displayObjectSize={ false }
+            onEdit={ onEdit }
           />
         ) : (
           <div className="react-json-view">
