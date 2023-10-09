@@ -3,7 +3,7 @@ import cn from 'classnames';
 import Modal from '~/components/common/Modal';
 import Button from '~/components/common/Button';
 import Icon, { IconType } from '~/components/common/Icon';
-import { IJSONObject, IRequest } from '~/logic/HTTPArchive/IRequest';
+import { JSONValue, IRequest, IJSONObject } from '~/logic/HTTPArchive/IRequest';
 import styles from './editRequestModal.scss';
 import JsonViewer from '~/components/common/JsonViewer';
 import { ExpandTreeState } from '~/components/common/JsonViewer/ExpandTreeState';
@@ -15,7 +15,7 @@ interface IProps {
 }
 
 const EditRequestModal = ({ isVisible, item, close }: IProps) => {
-  const [params, setParams] = useState<IJSONObject>(item.requestJSON);
+  const [params, setParams] = useState<JSONValue>(item.requestJSON.params);
 
   const getCurrentTab = async () => {
     const queryOptions = { active: true, lastFocusedWindow: true };
@@ -30,7 +30,10 @@ const EditRequestModal = ({ isVisible, item, close }: IProps) => {
 
     await chrome.scripting.executeScript({
       target: { tabId: tab.id },
-      func: (item: IRequest, params: IJSONObject) => {
+      func: (item: IRequest, params: JSONValue & {
+        headers?: IJSONObject,
+        payload?: IJSONObject,
+      }) => {
         const { url, method, headers, postData: { text: body } } = item.request;
         const json = JSON.parse(body);
 
@@ -58,14 +61,14 @@ const EditRequestModal = ({ isVisible, item, close }: IProps) => {
     close();
   };
 
-  const handleEditParams = ({ updated_src } : { updated_src: IJSONObject }) => {
+  const handleEditParams = ({ updated_src } : { updated_src: JSONValue }) => {
     setParams(updated_src);
   };
 
   const header = (
     <div className={ styles.header }>
       <span>
-        { `Resend "${ item.requestJSON.method }" Request` }
+        { `Resend "${ item.requestJSON.method }" request` }
       </span>
       <Button onClick={ close }>
         <Icon type={ IconType.Close } />

@@ -72,11 +72,13 @@ const Request = ({ item }: { item: IRequest }) => {
           </div>
         </div>
       </div>
-      <EditRequestModal
-        isVisible={ isEditRequestModalVisible }
-        item={ item }
-        close={ hideEditRequestModal }
-      />
+      { isEditRequestModalVisible && (
+        <EditRequestModal
+          isVisible={ isEditRequestModalVisible }
+          item={ item }
+          close={ hideEditRequestModal }
+        />
+      ) }
     </div>
   );
 };
