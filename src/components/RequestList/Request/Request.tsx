@@ -2,15 +2,29 @@ import React from 'react';
 import cn from 'classnames';
 import { useRequestContext } from '~/logic/HTTPArchive/HttpArchiveContext';
 import { useSettingsContext } from '~/logic/SettingsContext/SettingsContext';
+import useEditRequestModal from './EditRequestModal/useEditRequestModal';
+import Button from '~/components/common/Button';
+import Icon, { IconType } from '~/components/common/Icon';
 import { IRequest } from '~/logic/HTTPArchive/IRequest';
 import styles from './request.scss';
 
 const Request = ({ item }: { item: IRequest }) => {
   const { selected, setSelected } = useRequestContext();
   const { showCorsBadge, showRequestUrl } = useSettingsContext();
+  const {
+    EditRequestModal,
+    isEditRequestModalVisible,
+    showEditRequestModal,
+    hideEditRequestModal
+  } = useEditRequestModal();
 
   const handleClick = () => {
     setSelected(item);
+  };
+
+  const handleResendButtonClick = (e: React.MouseEvent<HTMLElement>) => {
+    e.stopPropagation();
+    showEditRequestModal();
   };
 
   return (
@@ -30,6 +44,13 @@ const Request = ({ item }: { item: IRequest }) => {
               title={ item.requestJSON.method }
             >
               { item.requestJSON.method }
+              <Button
+                title="Resend Request"
+                onClick={ handleResendButtonClick }
+                className={ styles.resendRequestButton }
+              >
+                <Icon type={ IconType.Update }></Icon>
+              </Button>
             </div>
             { showRequestUrl && (
               <div
@@ -51,6 +72,13 @@ const Request = ({ item }: { item: IRequest }) => {
           </div>
         </div>
       </div>
+      { isEditRequestModalVisible && (
+        <EditRequestModal
+          isVisible={ isEditRequestModalVisible }
+          item={ item }
+          close={ hideEditRequestModal }
+        />
+      ) }
     </div>
   );
 };
