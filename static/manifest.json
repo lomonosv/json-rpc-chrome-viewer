@@ -8,10 +8,6 @@
     "tabs",
     "scripting"
   ],
-  "host_permissions": [
-    "https://*/*",
-    "http://*/*"
-  ],
   "icons": {
     "16": "icons/16.png",
     "32": "icons/32.png",
