@@ -58,6 +58,10 @@
       background: $darkHoverBackground;
     }
   }
+
+  &:hover .resendRequestButton {
+    display: block;
+  }
 }
 
 .isSelected {
@@ -85,9 +89,17 @@
 }
 
 .method {
-  display: block;
+  display: flex;
+  align-items: center;
   font-family: monospace;
   font-size: 12px;
+}
+
+.resendRequestButton {
+  display: none;
+  height: 12px;
+  margin-left: 10px;
+  cursor: pointer;
 }
 
 .url {
