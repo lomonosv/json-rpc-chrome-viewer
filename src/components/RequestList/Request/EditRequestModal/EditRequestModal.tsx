@@ -1,6 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
+import cn from 'classnames';
 import Modal from '~/components/common/Modal';
-import { IRequest } from '~/logic/HTTPArchive/IRequest';
+import Button from '~/components/common/Button';
+import Icon, { IconType } from '~/components/common/Icon';
+import { IJSONObject, IRequest } from '~/logic/HTTPArchive/IRequest';
+import styles from './editRequestModal.scss';
+import JsonViewer from '~/components/common/JsonViewer';
+import { ExpandTreeState } from '~/components/common/JsonViewer/ExpandTreeState';
 
 interface IProps {
   isVisible: boolean,
@@ -9,6 +15,8 @@ interface IProps {
 }
 
 const EditRequestModal = ({ isVisible, item, close }: IProps) => {
+  const [params, setParams] = useState<IJSONObject>(item.requestJSON);
+
   const getCurrentTab = async () => {
     const queryOptions = { active: true, lastFocusedWindow: true };
     // `tab` will either be a `tabs.Tab` instance or `undefined`.
@@ -22,16 +30,9 @@ const EditRequestModal = ({ isVisible, item, close }: IProps) => {
 
     await chrome.scripting.executeScript({
       target: { tabId: tab.id },
-      func: (item) => {
+      func: (item: IRequest, params: IJSONObject) => {
         const { url, method, headers, postData: { text: body } } = item.request;
-
-        console.log('url', url);
-        console.log('method', method);
-        console.log('headers', headers.reduce((acc, header: { name: string, value: string }) => ({
-          ...acc,
-          [header.name]: header.value
-        }), {}));
-        console.log('body', body);
+        const json = JSON.parse(body);
 
         fetch(url, {
           method,
@@ -41,19 +42,69 @@ const EditRequestModal = ({ isVisible, item, close }: IProps) => {
             ...acc,
             [header.name]: header.value
           }), {}),
-          body
+          body: JSON.stringify({
+            ...json,
+            params: {
+              ...json.params,
+              headers: params.headers,
+              payload: params.payload
+            }
+          })
         }).then((response) => response.json());
       },
-      args: [item]
+      args: [item, params]
     });
+
+    close();
   };
+
+  const handleEditParams = ({ updated_src } : { updated_src: IJSONObject }) => {
+    setParams(updated_src);
+  };
+
+  const header = (
+    <div className={ styles.header }>
+      <span>
+        { `Resend "${ item.requestJSON.method }" Request` }
+      </span>
+      <Button onClick={ close }>
+        <Icon type={ IconType.Close } />
+      </Button>
+    </div>
+  );
+
+  const footer = (
+    <>
+      <Button
+        className={ cn(styles.button, styles.cancel) }
+        onClick={ close }
+      >
+        Cancel
+      </Button>
+      <Button
+        className={ styles.button }
+        onClick={ resend }
+      >
+        Resend
+      </Button>
+    </>
+  );
 
   return (
     <Modal
       isVisible={ isVisible }
+      className={ styles.editRequestModal }
       close={ close }
+      header={ header }
+      footer={ footer }
     >
-      <button onClick={ resend }>RESEND</button>
+      <div className={ styles.contentWrapper }>
+        <JsonViewer
+          src={ item.requestJSON.params || {} }
+          expandTreeState={ ExpandTreeState.Expanded }
+          onEdit={ handleEditParams }
+        />
+      </div>
     </Modal>
   );
 };

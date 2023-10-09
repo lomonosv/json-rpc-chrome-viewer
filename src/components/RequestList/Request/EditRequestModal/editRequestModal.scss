@@ -1,0 +1,42 @@
+@import "../../../common/variables";
+
+.editRequestModal {
+  width: 70%;
+  min-width: 150px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+}
+
+.contentWrapper {
+  height: 200px;
+  overflow: auto;
+}
+
+.button {
+  cursor: pointer;
+  background: $background;
+  padding: 5px 10px;
+  border: 1px solid $borderColor;
+  border-radius: 0.25rem;
+
+  &:not(.cancel):hover {
+    background: $hoverBackground;
+  }
+
+  :global(.isDark) & {
+    background: $darkBackground;
+    border: 1px solid $darkBorderColor;
+
+    &:not(.cancel):hover {
+      background: $darkBackground;
+    }
+  }
+
+  &.cancel {
+    border-width: 0;
+    margin-right: 10px;
+  }
+}
