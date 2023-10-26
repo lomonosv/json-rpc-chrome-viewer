@@ -3,6 +3,6 @@
 
 It includes a lot of features to make your life as developer easier and more comfortable.
 
-Resizable panes, background requests accumulation, filtering, preserve log settings, dark and light themes, keyboard requests navigation, url label for each method, CORS badge, expand/collapse JSON tree and others.
+Resizable panes, resend request feature, background requests accumulation, filtering, preserve log settings, dark and light themes, keyboard requests navigation, url label for each method, CORS badge, expand/collapse JSON tree and others.
 
 You are welcome to make feature requests, bug reports and pull requests.
