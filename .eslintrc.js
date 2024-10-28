@@ -5,11 +5,12 @@ module.exports = {
   },
   extends: [
     'airbnb-base',
-    'airbnb-typescript',
+    '@kesills/airbnb-typescript',
     'plugin:react/recommended'
   ],
   plugins: [
-    '@typescript-eslint'
+    '@typescript-eslint',
+    '@stylistic'
   ],
   settings: {
     react: {
@@ -17,7 +18,7 @@ module.exports = {
     }
   },
   rules: {
-    '@typescript-eslint/comma-dangle': ['warn', 'never'],
+    '@stylistic/comma-dangle': ['warn', 'never'],
     'import/prefer-default-export': 'off',
     'import/extensions': 'off',
     '@typescript-eslint/no-shadow': 'off',
@@ -29,6 +30,7 @@ module.exports = {
     'template-curly-spacing': ['warn', 'always'],
     'react/jsx-curly-spacing': ['warn', 'always'],
     'max-len': ['warn', { 'code': 120 }],
-    'operator-linebreak': 'off'
+    'operator-linebreak': 'off',
+    '@typescript-eslint/no-unused-vars': ['error', { 'caughtErrors': 'none' }]
   }
 };
