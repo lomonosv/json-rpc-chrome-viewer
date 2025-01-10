@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import cn from 'classnames';
 import Header from '~/components/common/Header';
 import JsonViewer from '~/components/common/JsonViewer';
 import CopyButton from '~/components/common/CopyButton';
@@ -22,18 +23,21 @@ const ResponseInfo = () => {
     setSelectedRequest(selected);
   }, [expandTreeState, selected]);
 
+  const isJsonResponse = !selectedRequest.isWarning;
   const json = selectedRequest.responseJSON?.result || selectedRequest.responseJSON?.error || {};
-  const jsonTSRepresentation = convertJsonToTS(json);
+  const jsonTSRepresentation = isJsonResponse && convertJsonToTS(json);
 
   return (
     <div className={ styles.responseInfoWrapper }>
       <Header className={ styles.responseInfoHeader }>
         <div className={ styles.responseInfoHeaderLeftSide }>
-          <ExpandButton
-            className={ styles.expandButton }
-            expandedState={ expandTreeStateValue }
-            onChangeState={ setExpandTreeStateValue }
-          />
+          { isJsonResponse && (
+            <ExpandButton
+              className={ styles.expandButton }
+              expandedState={ expandTreeStateValue }
+              onChangeState={ setExpandTreeStateValue }
+            />
+          ) }
           <span>Response</span>
         </div>
         <div className={ styles.responseInfoHeaderRightSide }>
@@ -45,15 +49,25 @@ const ResponseInfo = () => {
               iconType={ IconType.Typescript }
             />
           ) }
-          <CopyButton text={ formatJson(json) } />
+          <CopyButton text={ isJsonResponse ? formatJson(json) : selectedRequest.rawResponse } />
         </div>
       </Header>
-      <div className={ styles.responseInfoContainer }>
-        <JsonViewer
-          src={ json }
-          expandTreeState={ expandTreeStateValue }
-          defaultOpenNodesDepth={ 2 }
-        />
+      <div className={ cn(styles.responseInfoContainer, {
+        [styles.responseNotParsed]: selectedRequest.isWarning
+      }) }>
+        { isJsonResponse ? (
+          <JsonViewer
+            src={ json }
+            expandTreeState={ expandTreeStateValue }
+            defaultOpenNodesDepth={ 2 }
+          />
+        ) : (
+          <div className={ styles.rawResponseWrapper }>
+            <pre>
+              {selectedRequest.rawResponse}
+            </pre>
+          </div>
+        )}
       </div>
     </div>
   );

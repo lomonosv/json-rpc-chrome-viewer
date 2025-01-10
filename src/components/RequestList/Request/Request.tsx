@@ -32,8 +32,8 @@ const Request = ({ item }: { item: IRequest }) => {
       <div
         className={ cn(styles.request, {
           [styles.isSelected]: item.uuid === selected?.uuid,
-          [styles.error]: !!item.responseJSON?.error,
-          [styles.responseNotParsed]: !item.responseJSON
+          [styles.error]: item.isError,
+          [styles.responseNotParsed]: item.isWarning
         }) }
         onClick={ handleClick }
       >
@@ -63,7 +63,10 @@ const Request = ({ item }: { item: IRequest }) => {
             ) }
           </div>
         </div>
-        <div className={ styles.sizeTime }>
+        <div className={ styles.meta }>
+          <div>
+            { Math.ceil(item.response.status) }
+          </div>
           <div>
             { Math.ceil(item.response.content.size) }
           </div>
