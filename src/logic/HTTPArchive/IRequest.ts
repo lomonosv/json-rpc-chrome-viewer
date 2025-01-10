@@ -16,6 +16,8 @@ interface IJSONArray extends Array<JSONValue> { }
 export interface IRequest extends chrome.devtools.network.Request {
   uuid: string,
   isCors: boolean,
+  isError: boolean,
+  isWarning: boolean,
   request: Request,
   response: Response,
   time: number,
@@ -25,6 +27,7 @@ export interface IRequest extends chrome.devtools.network.Request {
     method: string,
     params: JSONValue
   },
+  rawRequest: string,
   responseJSON: {
     id: string,
     jsonrpc: string,
@@ -33,5 +36,6 @@ export interface IRequest extends chrome.devtools.network.Request {
       message: string
     }
     result?: JSONValue
-  }
+  },
+  rawResponse: string,
 }
