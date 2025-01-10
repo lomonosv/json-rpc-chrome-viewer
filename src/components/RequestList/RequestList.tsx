@@ -61,7 +61,8 @@ const RequestList = ({ className }: IComponentProps) => {
         <div className={ styles.requestsHeaderWrapper }>
           <Header className={ styles.requestsHeader }>
             <div className={ styles.methodHeader }>Method</div>
-            <div className={ styles.sizeTimeHeaders }>
+            <div className={ styles.metaHeaders }>
+              <div>Status</div>
               <div>Size (B)</div>
               <div>Time (ms)</div>
             </div>

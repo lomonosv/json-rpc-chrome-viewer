@@ -16,8 +16,17 @@ export const getPreparedRequest = async (
   const requests: IRequest[] = [];
 
   request.getContent((body) => {
-    const responseJSON = JSON.parse(responseContent || body);
-    const requestJSON = JSON.parse(request.request.postData.text);
+    const rawRequest = request.request.postData.text;
+    const rawResponse = responseContent || body;
+    const requestJSON = JSON.parse(rawRequest);
+    let responseJSON;
+
+    try {
+      responseJSON = JSON.parse(rawResponse);
+    } catch (e) {
+      responseJSON = null;
+    }
+
     const isBatch = Array.isArray(requestJSON) && Array.isArray(responseJSON);
 
     const referer = request.request.headers.find(({ name }) => name.toLowerCase() === 'referer');
@@ -30,8 +39,12 @@ export const getPreparedRequest = async (
         uuid: uuid(),
         ...request,
         isCors,
+        isError: !!responseJSON?.error,
+        isWarning: !responseJSON,
         requestJSON,
-        responseJSON
+        rawRequest,
+        responseJSON,
+        rawResponse
       });
       resolve(requests);
     } else {
@@ -45,8 +58,12 @@ export const getPreparedRequest = async (
           uuid: uuid(),
           ...request,
           isCors,
+          isError: !!requestJSONItem?.error,
+          isWarning: !requestJSONItem,
           requestJSON: requestJSONItem,
-          responseJSON: responseJSONIndex[requestJSONItem.id]
+          rawRequest,
+          responseJSON: responseJSONIndex[requestJSONItem.id],
+          rawResponse
         });
       });
 
