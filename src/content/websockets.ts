@@ -9,15 +9,13 @@
         try {
           const json = JSON.parse(event.data.replace(this.jsonParserRegex, '$1').replaceAll('\\', ''));
           console.log('- Incoming message intercepted:', json);
-        } catch (error) {
-          console.log(error);
-        }
+        } catch (error) { /* empty */ }
       });
     }
 
     send(data: string | ArrayBufferLike | Blob | ArrayBufferView): void {
       try {
-        if (data instanceof String) {
+        if (typeof data === 'string') {
           const json = JSON.parse(data.replace(this.jsonParserRegex, '$1').replaceAll('\\', ''));
           console.log('- Outgoing message intercepted:', json);
         }
