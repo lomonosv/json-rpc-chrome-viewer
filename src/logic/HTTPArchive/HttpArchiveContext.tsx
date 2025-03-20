@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useState, useRef, useCallback } from 'react';
+import { v4 as uuid } from 'uuid';
 import { useSettingsContext } from '~/logic/SettingsContext/SettingsContext';
 import { isJsonRpcRequest, getPreparedRequest } from '~/logic/HTTPArchive/filters';
 import { IRequest } from '~/logic/HTTPArchive/IRequest';
@@ -80,14 +81,73 @@ const useRequest = () => {
     }
   }, [requestsRef.current, setRequests]);
 
+  const handleRuntimeMessage = useCallback((message) => {
+    if (message.type === 'JSON_RPC_WEBSOCKET_MESSAGE') {
+      console.log('Received WebSocket data in background:', message.payload);
+
+      try {
+        const jsonParserRegex = /[^"]*"(.+)"[^"]*/;
+        if (message.payload.message.match(/jsonrpc/)) {
+          const json = JSON.parse(message.payload.message.replace(jsonParserRegex, '$1').replaceAll('\\', ''));
+
+          console.log(json);
+
+          const preparedRequest = [{
+            uuid: uuid(),
+            isCors: false,
+            isError: false,
+            isWarning: false,
+            request: {
+              url: 'websocket'
+            },
+            response: {
+              status: 200,
+              content: {
+                size: 1
+              }
+            },
+            time: 0,
+            requestJSON: {
+              id: json.id,
+              jsonrpc: json.jsonrpc,
+              method: json.method || '',
+              params: json.params
+            },
+            rawRequest: '',
+            responseJSON: {
+              id: json.id,
+              jsonrpc: json.jsonrpc,
+              error: {
+                code: 0,
+                message: ''
+              },
+              result: {}
+            },
+            rawResponse: ''
+          }];
+
+          // @ts-ignore
+          requestsRef.current = [
+            ...requestsRef.current,
+            ...preparedRequest
+          ];
+
+          setRequests(requestsRef.current);
+        }
+      } catch (error) { /* empty */ }
+    }
+  }, []);
+
   useEffect(() => {
     chrome.devtools.network.onRequestFinished.addListener(handleRequest);
+    chrome.runtime.onMessage.addListener(handleRuntimeMessage);
     !preserveLog && chrome.devtools.network.onNavigated.addListener(handleNavigation);
     window.addEventListener('INITIAL_REQUESTS_DATA', handleInitialRequestsData);
     document.addEventListener('keydown', handleKeyDown);
 
     return () => {
       chrome.devtools.network.onRequestFinished.removeListener(handleRequest);
+      chrome.runtime.onMessage.removeListener(handleRuntimeMessage);
       !preserveLog && chrome.devtools.network.onNavigated.removeListener(handleNavigation);
       window.removeEventListener('INITIAL_REQUESTS_DATA', handleInitialRequestsData);
       document.removeEventListener('keydown', handleKeyDown);
