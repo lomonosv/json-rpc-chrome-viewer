@@ -1,5 +1,5 @@
 {
-  "name": "JSON RPC Chrome Viewer",
+  "name": "JSON RPC Chrome Viewer - local",
   "version": "1.4.9",
   "description": "JSON RPC requests Chrome developer tools viewer. More convenient way to manage your rpc requests.",
   "manifest_version": 3,
@@ -18,5 +18,22 @@
     "48": "icons/48.png",
     "128": "icons/128.png"
   },
-  "devtools_page": "index.html"
+  "devtools_page": "index.html",
+  "content_scripts": [
+    {
+      "matches": [
+        "https://*/*",
+        "http://*/*"
+      ],
+      "js": ["content/content.js"],
+      "run_at": "document_start"
+    }
+  ],
+  "web_accessible_resources": [{
+    "matches": [
+      "https://*/*",
+      "http://*/*"
+    ],
+    "resources": ["content/websockets.js"]
+  }]
 }
