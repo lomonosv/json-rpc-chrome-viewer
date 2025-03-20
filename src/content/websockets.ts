@@ -7,15 +7,19 @@
 
       this.addEventListener('message', (event) => {
         try {
-          console.log('- Incoming message intercepted:', event.data.replace(this.jsonParserRegex, '$1'));
-        } catch (error) { /* empty */ }
+          const json = JSON.parse(event.data.replace(this.jsonParserRegex, '$1').replaceAll('\\', ''));
+          console.log('- Incoming message intercepted:', json);
+        } catch (error) {
+          console.log(error);
+        }
       });
     }
 
     send(data: string | ArrayBufferLike | Blob | ArrayBufferView): void {
       try {
         if (data instanceof String) {
-          console.log('- Outgoing message intercepted:', data.replace(this.jsonParserRegex, '$1'));
+          const json = JSON.parse(data.replace(this.jsonParserRegex, '$1').replaceAll('\\', ''));
+          console.log('- Outgoing message intercepted:', json);
         }
       } catch (error) { /* empty */ }
       super.send(data);
