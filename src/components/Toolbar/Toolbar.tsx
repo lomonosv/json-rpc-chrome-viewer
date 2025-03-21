@@ -12,7 +12,9 @@ const Toolbar = () => {
   const { filter, clear, setFilter } = useRequestContext();
   const {
     preserveLog,
-    setPreserveLog
+    setPreserveLog,
+    includeWebsocketLogs,
+    setIncludeWebsocketLogs
   } = useSettingsContext();
 
   const handleFilterChange: ChangeEventHandler<HTMLInputElement> = (e) => {
@@ -21,6 +23,10 @@ const Toolbar = () => {
 
   const handlePreserveLogChange: ChangeEventHandler<HTMLInputElement> = (e) => {
     setPreserveLog(e.target.checked);
+  };
+
+  const handleIncludeWebsocketLogsChange: ChangeEventHandler<HTMLInputElement> = (e) => {
+    setIncludeWebsocketLogs(e.target.checked);
   };
 
   useEffect(() => {
@@ -66,6 +72,14 @@ const Toolbar = () => {
             type={ Type.Checkbox }
             checked={ preserveLog }
             onChange={ handlePreserveLogChange }
+          />
+          <Input
+            name="includeWebsocketLogs"
+            label="Include Websocket Logs"
+            wrapperClassName={ styles.settingsItemWrapper }
+            type={ Type.Checkbox }
+            checked={ includeWebsocketLogs }
+            onChange={ handleIncludeWebsocketLogsChange }
           />
         </div>
         <div className={ styles.toolbarSection }>

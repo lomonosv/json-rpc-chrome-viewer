@@ -1,5 +1,3 @@
-import { Request, Response } from 'har-format';
-
 export type JSONValue =
   string |
   number |
@@ -13,28 +11,43 @@ export interface IJSONObject {
 
 interface IJSONArray extends Array<JSONValue> { }
 
-export interface IRequest extends chrome.devtools.network.Request {
+export interface IRequest {
   uuid: string,
   isCors: boolean,
   isError: boolean,
   isWarning: boolean,
-  request: Request,
-  response: Response,
+  isWebSocket: boolean,
+  websocketMessageType?: 'income' | 'outcome',
+  websocketJSON?: JSONValue & {
+    method: string,
+    id: string
+  },
+  request: {
+    url: string,
+    method?: string,
+    headers?: { name: string }[],
+    postData?: {
+      text: string
+    }
+  },
+  response: {
+    status: number,
+    content: {
+      size: number,
+    }
+  },
   time: number,
-  requestJSON: {
+  requestJSON?: {
     id: string,
     jsonrpc: string,
     method: string,
     params: JSONValue
   },
   rawRequest: string,
-  responseJSON: {
+  responseJSON?: {
     id: string,
     jsonrpc: string,
-    error?: {
-      code: number
-      message: string
-    }
+    error?: JSONValue
     result?: JSONValue
   },
   rawResponse: string,

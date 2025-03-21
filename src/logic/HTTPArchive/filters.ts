@@ -1,5 +1,5 @@
 import { v4 as uuid } from 'uuid';
-import { IRequest } from '~/logic/HTTPArchive/IRequest';
+import { IRequest, JSONValue } from '~/logic/HTTPArchive/IRequest';
 
 export const isJsonRpcRequest = (request: chrome.devtools.network.Request) => (
   request.request &&
@@ -9,7 +9,57 @@ export const isJsonRpcRequest = (request: chrome.devtools.network.Request) => (
   request.request.postData.text && request.request.postData.text.match(/jsonrpc/)
 );
 
-export const getPreparedRequest = async (
+export const isJsonRpcMessage = (message: string) => (
+  message.match(/jsonrpc/)
+);
+
+const parse = (message: string) => {
+  try {
+    return JSON.parse(message);
+  } catch (e) {
+    return null;
+  }
+};
+
+export const parseJsonRpcMessage = (message: string) => {
+  const sockJSJsonParserRegex = /[^"]*"(.+)"[^"]*/;
+  const json = parse(message);
+
+  if (!json || message.startsWith('[')) {
+    // SockJS message format
+    return parse(message.replace(sockJSJsonParserRegex, '$1').replaceAll('\\', ''));
+  }
+
+  return json;
+};
+
+export const getPreparedMessage = (
+  type: 'income' | 'outcome',
+  url: string,
+  json: JSONValue & { method: string, id: string }
+): IRequest => ({
+  uuid: uuid(),
+  isCors: false,
+  isError: false,
+  isWarning: false,
+  isWebSocket: true,
+  websocketMessageType: type,
+  websocketJSON: json,
+  request: {
+    url
+  },
+  response: {
+    status: 200,
+    content: {
+      size: 0
+    }
+  },
+  time: 0,
+  rawRequest: '',
+  rawResponse: ''
+});
+
+export const getPreparedHttpRequest = async (
   request: chrome.devtools.network.Request,
   responseContent?: string
 ): Promise<IRequest[]> => new Promise((resolve) => {
@@ -37,10 +87,25 @@ export const getPreparedRequest = async (
     if (!isBatch) {
       requests.push({
         uuid: uuid(),
-        ...request,
+        request: {
+          url: request.request.url,
+          method: request.request.method,
+          headers: request.request.headers,
+          postData: {
+            text: request.request.postData.text
+          }
+        },
+        response: {
+          status: request.response.status,
+          content: {
+            size: request.response.content.size
+          }
+        },
+        time: request.time,
         isCors,
         isError: !!responseJSON?.error,
         isWarning: !responseJSON,
+        isWebSocket: false,
         requestJSON,
         rawRequest,
         responseJSON,
@@ -56,10 +121,25 @@ export const getPreparedRequest = async (
       requestJSON.forEach((requestJSONItem) => {
         requests.push({
           uuid: uuid(),
-          ...request,
+          request: {
+            url: request.request.url,
+            method: request.request.method,
+            headers: request.request.headers,
+            postData: {
+              text: request.request.postData.text
+            }
+          },
+          response: {
+            status: request.response.status,
+            content: {
+              size: request.response.content.size
+            }
+          },
+          time: request.time,
           isCors,
           isError: !!requestJSONItem?.error,
           isWarning: !requestJSONItem,
+          isWebSocket: false,
           requestJSON: requestJSONItem,
           rawRequest,
           responseJSON: responseJSONIndex[requestJSONItem.id],
