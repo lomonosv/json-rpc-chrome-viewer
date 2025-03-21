@@ -4,6 +4,7 @@ import { useSettingsContext } from '~/logic/SettingsContext/SettingsContext';
 import RequestList from '~/components/RequestList';
 import RequestInfo from '~/components/RequestInfo';
 import ResponseInfo from '~/components/ResponseInfo';
+import MessageInfo from '~/components/MessageInfo';
 import Toolbar from '~/components/Toolbar';
 import Header from '~/components/common/Header';
 import ZeroCase from './ZeroCase';
@@ -36,8 +37,14 @@ const Layout = () => {
             <RequestList className={ styles.leftSideContainer } />
             { !!selected && (
               <div className={ styles.rightSideContainer }>
-                <RequestInfo />
-                <ResponseInfo />
+                { selected.isWebSocket ? (
+                  <MessageInfo />
+                ) : (
+                  <>
+                    <RequestInfo />
+                    <ResponseInfo />
+                  </>
+                ) }
               </div>
             ) }
           </>
