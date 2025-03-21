@@ -2,10 +2,18 @@ const { sassPlugin, postcssModules } = require('esbuild-sass-plugin');
 
 (async () => {
   await require('esbuild').build({
-    entryPoints: ['./src/index.jsx'],
+    entryPoints: {
+      'application': 'src/index.tsx',
+      ...Object.fromEntries(
+        require('fs').readdirSync('src/content')
+          .filter(file => file.endsWith('.ts'))
+          .map(file => [`content/${file.replace('.ts', '')}`, `src/content/${file}`])
+      )
+    },
     bundle: true,
     minify: true,
-    outfile: './build/application.js',
+    outdir: 'build',
+    entryNames: '[dir]/[name]',
     loader: { '.svg': 'text' },
     plugins: [
       await require('esbuild-plugin-copy').copy({

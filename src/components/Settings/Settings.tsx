@@ -21,8 +21,12 @@ const Settings = ({ onClose }: IComponentProps) => {
     setShowRequestUrl,
     showCorsBadge,
     setShowCorsBadge,
+    showWebsocketBadge,
+    setShowWebsocketBadge,
     expandTreeState,
     setExpandTreeState,
+    expandedWebsocketMessagesState,
+    setExpandedWebsocketMessagesState,
     jsonViewerTheme,
     setJsonViewerTheme
   } = useSettingsContext();
@@ -35,8 +39,16 @@ const Settings = ({ onClose }: IComponentProps) => {
     setShowCorsBadge(e.target.checked);
   };
 
+  const handleShowWebsocketBadgeChange: ChangeEventHandler<HTMLInputElement> = (e) => {
+    setShowWebsocketBadge(e.target.checked);
+  };
+
   const handleExpandTreeStateChange: ChangeEventHandler<HTMLSelectElement> = (e) => {
     setExpandTreeState(+e.target.value);
+  };
+
+  const handleExpandedWebsocketMessagesStateChange: ChangeEventHandler<HTMLSelectElement> = (e) => {
+    setExpandedWebsocketMessagesState(+e.target.value);
   };
 
   const handleJsonViewerThemeChange: ChangeEventHandler<HTMLSelectElement> = (e) => {
@@ -88,6 +100,17 @@ const Settings = ({ onClose }: IComponentProps) => {
             />
           </div>
           <div className={ styles.settingsItem }>
+            <Input
+                name="showWebsocketBadge"
+                label="Show Websocket badge for websocket messages"
+                wrapperClassName={ styles.settingsItemWrapper }
+                type={ Type.Checkbox }
+                checked={ showWebsocketBadge }
+                isDisabled={ !showRequestUrl }
+                onChange={ handleShowWebsocketBadgeChange }
+            />
+          </div>
+          <div className={ styles.settingsItem }>
             <span>JSON tree open state: </span>
             <Select<ExpandTreeState>
               name="expandedTreeState"
@@ -95,6 +118,16 @@ const Settings = ({ onClose }: IComponentProps) => {
               options={ expandedTreeStateOptions }
               value={ expandTreeState }
               onChange={ handleExpandTreeStateChange }
+            />
+          </div>
+          <div className={ styles.settingsItem }>
+            <span>JSON tree open state (Websocket messages): </span>
+            <Select<ExpandTreeState>
+              name="expandedWebsocketTreeState"
+              className={ styles.select }
+              options={ expandedTreeStateOptions }
+              value={ expandedWebsocketMessagesState }
+              onChange={ handleExpandedWebsocketMessagesStateChange }
             />
           </div>
           <div className={ styles.settingsItem }>
