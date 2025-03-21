@@ -1,5 +1,5 @@
 {
-  "name": "JSON RPC Chrome Viewer - local",
+  "name": "JSON RPC Chrome Viewer",
   "version": "1.4.9",
   "description": "JSON RPC requests Chrome developer tools viewer. More convenient way to manage your rpc requests.",
   "manifest_version": 3,

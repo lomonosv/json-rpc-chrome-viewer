@@ -7,6 +7,7 @@
         window.postMessage({ type: 'JSON_RPC_WEBSOCKET_MESSAGE',
           payload: {
             type: 'income',
+            url: this.url,
             message: event.data
           }
         }, '*');
@@ -17,9 +18,11 @@
       window.postMessage({ type: 'JSON_RPC_WEBSOCKET_MESSAGE',
         payload: {
           type: 'outcome',
+          url: this.url,
           message: data
         }
       }, '*');
+
       super.send(data);
     }
   }

@@ -10,7 +10,7 @@ import styles from './request.scss';
 
 const Request = ({ item }: { item: IRequest }) => {
   const { selected, setSelected } = useRequestContext();
-  const { showCorsBadge, showRequestUrl } = useSettingsContext();
+  const { showCorsBadge, showWebsocketBadge, showRequestUrl } = useSettingsContext();
   const {
     EditRequestModal,
     isEditRequestModalVisible,
@@ -41,37 +41,55 @@ const Request = ({ item }: { item: IRequest }) => {
           <div className={ styles.methodContainer }>
             <div
               className={ styles.method }
-              title={ item.requestJSON.method }
+              title={ item.isWebSocket ? item.websocketJSON.method || item.websocketJSON.id : item.requestJSON.method }
             >
-              { item.requestJSON.method }
-              <Button
-                title="Resend Request"
-                onClick={ handleResendButtonClick }
-                className={ styles.resendRequestButton }
-              >
-                <Icon type={ IconType.Update }></Icon>
-              </Button>
+              { !showRequestUrl && item.isWebSocket && (
+                <div
+                  className={ cn(styles.badgeMessageType, {
+                    [styles.income]: item.websocketMessageType === 'income',
+                    [styles.outcome]: item.websocketMessageType === 'outcome'
+                  }) }
+                />
+              ) }
+              { item.isWebSocket ? item.websocketJSON.method || item.websocketJSON.id : item.requestJSON.method }
+              { !item.isWebSocket && (
+                <Button
+                  title="Resend Request"
+                  onClick={ handleResendButtonClick }
+                  className={ styles.resendRequestButton }
+                >
+                  <Icon type={ IconType.Update }></Icon>
+                </Button>
+              ) }
             </div>
             { showRequestUrl && (
-              <div
-                className={ cn(styles.url, {
-                  [styles.isCors]: item.isCors && showCorsBadge
-                }) }
-              >
-                <span>{ item.request.url }</span>
-              </div>
+              <>
+                <div className={ cn(styles.badge, { [styles.isCors]: item.isCors && showCorsBadge }) } />
+                <div className={ cn(styles.badge, { [styles.isWebsocket]: item.isWebSocket && showWebsocketBadge }) } />
+                { item.isWebSocket && (
+                  <div
+                    className={ cn(styles.badgeMessageType, {
+                      [styles.income]: item.websocketMessageType === 'income',
+                      [styles.outcome]: item.websocketMessageType === 'outcome'
+                    }) }
+                  />
+                ) }
+                <div className={ styles.url }>
+                  <span>{ item.request.url }</span>
+                </div>
+              </>
             ) }
           </div>
         </div>
         <div className={ styles.meta }>
           <div>
-            { Math.ceil(item.response.status) }
+            { item.isWebSocket ? '' : Math.ceil(item.response.status) }
           </div>
           <div>
-            { Math.ceil(item.response.content.size) }
+            { item.isWebSocket ? '' : Math.ceil(item.response.content.size) }
           </div>
           <div>
-            { Math.ceil(item.time) }
+            { item.isWebSocket ? '' : Math.ceil(item.time) }
           </div>
         </div>
       </div>

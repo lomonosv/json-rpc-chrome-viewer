@@ -1,7 +1,12 @@
 import React, { createContext, useContext, useEffect, useState, useRef, useCallback } from 'react';
-import { v4 as uuid } from 'uuid';
 import { useSettingsContext } from '~/logic/SettingsContext/SettingsContext';
-import { isJsonRpcRequest, getPreparedRequest } from '~/logic/HTTPArchive/filters';
+import {
+  isJsonRpcRequest,
+  isJsonRpcMessage,
+  getPreparedHttpRequest,
+  getPreparedMessage,
+  parseJsonRpcMessage
+} from '~/logic/HTTPArchive/filters';
 import { IRequest } from '~/logic/HTTPArchive/IRequest';
 
 const useRequest = () => {
@@ -11,7 +16,7 @@ const useRequest = () => {
   const [filteredRequests, setFilteredRequests] = useState<IRequest[]>([]);
   const requestsRef = useRef<IRequest[]>([]);
 
-  const { preserveLog } = useSettingsContext();
+  const { preserveLog, includeWebsocketLogs } = useSettingsContext();
 
   const clear = () => {
     requestsRef.current = [];
@@ -51,7 +56,7 @@ const useRequest = () => {
   }[]>) => {
     const requests = await Promise.all(
       e.detail.filter(({ request }) => isJsonRpcRequest(request)).map(
-        ({ request, responseContent }) => getPreparedRequest(request, responseContent)
+        ({ request, responseContent }) => getPreparedHttpRequest(request, responseContent)
       )
     );
 
@@ -70,7 +75,7 @@ const useRequest = () => {
 
   const handleRequest = useCallback(async (request: chrome.devtools.network.Request) => {
     if (isJsonRpcRequest(request)) {
-      const preparedRequest = await getPreparedRequest(request);
+      const preparedRequest = await getPreparedHttpRequest(request);
 
       requestsRef.current = [
         ...requestsRef.current,
@@ -81,60 +86,22 @@ const useRequest = () => {
     }
   }, [requestsRef.current, setRequests]);
 
-  const handleRuntimeMessage = useCallback((message) => {
-    if (message.type === 'JSON_RPC_WEBSOCKET_MESSAGE') {
-      console.log('Received WebSocket data in background:', message.payload);
+  const handleRuntimeMessage = useCallback((
+    message: {
+      type: string,
+      payload: { type: 'income' | 'outcome', url: string, message: string },
+    }
+  ) => {
+    if (message.type === 'JSON_RPC_WEBSOCKET_MESSAGE' && isJsonRpcMessage(message.payload.message)) {
+      const json = parseJsonRpcMessage(message.payload.message);
+      const preparedRequest = getPreparedMessage(message.payload.type, message.payload.url, json);
 
-      try {
-        const jsonParserRegex = /[^"]*"(.+)"[^"]*/;
-        if (message.payload.message.match(/jsonrpc/)) {
-          const json = JSON.parse(message.payload.message.replace(jsonParserRegex, '$1').replaceAll('\\', ''));
+      requestsRef.current = [
+        ...requestsRef.current,
+        preparedRequest
+      ];
 
-          console.log(json);
-
-          const preparedRequest = [{
-            uuid: uuid(),
-            isCors: false,
-            isError: false,
-            isWarning: false,
-            request: {
-              url: 'websocket'
-            },
-            response: {
-              status: 200,
-              content: {
-                size: 1
-              }
-            },
-            time: 0,
-            requestJSON: {
-              id: json.id,
-              jsonrpc: json.jsonrpc,
-              method: json.method || '',
-              params: json.params
-            },
-            rawRequest: '',
-            responseJSON: {
-              id: json.id,
-              jsonrpc: json.jsonrpc,
-              error: {
-                code: 0,
-                message: ''
-              },
-              result: {}
-            },
-            rawResponse: ''
-          }];
-
-          // @ts-ignore
-          requestsRef.current = [
-            ...requestsRef.current,
-            ...preparedRequest
-          ];
-
-          setRequests(requestsRef.current);
-        }
-      } catch (error) { /* empty */ }
+      setRequests(requestsRef.current);
     }
   }, []);
 
@@ -162,18 +129,26 @@ const useRequest = () => {
   }, [requests, filteredRequests, selected]);
 
   useEffect(() => {
-    const filteredRequests = requests.filter((request) => (
-      request.requestJSON
+    const filteredRequests = requests.filter((request) => {
+      if (request.isWebSocket && includeWebsocketLogs) {
+        return (request.websocketJSON.method || request.websocketJSON.id).toLowerCase().includes(filter.toLowerCase());
+      }
+
+      if (request.isWebSocket && !includeWebsocketLogs) {
+        return false;
+      }
+
+      return request.requestJSON
         ? request.requestJSON.method.toLowerCase().includes(filter.toLowerCase())
-        : true
-    ));
+        : true;
+    });
 
     setFilteredRequests(filteredRequests);
 
     if (!filteredRequests.some(({ uuid }) => uuid === selected?.uuid)) {
       clearSelection();
     }
-  }, [requests, filter]);
+  }, [requests, filter, includeWebsocketLogs]);
 
   return {
     requests: filteredRequests,
