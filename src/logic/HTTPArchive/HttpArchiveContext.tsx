@@ -94,6 +94,9 @@ const useRequest = () => {
   ) => {
     if (message.type === 'JSON_RPC_WEBSOCKET_MESSAGE' && isJsonRpcMessage(message.payload.message)) {
       const json = parseJsonRpcMessage(message.payload.message);
+
+      if (!json) return;
+
       const preparedRequest = getPreparedMessage(message.payload.type, message.payload.url, json);
 
       requestsRef.current = [
