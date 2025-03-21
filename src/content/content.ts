@@ -1,15 +1,12 @@
 const script = document.createElement('script');
-
-script.id = 'websockets-interceptor';
 script.fetchPriority = 'high';
+script.src = chrome.runtime.getURL('content/websockets.js');
 
-(document.head || document.documentElement).appendChild(script);
+document.documentElement.appendChild(script);
 
 script.onload = () => {
   script.parentNode.removeChild(script);
 };
-
-script.src = chrome.runtime.getURL('content/websockets.js');
 
 window.addEventListener('message', (event) => {
   if (event.source !== window || !event.data.type) return;
