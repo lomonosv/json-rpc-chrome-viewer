@@ -1,0 +1,40 @@
+@import "../common/variables";
+
+.messageInfoWrapper {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  max-height: calc(100% - 28px);
+}
+
+.messageInfoHeader {
+  justify-content: space-between;
+}
+
+.messageInfoHeaderLeftSide {
+  display: flex;
+  align-items: center;
+}
+
+.expandButton {
+  margin-right: 10px;
+}
+
+.closeButton {
+  line-height: 12px;
+  padding: 2px;
+  margin-left: -2px;
+  margin-right: 6px;
+  display: inline-flex;
+}
+
+.messageInfoContainer {
+  height: 0;
+  flex-grow: 1;
+  border-bottom: 1px solid $borderColor;
+  display: flex;
+
+  :global(.isDark) & {
+    border-bottom: 1px solid $darkBorderColor;
+  }
+}
