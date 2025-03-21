@@ -104,14 +104,10 @@
   cursor: pointer;
 }
 
-.url {
-  display: flex;
-  align-items: center;
-  height: 14px;
-  margin-top: 3px;
+.badge {
+  display: inline-flex;
 
-  &.isCors::before {
-    content: "CORS";
+  &::before {
     opacity: 0.4;
     background: $headerBackground;
     border: 1px solid $borderColor;
@@ -130,6 +126,45 @@
       color: $darkColor;
     }
   }
+
+  &.isCors::before {
+    content: "CORS";
+  }
+
+  &.isWebsocket::before {
+    content: "WEBSOCKET";
+    background: $greenHeaderBackground;
+
+    :global(.isDark) & {
+      background: $greenHeaderBackground;
+    }
+  }
+}
+
+.badgeMessageType {
+  display: inline-flex;
+  width: 0;
+  height: 0;
+  margin-right: 5px;
+
+  &.income {
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 7px solid $error;
+  }
+
+  &.outcome {
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-bottom: 7px solid $greenHeaderBackground;
+  }
+}
+
+.url {
+  display: inline-flex;
+  align-items: center;
+  height: 14px;
+  margin-top: 3px;
 
   > span {
     opacity: 0.5;
