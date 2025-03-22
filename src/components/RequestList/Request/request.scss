@@ -1,22 +1,22 @@
-@import "../../common/variables";
+@use "../../common/variables";
 
 .requestWrapper {
   display: inline-block;
   min-width: 100%;
 
   &:nth-child(2n) .request {
-    background: $evenRowBackground;
+    background: variables.$evenRowBackground;
 
     :global(.isDark) & {
-      background: $darkEvenRowBackground;
+      background: variables.$darkEvenRowBackground;
     }
   }
 
   &:nth-child(2n + 1) .request {
-    background: $oddRowBackground;
+    background: variables.$oddRowBackground;
 
     :global(.isDark) & {
-      background: $darkOddRowBackground;
+      background: variables.$darkOddRowBackground;
     }
   }
 }
@@ -45,19 +45,19 @@
 
   &.error .method,
   &.error .meta {
-    color: $error;
+    color: variables.$error;
   }
 
   &.responseNotParsed .method,
   &.responseNotParsed .meta {
-    color: $warning;
+    color: variables.$warning;
   }
 
   &:not(.isSelected):hover {
-    background: $hoverBackground;
+    background: variables.$hoverBackground;
 
     :global(.isDark) & {
-      background: $darkHoverBackground;
+      background: variables.$darkHoverBackground;
     }
   }
 
@@ -67,10 +67,10 @@
 }
 
 .isSelected {
-  background: $selectedBackground !important;
+  background: variables.$selectedBackground !important;
 
   :global(.isDark) & {
-    background: $darkSelectedBackground !important;
+    background: variables.$darkSelectedBackground !important;
   }
 }
 
@@ -109,9 +109,9 @@
 
   &::before {
     opacity: 0.4;
-    background: $headerBackground;
-    border: 1px solid $borderColor;
-    color: $color;
+    background: variables.$headerBackground;
+    border: 1px solid variables.$borderColor;
+    color: variables.$color;
     padding: 1px 5px;
     margin-right: 5px;
     border-radius: 2px;
@@ -121,9 +121,9 @@
     justify-content: center;
 
     :global(.isDark) & {
-      background: $darkHeaderBackground;
-      border: 1px solid $darkBorderColor;
-      color: $darkColor;
+      background: variables.$darkHeaderBackground;
+      border: 1px solid variables.$darkBorderColor;
+      color: variables.$darkColor;
     }
   }
 
@@ -133,10 +133,10 @@
 
   &.isWebsocket::before {
     content: "WEBSOCKET";
-    background: $greenHeaderBackground;
+    background: variables.$greenHeaderBackground;
 
     :global(.isDark) & {
-      background: $greenHeaderBackground;
+      background: variables.$greenHeaderBackground;
     }
   }
 }
@@ -150,13 +150,13 @@
   &.income {
     border-left: 5px solid transparent;
     border-right: 5px solid transparent;
-    border-top: 7px solid $error;
+    border-top: 7px solid variables.$error;
   }
 
   &.outcome {
     border-left: 5px solid transparent;
     border-right: 5px solid transparent;
-    border-bottom: 7px solid $greenHeaderBackground;
+    border-bottom: 7px solid variables.$greenHeaderBackground;
   }
 }
 

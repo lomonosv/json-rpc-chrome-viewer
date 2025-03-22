@@ -5,11 +5,10 @@ module.exports = {
   ],
   extends: 'stylelint-config-standard',
   rules: {
+    'at-rule-no-unknown': null,
+    'scss/at-rule-no-unknown': true,
     'selector-pseudo-class-no-unknown': [true, {
       ignorePseudoClasses: ['global']
-    }],
-    'at-rule-no-unknown': [true, {
-      ignoreAtRules: ['mixin', 'include']
     }],
     'selector-class-pattern': null,
     'no-descending-specificity': null,

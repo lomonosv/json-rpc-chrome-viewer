@@ -1,22 +1,22 @@
-@import "../variables";
+@use "../variables";
 
 .headerContainer {
   z-index: 1;
   min-height: 27px;
   height: 27px;
-  border-bottom: 1px solid $borderColor;
+  border-bottom: 1px solid variables.$borderColor;
   display: flex;
   align-items: center;
   padding: 0 9px;
-  background: $headerBackground;
-  color: $color;
+  background: variables.$headerBackground;
+  color: variables.$color;
   user-select: none;
 }
 
 :global(.isDark) {
   .headerContainer {
-    background: $darkHeaderBackground;
-    color: $darkColor;
-    border-bottom: 1px solid $darkBorderColor;
+    background: variables.$darkHeaderBackground;
+    color: variables.$darkColor;
+    border-bottom: 1px solid variables.$darkBorderColor;
   }
 }
