@@ -21,25 +21,12 @@
   "devtools_page": "index.html",
   "content_scripts": [
     {
-      "matches": [
-        "https://*/*",
-        "http://*/*"
-      ],
-      "js": [
-        "content/content.js"
-      ],
+      "matches": ["*://*/*"],
+      "js": ["content/content.js"],
       "run_at": "document_start"
     }
   ],
-  "web_accessible_resources": [
-    {
-      "matches": [
-        "https://*/*",
-        "http://*/*"
-      ],
-      "resources": [
-        "content/websockets.js"
-      ]
-    }
-  ]
+  "background": {
+    "service_worker": "content/background.js"
+  }
 }
