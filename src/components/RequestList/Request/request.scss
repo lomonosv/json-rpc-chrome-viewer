@@ -1,10 +1,13 @@
 @use "../../common/variables";
 
 .requestWrapper {
-  display: inline-block;
-  min-width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  white-space: nowrap;
+  padding: 4px 7px;
 
-  &:nth-child(2n) .request {
+  &:nth-child(2n) {
     background: variables.$evenRowBackground;
 
     :global(.isDark) & {
@@ -12,22 +15,13 @@
     }
   }
 
-  &:nth-child(2n + 1) .request {
+  &:nth-child(2n + 1) {
     background: variables.$oddRowBackground;
 
     :global(.isDark) & {
       background: variables.$darkOddRowBackground;
     }
   }
-}
-
-.request {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  white-space: nowrap;
-  padding: 5px 7px;
-  height: 100%;
 
   .meta {
     display: flex;
@@ -84,23 +78,20 @@
   }
 }
 
-.methodContainer {
-  display: table;
-  table-layout: fixed;
-  width: 100%;
-}
-
 .method {
   display: flex;
   align-items: center;
   font-family: monospace;
   font-size: 12px;
+  padding-right: 18px;
 }
 
 .resendRequestButton {
   display: none;
   height: 12px;
-  margin-left: 10px;
+  position: relative;
+  left: 18px;
+  margin-left: -12px;
   cursor: pointer;
 }
 
