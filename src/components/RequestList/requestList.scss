@@ -1,8 +1,13 @@
 @use "../common/variables";
 
-.requestList {
+.requestListWrapper {
   flex-grow: 1;
   overflow: auto;
+}
+
+.requestList {
+  display: table;
+  min-width: 100%;
 }
 
 .requestsHeaderWrapper {
