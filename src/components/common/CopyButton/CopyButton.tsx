@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CopyToClipboard } from 'react-copy-to-clipboard';
+import copyToClipboard from 'copy-to-clipboard';
 import Button from '~/components/common/Button';
 import Icon, { IconType } from '~/components/common/Icon';
 import styles from './copyButton.scss';
@@ -20,6 +20,7 @@ const CopyButton = ({
   const [isCopied, setIsCopied] = useState<boolean>(false);
 
   const handleCopy = () => {
+    copyToClipboard(text);
     setIsCopied(true);
 
     setTimeout(() => {
@@ -36,17 +37,13 @@ const CopyButton = ({
   }
 
   return (
-    <CopyToClipboard
-      text={ text }
-      onCopy={ handleCopy }
+    <Button
+      title={ hint }
+      className={ className }
+      onClick={ handleCopy }
     >
-      <Button
-        title={ hint }
-        className={ className }
-      >
-        <Icon type={ iconType } />
-      </Button>
-    </CopyToClipboard>
+      <Icon type={ iconType } />
+    </Button>
   );
 };
 
