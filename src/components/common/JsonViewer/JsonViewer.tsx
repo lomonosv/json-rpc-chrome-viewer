@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import ReactJsonView, { ThemeKeys } from 'react-json-view';
+import ReactJsonView, { ThemeKeys } from '@microlink/react-json-view';
 import { JSONValue } from '~/logic/HTTPArchive/IRequest';
 import { useSettingsContext } from '~/logic/SettingsContext/SettingsContext';
 import { ExpandTreeState } from './ExpandTreeState';

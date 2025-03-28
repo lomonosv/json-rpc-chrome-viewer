@@ -11,6 +11,7 @@ const defaultShowWebsocketBadgeValue = true;
 const defaultExpandTreeStateValue = ExpandTreeState.Default;
 const defaultExpandedWebsocketMessagesStateValue = ExpandTreeState.Default;
 const defaultJsonViewerThemeValue = JsonViewerTheme.System;
+const defaultAutoScrollValue = true;
 
 const isDevtoolsDarkTheme = (): boolean => (
   chrome.devtools.panels.themeName === DevToolsTheme.Dark
@@ -23,8 +24,11 @@ const useSettings = () => {
   const [showCorsBadge, setShowCorsBadge] = useState<boolean>(defaultShowCorsBadgeValue);
   const [showWebsocketBadge, setShowWebsocketBadge] = useState<boolean>(defaultShowWebsocketBadgeValue);
   const [expandTreeState, setExpandTreeState] = useState<ExpandTreeState>(defaultExpandTreeStateValue);
-  const [expandedWebsocketMessagesState, setExpandedWebsocketMessagesState] = useState<ExpandTreeState>(defaultExpandedWebsocketMessagesStateValue);
+  const [expandedWebsocketMessagesState, setExpandedWebsocketMessagesState] = useState<ExpandTreeState>(
+    defaultExpandedWebsocketMessagesStateValue
+  );
   const [jsonViewerTheme, setJsonViewerTheme] = useState<JsonViewerTheme>(defaultJsonViewerThemeValue);
+  const [autoScroll, setAutoScroll] = useState<boolean>(defaultAutoScrollValue);
 
   useEffect(() => {
     getConfig('settings_preserveLog', defaultPreserveLogValue).then(setPreserveLog);
@@ -33,8 +37,10 @@ const useSettings = () => {
     getConfig('settings_showCorsBadge', defaultShowCorsBadgeValue).then(setShowCorsBadge);
     getConfig('settings_showWebsocketBadge', defaultShowWebsocketBadgeValue).then(setShowWebsocketBadge);
     getConfig('settings_expandTreeState', defaultExpandTreeStateValue).then(setExpandTreeState);
-    getConfig('settings_expandedWebsocketMessagesState', defaultExpandedWebsocketMessagesStateValue).then(setExpandedWebsocketMessagesState);
+    getConfig('settings_expandedWebsocketMessagesState', defaultExpandedWebsocketMessagesStateValue)
+      .then(setExpandedWebsocketMessagesState);
     getConfig('settings_jsonViewerTheme', defaultJsonViewerThemeValue).then(setJsonViewerTheme);
+    getConfig('settings_autoScroll', defaultAutoScrollValue).then(setAutoScroll);
   }, []);
 
   const handlePreserveLogChange = (settings_preserveLog: boolean) => {
@@ -81,6 +87,11 @@ const useSettings = () => {
     isDevtoolsDarkTheme() ? JsonViewerTheme.SummerFruit : JsonViewerTheme.SummerFruitInverted
   );
 
+  const handleAutoScrollChange = (settings_autoScroll: boolean) => {
+    setAutoScroll(settings_autoScroll);
+    chrome.storage.local.set({ settings_autoScroll });
+  };
+
   return {
     preserveLog,
     includeWebsocketLogs,
@@ -90,6 +101,7 @@ const useSettings = () => {
     showWebsocketBadge,
     expandTreeState,
     jsonViewerTheme,
+    autoScroll,
     systemJsonViewerTheme: jsonViewerTheme === JsonViewerTheme.System ? getSystemJsonViewerTheme() : jsonViewerTheme,
     isDarkTheme: isDevtoolsDarkTheme(),
     setPreserveLog: handlePreserveLogChange,
@@ -99,7 +111,8 @@ const useSettings = () => {
     setShowCorsBadge: handleShowCorsBadgeChange,
     setShowWebsocketBadge: handleShowWebsocketBadgeChange,
     setExpandTreeState: handleExpandTreeStateChange,
-    setJsonViewerTheme: handleJsonViewerThemeChange
+    setJsonViewerTheme: handleJsonViewerThemeChange,
+    setAutoScroll: handleAutoScrollChange
   };
 };
 
