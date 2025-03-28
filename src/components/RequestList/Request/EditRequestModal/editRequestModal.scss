@@ -1,4 +1,4 @@
-@import "../../../common/variables";
+@use "../../../common/variables";
 
 .editRequestModal {
   width: 100%;
@@ -17,21 +17,21 @@
 
 .button {
   cursor: pointer;
-  background: $background;
+  background: variables.$background;
   padding: 5px 10px;
-  border: 1px solid $borderColor;
+  border: 1px solid variables.$borderColor;
   border-radius: 0.25rem;
 
   &:not(.cancel):hover {
-    background: $hoverBackground;
+    background: variables.$hoverBackground;
   }
 
   :global(.isDark) & {
-    background: $darkBackground;
-    border: 1px solid $darkBorderColor;
+    background: variables.$darkBackground;
+    border: 1px solid variables.$darkBorderColor;
 
     &:not(.cancel):hover {
-      background: $darkBackground;
+      background: variables.$darkBackground;
     }
   }
 
