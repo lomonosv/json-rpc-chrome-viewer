@@ -23,7 +23,9 @@ const useSettings = () => {
   const [showCorsBadge, setShowCorsBadge] = useState<boolean>(defaultShowCorsBadgeValue);
   const [showWebsocketBadge, setShowWebsocketBadge] = useState<boolean>(defaultShowWebsocketBadgeValue);
   const [expandTreeState, setExpandTreeState] = useState<ExpandTreeState>(defaultExpandTreeStateValue);
-  const [expandedWebsocketMessagesState, setExpandedWebsocketMessagesState] = useState<ExpandTreeState>(defaultExpandedWebsocketMessagesStateValue);
+  const [expandedWebsocketMessagesState, setExpandedWebsocketMessagesState] = useState<ExpandTreeState>(
+    defaultExpandedWebsocketMessagesStateValue
+  );
   const [jsonViewerTheme, setJsonViewerTheme] = useState<JsonViewerTheme>(defaultJsonViewerThemeValue);
 
   useEffect(() => {
@@ -33,7 +35,8 @@ const useSettings = () => {
     getConfig('settings_showCorsBadge', defaultShowCorsBadgeValue).then(setShowCorsBadge);
     getConfig('settings_showWebsocketBadge', defaultShowWebsocketBadgeValue).then(setShowWebsocketBadge);
     getConfig('settings_expandTreeState', defaultExpandTreeStateValue).then(setExpandTreeState);
-    getConfig('settings_expandedWebsocketMessagesState', defaultExpandedWebsocketMessagesStateValue).then(setExpandedWebsocketMessagesState);
+    getConfig('settings_expandedWebsocketMessagesState', defaultExpandedWebsocketMessagesStateValue)
+      .then(setExpandedWebsocketMessagesState);
     getConfig('settings_jsonViewerTheme', defaultJsonViewerThemeValue).then(setJsonViewerTheme);
   }, []);
 
