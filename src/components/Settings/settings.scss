@@ -1,15 +1,15 @@
-@import "../common/variables";
+@use "../common/variables";
 
 .settingsWrapper {
-  background: $background;
-  color: $color;
+  background: variables.$background;
+  color: variables.$color;
   position: fixed;
   inset: 0;
   z-index: 2;
 
   :global(.isDark) & {
-    background: $darkBackground;
-    color: $darkColor;
+    background: variables.$darkBackground;
+    color: variables.$darkColor;
   }
 }
 
