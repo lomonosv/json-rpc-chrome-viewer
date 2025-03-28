@@ -1,4 +1,4 @@
-@import "../common/variables";
+@use "../common/variables";
 
 .toolbarContainer {
   display: flex;
@@ -34,7 +34,7 @@
 }
 
 .filterClearIconWrapper {
-  background: $borderColor;
+  background: variables.$borderColor;
   border-radius: 50%;
   position: absolute;
   right: 14px;
@@ -47,11 +47,11 @@
   justify-content: center;
 
   :global(.isDark) & {
-    background: $darkBorderColor;
+    background: variables.$darkBorderColor;
   }
 
   &:hover {
-    background: $darkColor;
+    background: variables.$darkColor;
   }
 }
 

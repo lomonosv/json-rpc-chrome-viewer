@@ -1,33 +1,27 @@
-@import "../../common/variables";
+@use "../../common/variables";
 
 .requestWrapper {
-  display: inline-block;
-  min-width: 100%;
-
-  &:nth-child(2n) .request {
-    background: $evenRowBackground;
-
-    :global(.isDark) & {
-      background: $darkEvenRowBackground;
-    }
-  }
-
-  &:nth-child(2n + 1) .request {
-    background: $oddRowBackground;
-
-    :global(.isDark) & {
-      background: $darkOddRowBackground;
-    }
-  }
-}
-
-.request {
   display: flex;
   align-items: center;
   justify-content: space-between;
   white-space: nowrap;
-  padding: 5px 7px;
-  height: 100%;
+  padding: 4px 7px;
+
+  &:nth-child(2n) {
+    background: variables.$evenRowBackground;
+
+    :global(.isDark) & {
+      background: variables.$darkEvenRowBackground;
+    }
+  }
+
+  &:nth-child(2n + 1) {
+    background: variables.$oddRowBackground;
+
+    :global(.isDark) & {
+      background: variables.$darkOddRowBackground;
+    }
+  }
 
   .meta {
     display: flex;
@@ -45,19 +39,19 @@
 
   &.error .method,
   &.error .meta {
-    color: $error;
+    color: variables.$error;
   }
 
   &.responseNotParsed .method,
   &.responseNotParsed .meta {
-    color: $warning;
+    color: variables.$warning;
   }
 
   &:not(.isSelected):hover {
-    background: $hoverBackground;
+    background: variables.$hoverBackground;
 
     :global(.isDark) & {
-      background: $darkHoverBackground;
+      background: variables.$darkHoverBackground;
     }
   }
 
@@ -67,10 +61,10 @@
 }
 
 .isSelected {
-  background: $selectedBackground !important;
+  background: variables.$selectedBackground !important;
 
   :global(.isDark) & {
-    background: $darkSelectedBackground !important;
+    background: variables.$darkSelectedBackground !important;
   }
 }
 
@@ -84,23 +78,20 @@
   }
 }
 
-.methodContainer {
-  display: table;
-  table-layout: fixed;
-  width: 100%;
-}
-
 .method {
   display: flex;
   align-items: center;
   font-family: monospace;
   font-size: 12px;
+  padding-right: 18px;
 }
 
 .resendRequestButton {
   display: none;
   height: 12px;
-  margin-left: 10px;
+  position: relative;
+  left: 18px;
+  margin-left: -12px;
   cursor: pointer;
 }
 
@@ -109,9 +100,9 @@
 
   &::before {
     opacity: 0.4;
-    background: $headerBackground;
-    border: 1px solid $borderColor;
-    color: $color;
+    background: variables.$headerBackground;
+    border: 1px solid variables.$borderColor;
+    color: variables.$color;
     padding: 1px 5px;
     margin-right: 5px;
     border-radius: 2px;
@@ -121,9 +112,9 @@
     justify-content: center;
 
     :global(.isDark) & {
-      background: $darkHeaderBackground;
-      border: 1px solid $darkBorderColor;
-      color: $darkColor;
+      background: variables.$darkHeaderBackground;
+      border: 1px solid variables.$darkBorderColor;
+      color: variables.$darkColor;
     }
   }
 
@@ -133,10 +124,10 @@
 
   &.isWebsocket::before {
     content: "WEBSOCKET";
-    background: $greenHeaderBackground;
+    background: variables.$greenHeaderBackground;
 
     :global(.isDark) & {
-      background: $greenHeaderBackground;
+      background: variables.$greenHeaderBackground;
     }
   }
 }
@@ -150,13 +141,13 @@
   &.income {
     border-left: 5px solid transparent;
     border-right: 5px solid transparent;
-    border-top: 7px solid $error;
+    border-top: 7px solid variables.$error;
   }
 
   &.outcome {
     border-left: 5px solid transparent;
     border-right: 5px solid transparent;
-    border-bottom: 7px solid $greenHeaderBackground;
+    border-bottom: 7px solid variables.$greenHeaderBackground;
   }
 }
 

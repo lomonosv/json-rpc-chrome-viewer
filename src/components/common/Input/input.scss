@@ -1,4 +1,4 @@
-@import "../variables";
+@use "../variables";
 
 .inputWrapper {
   position: relative;
@@ -6,10 +6,10 @@
   align-items: center;
 
   &:hover input:not([disabled]) ~ .label {
-    color: $highLightedColor;
+    color: variables.$highLightedColor;
 
     :global(.isDark) & {
-      color: $darkHighLightedColor;
+      color: variables.$darkHighLightedColor;
     }
   }
 }
@@ -19,32 +19,32 @@
 }
 
 .input {
-  background: $background;
-  color: $color;
+  background: variables.$background;
+  color: variables.$color;
   outline: none;
   border: 1px solid transparent;
   font-family: system-ui, sans-serif;
   font-size: 12px;
 
   :global(.isDark) & {
-    background: $darkBackground;
-    color: $darkColor;
+    background: variables.$darkBackground;
+    color: variables.$darkColor;
   }
 
   &:hover {
-    border: 1px solid $borderColor;
+    border: 1px solid variables.$borderColor;
 
     :global(.isDark) & {
-      border: 1px solid $darkBorderColor;
+      border: 1px solid variables.$darkBorderColor;
     }
   }
 }
 
 .label {
   margin-left: 5px;
-  color: $color;
+  color: variables.$color;
 
   :global(.isDark) & {
-    color: $darkColor;
+    color: variables.$darkColor;
   }
 }

@@ -28,7 +28,9 @@ const Settings = ({ onClose }: IComponentProps) => {
     expandedWebsocketMessagesState,
     setExpandedWebsocketMessagesState,
     jsonViewerTheme,
-    setJsonViewerTheme
+    setJsonViewerTheme,
+    autoScroll,
+    setAutoScroll
   } = useSettingsContext();
 
   const handleShowRequestUrlChange: ChangeEventHandler<HTMLInputElement> = (e) => {
@@ -41,6 +43,10 @@ const Settings = ({ onClose }: IComponentProps) => {
 
   const handleShowWebsocketBadgeChange: ChangeEventHandler<HTMLInputElement> = (e) => {
     setShowWebsocketBadge(e.target.checked);
+  };
+
+  const handleAutoScrollChange: ChangeEventHandler<HTMLInputElement> = (e) => {
+    setAutoScroll(e.target.checked);
   };
 
   const handleExpandTreeStateChange: ChangeEventHandler<HTMLSelectElement> = (e) => {
@@ -108,6 +114,16 @@ const Settings = ({ onClose }: IComponentProps) => {
                 checked={ showWebsocketBadge }
                 isDisabled={ !showRequestUrl }
                 onChange={ handleShowWebsocketBadgeChange }
+            />
+          </div>
+          <div className={ styles.settingsItem }>
+            <Input
+                name="autoScroll"
+                label="Autoscroll to the latest request"
+                wrapperClassName={ styles.settingsItemWrapper }
+                type={ Type.Checkbox }
+                checked={ autoScroll }
+                onChange={ handleAutoScrollChange }
             />
           </div>
           <div className={ styles.settingsItem }>

@@ -37,7 +37,7 @@ const Modal = ({
           <div className={ styles.header }>
             { header }
           </div>
-          <div>
+          <div className={ styles.contentWrapper }>
             { children }
           </div>
           <div className={ styles.footer }>

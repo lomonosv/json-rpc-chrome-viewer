@@ -1,15 +1,15 @@
-@import "../common/variables";
+@use "../common/variables";
 
 .layoutWrapper {
   display: flex;
   flex-direction: column;
   height: 100%;
-  background: $background;
-  color: $color;
+  background: variables.$background;
+  color: variables.$color;
 
   :global(.isDark) & {
-    background: $darkBackground;
-    color: $darkColor;
+    background: variables.$darkBackground;
+    color: variables.$darkColor;
   }
 }
 
@@ -21,12 +21,12 @@
 
 .leftSideContainer {
   font-weight: normal;
-  border-right: 1px solid $borderColor;
+  border-right: 1px solid variables.$borderColor;
   display: flex;
   flex-direction: column;
 
   :global(.isDark) & {
-    border-right: 1px solid $darkBorderColor;
+    border-right: 1px solid variables.$darkBorderColor;
   }
 }
 

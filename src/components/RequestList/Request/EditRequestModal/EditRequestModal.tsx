@@ -101,13 +101,11 @@ const EditRequestModal = ({ isVisible, item, close }: IProps) => {
       header={ header }
       footer={ footer }
     >
-      <div className={ styles.contentWrapper }>
-        <JsonViewer
-          src={ item.requestJSON.params || {} }
-          expandTreeState={ ExpandTreeState.Expanded }
-          onEdit={ handleEditParams }
-        />
-      </div>
+      <JsonViewer
+        src={ item.requestJSON.params || {} }
+        expandTreeState={ ExpandTreeState.Expanded }
+        onEdit={ handleEditParams }
+      />
     </Modal>
   );
 };

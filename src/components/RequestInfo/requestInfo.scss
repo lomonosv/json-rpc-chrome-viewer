@@ -1,4 +1,4 @@
-@import "../common/variables";
+@use "../common/variables";
 
 .requestInfoWrapper {
   display: flex;
@@ -30,11 +30,11 @@
 .requestInfoContainer {
   height: 0;
   flex-grow: 1;
-  border-bottom: 1px solid $borderColor;
+  border-bottom: 1px solid variables.$borderColor;
   display: flex;
 
   :global(.isDark) & {
-    border-bottom: 1px solid $darkBorderColor;
+    border-bottom: 1px solid variables.$darkBorderColor;
   }
 }
 

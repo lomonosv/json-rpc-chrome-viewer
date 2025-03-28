@@ -1,4 +1,4 @@
-@import "../common/variables";
+@use "../common/variables";
 
 .responseInfoWrapper {
   display: flex;
@@ -37,7 +37,7 @@
 
   &.responseNotParsed {
     font-size: 14px;
-    color: $color;
+    color: variables.$color;
 
     .rawResponseWrapper {
       width: 100%;
@@ -51,7 +51,7 @@
     }
 
     :global(.isDark) & {
-      color: $darkColor;
+      color: variables.$darkColor;
     }
   }
 }

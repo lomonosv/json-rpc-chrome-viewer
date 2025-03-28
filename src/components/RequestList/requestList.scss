@@ -1,8 +1,13 @@
-@import "../common/variables";
+@use "../common/variables";
 
-.requestList {
+.requestListWrapper {
   flex-grow: 1;
   overflow: auto;
+}
+
+.requestList {
+  display: table;
+  min-width: 100%;
 }
 
 .requestsHeaderWrapper {
@@ -11,10 +16,10 @@
   position: sticky;
   top: 0;
   z-index: 1;
-  background: $headerBackground;
+  background: variables.$headerBackground;
 
   :global(.isDark) & {
-    background: $darkHeaderBackground;
+    background: variables.$darkHeaderBackground;
   }
 }
 

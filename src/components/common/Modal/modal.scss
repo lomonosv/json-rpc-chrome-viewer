@@ -1,4 +1,4 @@
-@import "../variables";
+@use "../variables";
 
 .wrapper {
   display: flex;
@@ -13,7 +13,7 @@
 }
 
 .backgroundOverlay {
-  background: $blurBackground;;
+  background: variables.$blurBackground;;
   opacity: 0.7;
   position: absolute;
   top: 0;
@@ -22,22 +22,22 @@
   height: 100%;
 
   :global(.isDark) & {
-    background:$darkBlurBackground;
+    background: variables.$darkBlurBackground;
   }
 }
 
 .modal {
   position: relative;
   z-index: 1;
-  border: 1px solid $borderColor;
-  background: $background;
+  border: 1px solid variables.$borderColor;
+  background: variables.$background;
   border-radius: 0.25rem;
-  box-shadow: 1px 1px 0 $background;
+  box-shadow: 1px 1px 0 variables.$background;
 
   :global(.isDark) & {
-    border: 1px solid $darkBorderColor;
-    background: $darkBackground;
-    box-shadow: 1px 1px 0 $darkBackground;
+    border: 1px solid variables.$darkBorderColor;
+    background: variables.$darkBackground;
+    box-shadow: 1px 1px 0 variables.$darkBackground;
   }
 }
 
@@ -48,15 +48,20 @@
 
 .header {
   padding: 6px 10px;
-  color: $color;
+  color: variables.$color;
   font-size: 12px;
   font-weight: bold;
-  border-bottom: 1px solid $borderColor;
+  border-bottom: 1px solid variables.$borderColor;
 
   :global(.isDark) & {
-    color: $darkColor;
-    border-bottom: 1px solid $darkBorderColor;
+    color: variables.$darkColor;
+    border-bottom: 1px solid variables.$darkBorderColor;
   }
+}
+
+.contentWrapper {
+  height: calc(100% - 74px);
+  overflow: auto;
 }
 
 .footer {
