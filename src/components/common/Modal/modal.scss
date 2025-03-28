@@ -59,6 +59,11 @@
   }
 }
 
+.contentWrapper {
+  height: calc(100% - 74px);
+  overflow: auto;
+}
+
 .footer {
   display: flex;
   justify-content: flex-end;
