@@ -22,10 +22,10 @@
   "dependencies": {
     "@microlink/react-json-view": "^1.26.1",
     "classnames": "^2.5.1",
+    "copy-to-clipboard": "^3.3.3",
     "json2ts": "^0.0.7",
     "re-resizable": "^6.11.2",
     "react": "^19.0.0",
-    "react-copy-to-clipboard": "^5.1.0",
     "react-dom": "^19.0.0",
     "uuid": "^11.1.0"
   },
