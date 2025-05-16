@@ -20,6 +20,7 @@ const Request = ({ item }: { item: IRequest }) => {
 
   const handleClick = () => {
     setSelected(item);
+    throw new Error('Testing error handling');
   };
 
   const handleResendButtonClick = (e: React.MouseEvent<HTMLElement>) => {
