@@ -21,6 +21,9 @@
   "homepage": "https://github.com/lomonosv/json-rpc-chrome-viewer#readme",
   "dependencies": {
     "@microlink/react-json-view": "^1.26.1",
+    "@sentry/browser": "^9.19.0",
+    "@sentry/esbuild-plugin": "^3.4.0",
+    "@sentry/react": "^9.19.0",
     "classnames": "^2.5.1",
     "copy-to-clipboard": "^3.3.3",
     "json2ts": "^0.0.7",
