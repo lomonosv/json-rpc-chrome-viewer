@@ -31,5 +31,5 @@ const callback = (panel) => {
   });
 }
 
-panels.create('JSON-RPC Chrome Viewer', 'icons/16.png', 'application.html', callback);
+panels.create('JSON-RPC Chrome Viewer - Test', 'icons/16.png', 'application.html', callback);
 
