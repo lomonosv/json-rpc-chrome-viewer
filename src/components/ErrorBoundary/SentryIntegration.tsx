@@ -41,7 +41,7 @@ const SentryIntegration = ({ children }) => {
 
     const scope = new Scope();
     scope.setClient(client);
-    client.init(); // initializing has to be done after setting the client on the scope
+    client.init();
 
     container.bind(DITypes.Scope).toConstantValue(scope);
   }, []);
