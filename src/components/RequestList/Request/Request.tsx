@@ -20,7 +20,6 @@ const Request = ({ item }: { item: IRequest }) => {
 
   const handleClick = () => {
     setSelected(item);
-    throw new Error('Testing error handling');
   };
 
   const handleResendButtonClick = (e: React.MouseEvent<HTMLElement>) => {
@@ -63,7 +62,8 @@ const Request = ({ item }: { item: IRequest }) => {
         </div>
         { showRequestUrl && (
           <>
-            <div className={ cn(styles.badge, { [styles.isCors]: item.isCors && showCorsBadge }) } />
+            { /* @ts-ignore */ }
+            <div className={ cn(styles.badge, { [styles.isCors]: item.isCorss.cors && showCorsBadge }) } />
             <div className={ cn(styles.badge, { [styles.isWebsocket]: item.isWebSocket && showWebsocketBadge }) } />
             { item.isWebSocket && (
               <div

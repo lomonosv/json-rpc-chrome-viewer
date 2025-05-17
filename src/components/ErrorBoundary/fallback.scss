@@ -1,0 +1,17 @@
+@use "../common/variables";
+
+.container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-size: 14px;
+  background: variables.$background;
+  color: variables.$color;
+
+  :global(.isDark) & {
+    background: variables.$darkBackground;
+    color: variables.$darkColor;
+  }
+}

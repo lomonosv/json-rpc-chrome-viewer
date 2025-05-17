@@ -3,15 +3,19 @@ import Layout from '~/components/Layout';
 import SettingsContext from '~/logic/SettingsContext/SettingsContext';
 import HttpArchiveContext from '~/logic/HTTPArchive/HttpArchiveContext';
 import CacheContext from '~/logic/CacheContext/CacheContext';
+import { createContainer } from '~/logic/DI';
+import ErrorBoundary from './ErrorBoundary';
 
 const Application = () => (
-  <SettingsContext>
-    <HttpArchiveContext>
-      <CacheContext>
-        <Layout />
-      </CacheContext>
-    </HttpArchiveContext>
-  </SettingsContext>
+  <ErrorBoundary>
+    <SettingsContext>
+      <HttpArchiveContext>
+        <CacheContext>
+          <Layout />
+        </CacheContext>
+      </HttpArchiveContext>
+    </SettingsContext>
+  </ErrorBoundary>
 );
 
-export default Application;
+export default createContainer(Application);
