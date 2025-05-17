@@ -1,13 +1,13 @@
 {
   "name": "json-rpc-chrome-viewer",
-  "version": "1.5.7",
+  "version": "1.6.0",
   "description": "JSON RPC request dev tools",
   "main": "src/index.jsx",
   "scripts": {
     "eslint": "eslint --ext .js,.ts,.jsx,.tsx --cache=true --cache-location=./.cache/eslint --ignore-path=.eslintignore --config=./.eslintrc.js ./",
     "stylelint": "stylelint \"src/**/*.scss\"",
     "lint": "npm run eslint && npm run stylelint",
-    "clean":"rm -rf build",
+    "clean": "rm -rf build",
     "build": "npm run clean && npm run lint && tsc -noEmit && node scripts/build.js && node scripts/envSubstitute.js",
     "release": "release-it"
   },
