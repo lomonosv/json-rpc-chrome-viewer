@@ -18,7 +18,7 @@ module.exports = {
     }
   },
   rules: {
-    '@stylistic/comma-dangle': ['warn', 'never'],
+    '@stylistic/comma-dangle': ['warn', 'only-multiline'],
     'import/prefer-default-export': 'off',
     'import/extensions': 'off',
     '@typescript-eslint/no-shadow': 'off',
@@ -31,6 +31,7 @@ module.exports = {
     'react/jsx-curly-spacing': ['warn', 'always'],
     'max-len': ['warn', { 'code': 120 }],
     'operator-linebreak': 'off',
-    '@typescript-eslint/no-unused-vars': ['error', { 'caughtErrors': 'none' }]
+    '@typescript-eslint/no-unused-vars': ['error', { 'caughtErrors': 'none' }],
+    'no-param-reassign': "off",
   }
 };
