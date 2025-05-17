@@ -1,9 +1,10 @@
 {
   "compilerOptions": {
     "noImplicitAny": false,
-    "module": "es6",
-    "target": "es6",
+    "module": "es2022",
+    "target": "ES2022",
     "lib": [
+      "es2022",
       "es2021",
       "es2021.promise",
       "dom"
@@ -16,7 +17,8 @@
       "~/logic/*": ["src/logic/*"],
       "~/components/*": ["src/components/*"]
     },
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "sourceMap": true
   },
   "include": [
     "./src/**/*"
