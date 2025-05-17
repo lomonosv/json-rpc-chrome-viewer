@@ -4,9 +4,11 @@
   "description": "JSON RPC request dev tools",
   "main": "src/index.jsx",
   "scripts": {
-    "lint": "eslint --ext .js,.ts,.jsx,.tsx --cache=true --cache-location=./.cache/eslint --ignore-path=.eslintignore --config=./.eslintrc.js ./",
+    "eslint": "eslint --ext .js,.ts,.jsx,.tsx --cache=true --cache-location=./.cache/eslint --ignore-path=.eslintignore --config=./.eslintrc.js ./",
     "stylelint": "stylelint \"src/**/*.scss\"",
-    "build": "rm -rf build && npm run lint && npm run stylelint && tsc -noEmit && node scripts/build.js",
+    "lint": "npm run eslint && npm run stylelint",
+    "clean":"rm -rf build",
+    "build": "npm run clean && npm run lint && tsc -noEmit && node scripts/build.js && node scripts/envSubstitute.js",
     "release": "release-it"
   },
   "repository": {
@@ -22,19 +24,20 @@
   "dependencies": {
     "@microlink/react-json-view": "^1.26.1",
     "@sentry/browser": "^9.19.0",
-    "@sentry/esbuild-plugin": "^3.4.0",
-    "@sentry/react": "^9.19.0",
     "classnames": "^2.5.1",
     "copy-to-clipboard": "^3.3.3",
+    "inversify": "^7.5.1",
     "json2ts": "^0.0.7",
     "re-resizable": "^6.11.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "reflect-metadata": "^0.2.2",
     "uuid": "^11.1.0"
   },
   "devDependencies": {
     "@kesills/eslint-config-airbnb-typescript": "^20.0.0",
     "@release-it/bumper": "^7.0.2",
+    "@sentry/esbuild-plugin": "^3.4.0",
     "@stylistic/eslint-plugin": "^2.9.0",
     "@types/chrome": "^0.0.313",
     "@types/react": "^19.0.12",
