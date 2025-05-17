@@ -62,8 +62,7 @@ const Request = ({ item }: { item: IRequest }) => {
         </div>
         { showRequestUrl && (
           <>
-            { /* @ts-ignore */ }
-            <div className={ cn(styles.badge, { [styles.isCors]: item.isCorss.cors && showCorsBadge }) } />
+            <div className={ cn(styles.badge, { [styles.isCors]: item.isCors && showCorsBadge }) } />
             <div className={ cn(styles.badge, { [styles.isWebsocket]: item.isWebSocket && showWebsocketBadge }) } />
             { item.isWebSocket && (
               <div
