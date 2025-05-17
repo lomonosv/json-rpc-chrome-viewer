@@ -1,4 +1,5 @@
 const { sassPlugin, postcssModules } = require('esbuild-sass-plugin');
+const { sentryEsbuildPlugin } = require("@sentry/esbuild-plugin");
 
 (async () => {
   await require('esbuild').build({
@@ -15,6 +16,7 @@ const { sassPlugin, postcssModules } = require('esbuild-sass-plugin');
     outdir: 'build',
     entryNames: '[dir]/[name]',
     loader: { '.svg': 'text' },
+    sourcemap: true,
     plugins: [
       await require('esbuild-plugin-copy').copy({
         resolveFrom: 'cwd',
@@ -27,6 +29,11 @@ const { sassPlugin, postcssModules } = require('esbuild-sass-plugin');
       sassPlugin({
         type: 'style',
         transform: postcssModules({})
+      }),
+      sentryEsbuildPlugin({
+        authToken: process.env.SENTRY_AUTH_TOKEN,
+        org: "json-rpc-chrome-viewer",
+        project: "json-rpc-chrome-viewer",
       })
     ]
   }).catch(() => process.exit(1));
