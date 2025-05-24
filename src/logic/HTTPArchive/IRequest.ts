@@ -19,8 +19,14 @@ export interface IRequest {
   isWebSocket: boolean,
   websocketMessageType?: 'income' | 'outcome',
   websocketJSON?: JSONValue & {
-    method: string,
     id: string
+    method: string,
+    params?: JSONValue,
+    error?: JSONValue & {
+      code?: number,
+      message?: string,
+    }
+    result?: JSONValue
   },
   request: {
     url: string,
