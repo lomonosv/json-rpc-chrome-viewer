@@ -134,7 +134,12 @@ const useRequest = () => {
   useEffect(() => {
     const filteredRequests = requests.filter((request) => {
       if (request.isWebSocket && includeWebsocketLogs) {
-        return (request.websocketJSON.method || request.websocketJSON.id).toLowerCase().includes(filter.toLowerCase());
+        return (
+          request.websocketJSON.method ||
+          request.websocketJSON.id ||
+          request.websocketJSON.error?.message ||
+          `${ request.websocketMessageType } message`
+        ).toLowerCase().includes(filter.toLowerCase());
       }
 
       if (request.isWebSocket && !includeWebsocketLogs) {
