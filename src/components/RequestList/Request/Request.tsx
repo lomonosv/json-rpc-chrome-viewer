@@ -39,7 +39,14 @@ const Request = ({ item }: { item: IRequest }) => {
       <div className={ styles.methodWrapper }>
         <div
           className={ styles.method }
-          title={ item.isWebSocket ? item.websocketJSON.method || item.websocketJSON.id : item.requestJSON.method }
+          title={
+            item.isWebSocket
+              ? item.websocketJSON.method ||
+                item.websocketJSON.id ||
+                item.websocketJSON.error?.message ||
+                `${ item.websocketMessageType } message`
+              : item.requestJSON.method
+          }
         >
           { !showRequestUrl && item.isWebSocket && (
             <div
@@ -49,7 +56,14 @@ const Request = ({ item }: { item: IRequest }) => {
               }) }
             />
           ) }
-          { item.isWebSocket ? item.websocketJSON.method || item.websocketJSON.id : item.requestJSON.method }
+          {
+            item.isWebSocket
+              ? item.websocketJSON.method ||
+                item.websocketJSON.id ||
+                item.websocketJSON.error?.message ||
+                `${ item.websocketMessageType } message`
+              : item.requestJSON.method
+          }
           { !item.isWebSocket && (
             <Button
               title="Resend Request"
