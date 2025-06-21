@@ -13,6 +13,8 @@ const Toolbar = () => {
   const {
     preserveLog,
     setPreserveLog,
+    includeJsonRpcLogs,
+    setIncludeJsonRpcLogs,
     includeWebsocketLogs,
     setIncludeWebsocketLogs
   } = useSettingsContext();
@@ -23,6 +25,10 @@ const Toolbar = () => {
 
   const handlePreserveLogChange: ChangeEventHandler<HTMLInputElement> = (e) => {
     setPreserveLog(e.target.checked);
+  };
+
+  const handleIncludeJsonRpcLogsChange: ChangeEventHandler<HTMLInputElement> = (e) => {
+    setIncludeJsonRpcLogs(e.target.checked);
   };
 
   const handleIncludeWebsocketLogsChange: ChangeEventHandler<HTMLInputElement> = (e) => {
@@ -72,6 +78,14 @@ const Toolbar = () => {
             type={ Type.Checkbox }
             checked={ preserveLog }
             onChange={ handlePreserveLogChange }
+          />
+          <Input
+            name="includeJsonRpcLogs"
+            label="Include JSON-RPC Logs"
+            wrapperClassName={ styles.settingsItemWrapper }
+            type={ Type.Checkbox }
+            checked={ includeJsonRpcLogs }
+            onChange={ handleIncludeJsonRpcLogsChange }
           />
           <Input
             name="includeWebsocketLogs"
