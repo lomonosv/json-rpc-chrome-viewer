@@ -21,7 +21,7 @@ const Layout = () => {
     if (isDarkTheme) {
       body.classList.add('isDark');
     }
-  }, []);
+  }, [isDarkTheme]);
 
   return (
     <div

@@ -16,7 +16,11 @@ const useRequest = () => {
   const [filteredRequests, setFilteredRequests] = useState<IRequest[]>([]);
   const requestsRef = useRef<IRequest[]>([]);
 
-  const { preserveLog, includeWebsocketLogs } = useSettingsContext();
+  const {
+    preserveLog,
+    includeJsonRpcLogs,
+    includeWebsocketLogs
+  } = useSettingsContext();
 
   const clear = () => {
     requestsRef.current = [];
@@ -134,21 +138,27 @@ const useRequest = () => {
   useEffect(() => {
     const filteredRequests = requests.filter((request) => {
       if (request.isWebSocket && includeWebsocketLogs) {
-        return (
+        return !!(
           request.websocketJSON.method ||
           request.websocketJSON.id ||
           request.websocketJSON.error?.message ||
           `${ request.websocketMessageType } message`
-        ).toLowerCase().includes(filter.toLowerCase());
+        ).toLowerCase?.().includes(filter.toLowerCase());
       }
 
       if (request.isWebSocket && !includeWebsocketLogs) {
         return false;
       }
 
-      return request.requestJSON
-        ? request.requestJSON.method.toLowerCase().includes(filter.toLowerCase())
-        : true;
+      if (request.requestJSON && includeJsonRpcLogs) {
+        return !!request.requestJSON.method?.toLowerCase?.().includes(filter.toLowerCase());
+      }
+
+      if (request.requestJSON && !includeJsonRpcLogs) {
+        return false;
+      }
+
+      return true;
     });
 
     setFilteredRequests(filteredRequests);
@@ -156,7 +166,7 @@ const useRequest = () => {
     if (!filteredRequests.some(({ uuid }) => uuid === selected?.uuid)) {
       clearSelection();
     }
-  }, [requests, filter, includeWebsocketLogs]);
+  }, [requests, filter, includeJsonRpcLogs, includeWebsocketLogs]);
 
   return {
     requests: filteredRequests,

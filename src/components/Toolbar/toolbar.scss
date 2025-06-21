@@ -5,11 +5,20 @@
   align-items: center;
   justify-content: space-between;
   width: 100%;
+  white-space: nowrap;
 }
 
 .toolbarSection {
   display: flex;
   align-items: center;
+
+  &:first-child {
+    margin-right: 10px;
+  }
+
+  &:last-child {
+    margin-left: 10px;
+  }
 }
 
 .clearButton {
