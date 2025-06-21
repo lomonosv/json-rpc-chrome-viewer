@@ -1,6 +1,6 @@
 {
   "name": "json-rpc-chrome-viewer",
-  "version": "1.6.3",
+  "version": "1.7.0",
   "description": "JSON RPC request dev tools",
   "main": "src/index.jsx",
   "scripts": {
