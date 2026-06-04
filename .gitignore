@@ -1,6 +1,36 @@
-build
-node_modules
-.idea
+# Dependencies
+node_modules/
+
+# Build
+dist/
+build/
+out/
 .cache
-.DS_Store
+
+# Environment
 .env
+.env.local
+.env.*.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Expo
+.expo/
+
+# Coverage
+coverage/
+
+# AI
+.claude
+.kiro
+docs/
+AGENTS.md
+CLAUDE.md
