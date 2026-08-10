@@ -14,4 +14,4 @@ module.exports = {
     'no-descending-specificity': null,
     'import-notation': 'string'
   }
-}
+};
