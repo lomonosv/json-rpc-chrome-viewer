@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "noImplicitAny": false,
-    "module": "es2022",
+    "module": "esnext",
     "target": "ES2022",
     "lib": [
       "es2022",
@@ -11,7 +11,7 @@
     ],
     "jsx": "react",
     "allowJs": true,
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "baseUrl": "./",
     "paths": {
       "~/logic/*": ["src/logic/*"],
