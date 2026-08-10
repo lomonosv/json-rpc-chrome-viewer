@@ -14,7 +14,7 @@
       });
     }
 
-    send(data: string | ArrayBufferLike | Blob | ArrayBufferView): void {
+    send(data: string | BufferSource | Blob): void {
       window.postMessage({ type: 'JSON_RPC_WEBSOCKET_MESSAGE',
         payload: {
           type: 'outcome',
