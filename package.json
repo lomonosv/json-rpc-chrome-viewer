@@ -15,7 +15,7 @@
     "type": "git",
     "url": "git+https://github.com/lomonosv/json-rpc-chrome-viewer.git"
   },
-  "author": "lomonosv.developer@gmail.com, vasil@kramarenko.com.ua",
+  "author": "lomonosv.developer@gmail.com",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/lomonosv/json-rpc-chrome-viewer/issues"
