@@ -8,7 +8,7 @@ interface IComponentProps {
   text: string,
   className?: string,
   hint?: string,
-  iconType?: IconType
+  iconType?: IconType,
 }
 
 const CopyButton = ({

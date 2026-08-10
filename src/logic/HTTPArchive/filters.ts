@@ -35,12 +35,24 @@ export const parseJsonRpcMessage = (message: string) => {
   return json;
 };
 
+export const getRequestLabel = (request: IRequest): string => String(
+  (
+    request.isWebSocket
+      ? request.websocketJSON.method ||
+        request.websocketJSON.id ||
+        request.websocketJSON.error?.message ||
+        `${ request.websocketMessageType } message`
+      : request.requestJSON?.method
+  ) ?? ''
+);
+
 export const getPreparedMessage = (
   type: 'income' | 'outcome',
   url: string,
   json: JSONValue & { method: string, id: string }
 ): IRequest => ({
   uuid: uuid(),
+  startTime: Date.now(),
   isCors: false,
   isError: false,
   isWarning: false,
@@ -86,9 +98,13 @@ export const getPreparedHttpRequest = async (
 
     const isCors = !request.request.url.includes(host);
 
+    const startedAt = Date.parse(request.startedDateTime);
+    const startTime = Number.isNaN(startedAt) ? Date.now() : startedAt;
+
     if (!isBatch) {
       requests.push({
         uuid: uuid(),
+        startTime,
         request: {
           url: request.request.url,
           method: request.request.method,
@@ -123,6 +139,7 @@ export const getPreparedHttpRequest = async (
       requestJSON.forEach((requestJSONItem) => {
         requests.push({
           uuid: uuid(),
+          startTime,
           request: {
             url: request.request.url,
             method: request.request.method,

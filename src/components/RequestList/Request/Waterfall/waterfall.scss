@@ -1,0 +1,31 @@
+@use "../../../common/variables";
+
+.waterfall {
+  position: relative;
+  flex: 1;
+  height: 9px;
+  overflow: hidden;
+}
+
+.bar {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  min-width: 1px;
+  border-radius: 2px;
+  background: variables.$waterfallBar;
+
+  :global(.isDark) & {
+    background: variables.$darkWaterfallBar;
+  }
+}
+
+.tick {
+  width: 2px;
+  border-radius: 1px;
+  background: variables.$waterfallTick;
+
+  :global(.isDark) & {
+    background: variables.$darkWaterfallTick;
+  }
+}

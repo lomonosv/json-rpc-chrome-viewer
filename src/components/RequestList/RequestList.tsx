@@ -1,6 +1,8 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
+import cn from 'classnames';
 import { Resizable } from 're-resizable';
 import { useRequestContext } from '~/logic/HTTPArchive/HttpArchiveContext';
+import { SortDirection, SortField } from '~/logic/HTTPArchive/SortField';
 import { useCacheContext } from '~/logic/CacheContext/CacheContext';
 import { useSettingsContext } from '~/logic/SettingsContext/SettingsContext';
 import Header from '~/components/common/Header';
@@ -9,8 +11,35 @@ import styles from './requestList.scss';
 
 const minLeftSideWidth = 200;
 
+interface ISortableHeaderProps {
+  field: SortField,
+  className?: string,
+  children: string,
+}
+
+const SortableHeader = ({ field, className, children }: ISortableHeaderProps) => {
+  const { sortField, sortDirection, toggleSort } = useRequestContext();
+  const isSorted = sortField === field;
+
+  return (
+    <button
+      type="button"
+      title={ `Sort by ${ field }` }
+      className={ cn(styles.sortableHeader, className, { [styles.isSorted]: isSorted }) }
+      onClick={ () => toggleSort(field) }
+    >
+      { children }
+      { isSorted && (
+        <span className={ styles.sortIndicator }>
+          { sortDirection === SortDirection.Asc ? '▲' : '▼' }
+        </span>
+      ) }
+    </button>
+  );
+};
+
 interface IComponentProps {
-  className?: string
+  className?: string,
 }
 
 const RequestList = ({ className }: IComponentProps) => {
@@ -18,7 +47,13 @@ const RequestList = ({ className }: IComponentProps) => {
   const requestsWrapperRef = useRef<HTMLDivElement>(null);
   const { requests, selected } = useRequestContext();
   const { requestListSectionWidth, updateRequestListSectionWidth } = useCacheContext();
-  const { autoScroll } = useSettingsContext();
+  const {
+    autoScroll,
+    showWaterfallColumn,
+    showStatusColumn,
+    showSizeColumn,
+    showTimeColumn
+  } = useSettingsContext();
 
   useEffect(() => {
     resizableRef.current.updateSize({
@@ -39,6 +74,17 @@ const RequestList = ({ className }: IComponentProps) => {
       requestsWrapperRef.current.scrollTop = requestsWrapperRef.current.scrollHeight;
     }
   }, [autoScroll, requests]);
+
+  const { timelineStart, timelineEnd } = useMemo(() => {
+    if (!requests.length) {
+      return { timelineStart: 0, timelineEnd: 1 };
+    }
+
+    return requests.reduce((acc, request) => ({
+      timelineStart: Math.min(acc.timelineStart, request.startTime),
+      timelineEnd: Math.max(acc.timelineEnd, request.startTime + (request.isWebSocket ? 0 : request.time))
+    }), { timelineStart: Infinity, timelineEnd: -Infinity });
+  }, [requests]);
 
   const handleResize = () => {
     updateRequestListSectionWidth(resizableRef.current.size.width);
@@ -73,11 +119,24 @@ const RequestList = ({ className }: IComponentProps) => {
         <div className={ styles.requestList }>
           <div className={ styles.requestsHeaderWrapper }>
             <Header className={ styles.requestsHeader }>
-              <div className={ styles.methodHeader }>Method</div>
+              <SortableHeader field={ SortField.Method } className={ styles.methodHeader }>
+                Method
+              </SortableHeader>
               <div className={ styles.metaHeaders }>
-                <div>Status</div>
-                <div>Size (B)</div>
-                <div>Time (ms)</div>
+                { showWaterfallColumn && (
+                  <SortableHeader field={ SortField.Waterfall } className={ styles.waterfallHeader }>
+                    Waterfall
+                  </SortableHeader>
+                ) }
+                { showStatusColumn && (
+                  <SortableHeader field={ SortField.Status }>Status</SortableHeader>
+                ) }
+                { showSizeColumn && (
+                  <SortableHeader field={ SortField.Size }>Size (B)</SortableHeader>
+                ) }
+                { showTimeColumn && (
+                  <SortableHeader field={ SortField.Time }>Time (ms)</SortableHeader>
+                ) }
               </div>
             </Header>
           </div>
@@ -86,6 +145,8 @@ const RequestList = ({ className }: IComponentProps) => {
               <Request
                 key={ `${ item.request.url } - ${ index }` }
                 item={ item }
+                timelineStart={ timelineStart }
+                timelineEnd={ timelineEnd }
               />
             ))
           }

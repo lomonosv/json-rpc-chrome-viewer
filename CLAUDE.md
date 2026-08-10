@@ -58,7 +58,7 @@ Nested providers in `src/components/Application.tsx`, and **the order is load-be
 ErrorBoundary → SettingsContext → HttpArchiveContext → CacheContext → Layout
 ```
 
-`HttpArchiveContext` reads `preserveLog`, `includeJsonRpcLogs` and `includeWebsocketLogs` from `SettingsContext`, so it must nest inside it.
+`HttpArchiveContext` reads `preserveLog`, the include-log filters and the column-visibility flags from `SettingsContext`, so it must nest inside it.
 
 Every context follows the same shape — match it when adding one:
 
@@ -72,9 +72,34 @@ export default ({ children }) => <XContext.Provider value={ useX() }>{ children 
 
 `HttpArchiveContext` keeps `requestsRef.current` mirroring the `requests` state because its Chrome event listeners are registered in an effect keyed only on `preserveLog`; the callbacks would otherwise close over stale state. Mutate the ref and then `setRequests(requestsRef.current)` — don't replace this with a plain setter.
 
+### The request list
+
+`RequestList` renders a Method column plus four optional meta columns — Waterfall, Status, Size, Time — each gated on a `SettingsContext` flag. Method is deliberately not hideable; it is what identifies a row.
+
+**Sorting lives in `HttpArchiveContext`, not in the component.** Keyboard navigation (↑/↓) walks the same `filteredRequests` array, so sorting anywhere else would let the arrow keys traverse a different order than the one on screen. Default is `SortField.Waterfall` ascending; clicking a header toggles asc/desc, clicking a different one resets to asc. Ties break on `startTime`, because arrival order is *completion* order for HTTP.
+
+Sorting by a hidden column is handled by **deriving** rather than storing a correction:
+
+```ts
+const fallbackSortField = showWaterfallColumn ? SortField.Waterfall : SortField.Method;
+const effectiveSortField = isColumnVisible[sortField] ? sortField : fallbackSortField;
+```
+
+Do not replace this with a `useEffect` that resets `sortField` — that trips `react-hooks/set-state-in-effect`, costs a correcting re-render, and loses the user's original choice when the column is shown again.
+
+`IRequest.startTime` (epoch ms) drives both the waterfall and the default sort. HTTP takes it from the HAR entry's `startedDateTime`, guarded against `NaN` since that would corrupt sort order *and* bar geometry. WebSocket messages have no HAR entry, so they use `Date.now()` at panel arrival — slightly later than wire time, and they render as an instantaneous tick rather than a bar.
+
+`getRequestLabel()` in `filters.ts` derives the Method-column text and is what the Method sort orders by. The filter effect in `HttpArchiveContext` still has its own inline copy of that expression — it relies on `.toLowerCase?.()` short-circuiting for numeric websocket ids, so routing it through `getRequestLabel`'s `String()` coercion would change filter behaviour.
+
+Batch requests share one HAR entry, so every row exploded from a batch carries an identical `startTime` and `time` and renders identical bars.
+
 ### Persistence
 
-All settings flow through `getConfig()` in `src/logic/common/helpers.ts` into `chrome.storage.local`, keyed with a `settings_` prefix. Note the cross-realm coupling: `static/index.js` reads `settings_preserveLog` straight from storage to decide whether to flush its buffer on navigation, so that key name is shared between the bundled app and the unbundled DevTools page.
+All settings flow through `getConfig()` in `src/logic/common/helpers.ts` into `chrome.storage.local`, keyed with a `settings_` prefix. Adding one means touching five places in `SettingsContext.tsx`: a `default*Value` const, a `useState`, a `getConfig` call in the load effect, a `handle*Change` writer, and two entries in the returned object. Column visibility follows this as `settings_showWaterfallColumn`, `settings_showStatusColumn`, `settings_showSizeColumn`, `settings_showTimeColumn`.
+
+Sort field and direction are **not** persisted — they reset with the panel.
+
+Note the cross-realm coupling: `static/index.js` reads `settings_preserveLog` straight from storage to decide whether to flush its buffer on navigation, so that key name is shared between the bundled app and the unbundled DevTools page.
 
 ### Dependency injection
 
@@ -92,8 +117,23 @@ Consequence: **only React render/lifecycle errors reaching `ErrorBoundary.compon
 
 - **SCSS** goes through `esbuild-sass-plugin` with `postcssModules`, so `import styles from './x.scss'` yields hashed class names. Use `:global(...)` to opt out of scoping (see `src/index.scss`). Shared theme variables live in `src/components/common/variables.scss` and are pulled in with namespaced `@use` — `@use "../variables";` then `variables.$color`, not a bare `@import`.
 - **SVGs** load as `text` (`loader: { '.svg': 'text' }`) and are injected via `dangerouslySetInnerHTML` in `Icon.tsx`.
+- Dark theme is a `body.isDark` class toggled in `Layout.tsx`, so theme overrides are written as nested `:global(.isDark) & { … }`, never a media query.
 - **`process.env.X` is not substituted by esbuild.** `scripts/envSubstitute.js` rewrites those tokens textually across `build/` after bundling, using `.env`. Env values therefore only exist after a full `npm run build`, never after a bare `node scripts/build.js`.
 - Path aliases `~/logic/*` and `~/components/*` come from `tsconfig.json` and are resolved by esbuild from there.
+
+## Styling pitfalls
+
+The request-list table is hand-built from flexbox, and these bit repeatedly. When a rule's outcome depends on specificity, **verify against the compiled CSS in `build/application.js`** rather than reasoning about it — the class names are hashed, so grep for the rule text.
+
+- **There is no global `box-sizing: border-box`.** Cells that carry a border or padding must set it explicitly, or `width: 100px` silently becomes 101px and the header stops lining up with the rows.
+- **Header and row geometry must match exactly.** Both `.requestsHeader` and `.requestWrapper` right-align their meta group via `justify-content: space-between`, so any difference in horizontal padding or cell width shifts every separator. The shared `Header` component pads `0 9px`; the list overrides it to `0 7px` to match the rows.
+- **Row vertical padding lives on `.methodWrapper`, not `.requestWrapper`.** Borders paint on the padding box, so padding on the row would make every column separator stop short of the row edges. `.methodWrapper` sets row height instead, and the stretched meta cells inherit it.
+- `.requestWrapper` and `.meta` use `align-items: stretch` so separators span full row height. `.methodWrapper` re-centres its own content with `flex-direction: column; justify-content: center`.
+- **`.sortableHeader` resets `border: none`** for the native `<button>` headers; `.metaHeaders > button` at (0,1,1) re-adds `border-left` and must out-specify it.
+- **`.bar` and `.tick` are applied together** in `Waterfall.tsx`. Their `:global(.isDark)` overrides tie at (0,2,0), so `.tick` must stay declared *after* `.bar` or websocket ticks render blue in dark mode.
+- Header cells are real `<button>`s. Keep it that way — clickable `<div>`s reintroduce the `jsx-a11y` findings this config now suppresses.
+
+Waterfall colours are `$waterfallBar` / `$waterfallTick` and `$darkWaterfallBar` / `$darkWaterfallTick` in `variables.scss`, drawn from the Chrome DevTools palette so the panel reads as native. Note `$greenHeaderBackground` is still neon `#32ff00`, used by the WEBSOCKET badge and the income/outcome triangles.
 
 ## Toolchain constraints
 
@@ -103,4 +143,6 @@ These are pinned deliberately — verify before "upgrading" past them:
 - **TypeScript is capped at 6.0.x** — `typescript-eslint` peers `typescript <6.1.0`, and this repo uses type-aware linting.
 - `tsconfig.json` pins `"strict": false` and an explicit `"types": ["chrome", "node"]` because TS 6 flipped both defaults. The `strict` pin preserves existing behaviour; turning it on surfaces ~50 real null-safety errors.
 - **Node 24 in CI.** Older Node fails outright: `eslint-plugin-n` and `stylelint` use `with { type: "json" }` import attributes, and release-it 21 requires `^22.21 || >=24`.
-- Rules conflicting with this codebase's conventions (arrow-function components, TS optional props in place of `defaultProps`, JSX formatting) are disabled in `eslint.config.mjs`. `react-hooks/*` and `jsx-a11y/*` are set to **warn** rather than error — they were never linted before, and their findings are unaddressed, so warnings are expected in lint output.
+- Rules conflicting with this codebase's conventions (arrow-function components, TS optional props in place of `defaultProps`, JSX formatting) are disabled in `eslint.config.mjs`, as are `react-hooks/exhaustive-deps`, `react-hooks/set-state-in-effect` and the triggering `jsx-a11y` rules.
+- **`npm run lint` is expected to report zero problems — no errors and no warnings.** Any output is something you introduced; fix it rather than adding to the baseline.
+- `@stylistic/member-delimiter-style` is configured `delimiter: 'comma'` with `requireLast: true` for multiline. Interface and type members use commas **including a trailing one** on the last member; single-line members omit it.
