@@ -1,6 +1,13 @@
 {
   "compilerOptions": {
+    // TypeScript 6 defaults `strict` to true; pinned to preserve existing behaviour.
+    "strict": false,
     "noImplicitAny": false,
+    // TypeScript 6 no longer auto-includes every @types package.
+    "types": [
+      "chrome",
+      "node"
+    ],
     "module": "esnext",
     "target": "ES2022",
     "lib": [
@@ -12,10 +19,9 @@
     "jsx": "react",
     "allowJs": true,
     "moduleResolution": "bundler",
-    "baseUrl": "./",
     "paths": {
-      "~/logic/*": ["src/logic/*"],
-      "~/components/*": ["src/components/*"]
+      "~/logic/*": ["./src/logic/*"],
+      "~/components/*": ["./src/components/*"]
     },
     "esModuleInterop": true,
     "sourceMap": true
