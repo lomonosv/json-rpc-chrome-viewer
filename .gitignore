@@ -27,10 +27,3 @@ Thumbs.db
 
 # Coverage
 coverage/
-
-# AI
-.claude
-.kiro
-docs/
-AGENTS.md
-CLAUDE.md
