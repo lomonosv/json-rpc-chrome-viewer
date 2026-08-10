@@ -26,6 +26,7 @@
   .meta {
     display: flex;
     align-items: stretch;
+    flex-shrink: 0;
 
     > div {
       width: 100px;
@@ -83,16 +84,11 @@
 
 .methodWrapper {
   min-width: 300px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
   padding: 7px 0;
+  flex: 1 1 auto;
+  width: 0;
+  overflow: hidden;
 
-  .method,
-  .url {
-    text-overflow: ellipsis;
-    overflow: hidden;
-  }
 }
 
 .method {
@@ -101,6 +97,14 @@
   font-family: monospace;
   font-size: 12px;
   padding-right: 18px;
+  overflow: hidden;
+}
+
+.methodLabel {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .resendRequestButton {
@@ -168,13 +172,25 @@
   }
 }
 
+.urlRow {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  margin-top: 3px;
+}
+
 .url {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   height: 14px;
-  margin-top: 3px;
+  flex: 1 1 auto;
+  width: 0;
+  min-width: 0;
 
   > span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
     opacity: 0.5;
   }
 }
