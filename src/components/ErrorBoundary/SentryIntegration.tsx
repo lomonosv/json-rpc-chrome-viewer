@@ -5,6 +5,7 @@ import {
   getDefaultIntegrations,
   rewriteFramesIntegration,
   makeFetchTransport,
+  setCurrentClient,
   Scope,
 } from '@sentry/browser';
 import { useDIContext } from '~/logic/DI/DIContext';
@@ -14,8 +15,11 @@ const SentryIntegration = ({ children }) => {
   const { container } = useDIContext();
 
   useEffect(() => {
+    // GlobalHandlers (window.onerror / onunhandledrejection) and BrowserApiErrors
+    // (wraps addEventListener & timer callbacks) are what capture errors outside of
+    // React rendering. Breadcrumbs stays disabled to keep devtools noise out of events.
     const integrations = getDefaultIntegrations({}).filter(
-      (defaultIntegration) => !['BrowserApiErrors', 'Breadcrumbs', 'GlobalHandlers'].includes(
+      (defaultIntegration) => !['Breadcrumbs'].includes(
         defaultIntegration.name
       )
     );
@@ -41,6 +45,10 @@ const SentryIntegration = ({ children }) => {
 
     const scope = new Scope();
     scope.setClient(client);
+
+    // GlobalHandlers only reports when getClient() matches its own client, so the
+    // client has to be registered globally as well as on the DI-injected scope.
+    setCurrentClient(client);
     client.init();
 
     container.bind(DITypes.Scope).toConstantValue(scope);
