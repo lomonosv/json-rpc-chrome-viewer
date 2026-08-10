@@ -7,7 +7,7 @@ interface IComponentProps<T> {
   className?: string,
   value: T,
   options: { key: T, value: string }[],
-  onChange: ChangeEventHandler<HTMLSelectElement>
+  onChange: ChangeEventHandler<HTMLSelectElement>,
 }
 
 const Select = <T extends string | number>({ name, className, value, options, onChange }: IComponentProps<T>) => (

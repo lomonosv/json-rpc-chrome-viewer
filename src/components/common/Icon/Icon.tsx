@@ -5,7 +5,7 @@ import styles from './icon.scss';
 
 interface IComponentProps {
   type: IconType,
-  className?: string
+  className?: string,
 }
 
 const Icon = ({ type, className }: IComponentProps) => (

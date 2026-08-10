@@ -14,7 +14,7 @@ interface IComponentProps {
   checked?: boolean,
   onChange: ChangeEventHandler<HTMLInputElement>,
   isDisabled?: boolean,
-  clearComponent?: React.ReactElement
+  clearComponent?: React.ReactElement,
 }
 
 const Input = ({
@@ -31,7 +31,7 @@ const Input = ({
   inputRef,
   clearComponent
 }: IComponentProps & {
-  inputRef: ForwardedRef<HTMLInputElement>
+  inputRef: ForwardedRef<HTMLInputElement>,
 }) => (
   <label
     htmlFor={ name }

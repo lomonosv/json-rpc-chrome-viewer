@@ -5,12 +5,28 @@ import { useSettingsContext } from '~/logic/SettingsContext/SettingsContext';
 import useEditRequestModal from './EditRequestModal/useEditRequestModal';
 import Button from '~/components/common/Button';
 import Icon, { IconType } from '~/components/common/Icon';
+import Waterfall from './Waterfall';
+import { getRequestLabel } from '~/logic/HTTPArchive/filters';
 import { IRequest } from '~/logic/HTTPArchive/IRequest';
 import styles from './request.scss';
 
-const Request = ({ item }: { item: IRequest }) => {
+interface IComponentProps {
+  item: IRequest,
+  timelineStart: number,
+  timelineEnd: number,
+}
+
+const Request = ({ item, timelineStart, timelineEnd }: IComponentProps) => {
   const { selected, setSelected } = useRequestContext();
-  const { showCorsBadge, showWebsocketBadge, showRequestUrl } = useSettingsContext();
+  const {
+    showCorsBadge,
+    showWebsocketBadge,
+    showRequestUrl,
+    showWaterfallColumn,
+    showStatusColumn,
+    showSizeColumn,
+    showTimeColumn
+  } = useSettingsContext();
   const {
     EditRequestModal,
     isEditRequestModalVisible,
@@ -39,14 +55,7 @@ const Request = ({ item }: { item: IRequest }) => {
       <div className={ styles.methodWrapper }>
         <div
           className={ styles.method }
-          title={
-            item.isWebSocket
-              ? item.websocketJSON.method ||
-                item.websocketJSON.id ||
-                item.websocketJSON.error?.message ||
-                `${ item.websocketMessageType } message`
-              : item.requestJSON.method
-          }
+          title={ getRequestLabel(item) }
         >
           { !showRequestUrl && item.isWebSocket && (
             <div
@@ -56,14 +65,7 @@ const Request = ({ item }: { item: IRequest }) => {
               }) }
             />
           ) }
-          {
-            item.isWebSocket
-              ? item.websocketJSON.method ||
-                item.websocketJSON.id ||
-                item.websocketJSON.error?.message ||
-                `${ item.websocketMessageType } message`
-              : item.requestJSON.method
-          }
+          { getRequestLabel(item) }
           { !item.isWebSocket && (
             <Button
               title="Resend Request"
@@ -93,15 +95,30 @@ const Request = ({ item }: { item: IRequest }) => {
         ) }
       </div>
       <div className={ styles.meta }>
-        <div>
-          { item.isWebSocket ? '' : Math.ceil(item.response.status) }
-        </div>
-        <div>
-          { item.isWebSocket ? '' : Math.ceil(item.response.content.size) }
-        </div>
-        <div>
-          { item.isWebSocket ? '' : Math.ceil(item.time) }
-        </div>
+        { showWaterfallColumn && (
+          <div className={ styles.waterfallCell }>
+            <Waterfall
+              item={ item }
+              timelineStart={ timelineStart }
+              timelineEnd={ timelineEnd }
+            />
+          </div>
+        ) }
+        { showStatusColumn && (
+          <div>
+            { item.isWebSocket ? '' : Math.ceil(item.response.status) }
+          </div>
+        ) }
+        { showSizeColumn && (
+          <div>
+            { item.isWebSocket ? '' : Math.ceil(item.response.content.size) }
+          </div>
+        ) }
+        { showTimeColumn && (
+          <div>
+            { item.isWebSocket ? '' : Math.ceil(item.time) }
+          </div>
+        ) }
       </div>
       { isEditRequestModalVisible && (
         <EditRequestModal

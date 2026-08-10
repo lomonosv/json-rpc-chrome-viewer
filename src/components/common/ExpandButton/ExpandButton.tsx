@@ -7,7 +7,7 @@ import styles from './expandButton.scss';
 interface IComponentProps {
   className?: string,
   expandedState: ExpandTreeState,
-  onChangeState: (expandedState: ExpandTreeState) => void
+  onChangeState: (expandedState: ExpandTreeState) => void,
 }
 
 const ExpandButton = ({ className, expandedState, onChangeState }: IComponentProps) => {
