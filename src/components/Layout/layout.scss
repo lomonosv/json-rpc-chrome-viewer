@@ -22,9 +22,12 @@
 
 .leftSideContainer {
   font-weight: normal;
-  border-right: 1px solid variables.$borderColor;
   display: flex;
   flex-direction: column;
+}
+
+.leftSideContainer:not(:last-child) {
+  border-right: 1px solid variables.$borderColor;
 
   :global(.isDark) & {
     border-right: 1px solid variables.$darkBorderColor;

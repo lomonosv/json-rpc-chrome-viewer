@@ -9,7 +9,7 @@ interface IComponentProps {
   src: JSONValue,
   defaultOpenNodesDepth?: number,
   expandTreeState: ExpandTreeState,
-  onEdit?: (edit: any) => void
+  onEdit?: (edit: any) => void,
 }
 
 const JsonViewer = ({

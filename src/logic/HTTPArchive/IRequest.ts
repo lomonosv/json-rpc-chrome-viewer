@@ -6,7 +6,7 @@ export type JSONValue =
   IJSONArray;
 
 export interface IJSONObject {
-  [k: string]: JSONValue
+  [k: string]: JSONValue,
 }
 
 interface IJSONArray extends Array<JSONValue> { }
@@ -19,42 +19,43 @@ export interface IRequest {
   isWebSocket: boolean,
   websocketMessageType?: 'income' | 'outcome',
   websocketJSON?: JSONValue & {
-    id: string
+    id: string,
     method: string,
     params?: JSONValue,
     error?: JSONValue & {
       code?: number,
       message?: string,
-    }
-    result?: JSONValue
+    },
+    result?: JSONValue,
   },
   request: {
     url: string,
     method?: string,
     headers?: { name: string }[],
     postData?: {
-      text: string
-    }
+      text: string,
+    },
   },
   response: {
     status: number,
     content: {
       size: number,
-    }
+    },
   },
+  startTime: number,
   time: number,
   requestJSON?: {
     id: string,
     jsonrpc: string,
     method: string,
-    params: JSONValue
+    params: JSONValue,
   },
   rawRequest: string,
   responseJSON?: {
     id: string,
     jsonrpc: string,
-    error?: JSONValue
-    result?: JSONValue
+    error?: JSONValue,
+    result?: JSONValue,
   },
   rawResponse: string,
 }
