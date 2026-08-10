@@ -2,10 +2,10 @@
 
 .requestWrapper {
   display: flex;
-  align-items: center;
+  align-items: stretch;
   justify-content: space-between;
   white-space: nowrap;
-  padding: 4px 7px;
+  padding: 0 7px;
 
   &:nth-child(2n) {
     background: variables.$evenRowBackground;
@@ -25,11 +25,24 @@
 
   .meta {
     display: flex;
-    align-items: center;
+    align-items: stretch;
 
     > div {
       width: 100px;
-      text-align: center;
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-left: 1px solid variables.$borderColor;
+
+      :global(.isDark) & {
+        border-left-color: variables.$darkBorderColor;
+      }
+    }
+
+    > .waterfallCell {
+      width: 200px;
+      padding: 0 8px;
     }
   }
 
@@ -70,6 +83,10 @@
 
 .methodWrapper {
   min-width: 300px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 7px 0;
 
   .method,
   .url {

@@ -23,10 +23,40 @@
   }
 }
 
-.requestsHeader {
+.requestsHeaderWrapper .requestsHeader {
   display: flex;
-  align-items: center;
+  align-items: stretch;
   justify-content: space-between;
+  padding: 0 7px;
+}
+
+.sortableHeader {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+
+  &:hover {
+    color: variables.$highLightedColor;
+
+    :global(.isDark) & {
+      color: variables.$darkHighLightedColor;
+    }
+  }
+}
+
+.isSorted {
+  font-weight: 600;
+}
+
+.sortIndicator {
+  font-size: 8px;
+  opacity: 0.7;
 }
 
 .methodHeader {
@@ -35,10 +65,22 @@
 
 .metaHeaders {
   display: flex;
-  align-items: center;
+  align-items: stretch;
 
-  > div {
+  > button {
     width: 100px;
-    text-align: center;
+    box-sizing: border-box;
+    justify-content: center;
+    border-left: 1px solid variables.$borderColor;
+
+    :global(.isDark) & {
+      border-left-color: variables.$darkBorderColor;
+    }
+  }
+
+  > .waterfallHeader {
+    width: 200px;
+    justify-content: flex-start;
+    padding: 0 8px;
   }
 }
