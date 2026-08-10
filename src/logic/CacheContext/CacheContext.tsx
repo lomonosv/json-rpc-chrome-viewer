@@ -40,7 +40,7 @@ export const useCacheContext = (): CacheContextType => (
 );
 
 interface IComponentProps {
-  children: React.ReactElement
+  children: React.ReactElement,
 }
 
 const CacheContextProvider: React.FC<IComponentProps> = ({ children }) => (

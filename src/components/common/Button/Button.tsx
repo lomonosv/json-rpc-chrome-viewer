@@ -6,7 +6,7 @@ interface IComponentProps {
   children?: string | React.ReactElement,
   onClick?: (e: React.MouseEvent<HTMLElement>) => void,
   className?: string,
-  title?: string
+  title?: string,
 }
 
 const Button = ({

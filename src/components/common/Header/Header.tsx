@@ -4,7 +4,7 @@ import styles from './header.scss';
 
 interface IComponentProps {
   className?: string,
-  children: React.ReactElement | React.ReactElement[]
+  children: React.ReactElement | React.ReactElement[],
 }
 
 const Header = ({ className, children }: IComponentProps) => (

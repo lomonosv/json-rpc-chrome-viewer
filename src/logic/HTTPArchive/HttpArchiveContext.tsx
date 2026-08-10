@@ -5,22 +5,56 @@ import {
   isJsonRpcMessage,
   getPreparedHttpRequest,
   getPreparedMessage,
+  getRequestLabel,
   parseJsonRpcMessage
 } from '~/logic/HTTPArchive/filters';
 import { IRequest } from '~/logic/HTTPArchive/IRequest';
+import { SortDirection, SortField } from '~/logic/HTTPArchive/SortField';
+
+const getSortValue = (request: IRequest, field: SortField): string | number => {
+  switch (field) {
+    case SortField.Method:
+      return getRequestLabel(request).toLowerCase();
+    case SortField.Status:
+      return request.response.status;
+    case SortField.Size:
+      return request.response.content.size;
+    case SortField.Time:
+      return request.time;
+    default:
+      return request.startTime;
+  }
+};
 
 const useRequest = () => {
   const [selected, setSelected] = useState<IRequest>(null);
   const [filter, setFilter] = useState<string>('');
   const [requests, setRequests] = useState<IRequest[]>([]);
   const [filteredRequests, setFilteredRequests] = useState<IRequest[]>([]);
+  const [sortField, setSortField] = useState<SortField>(SortField.Waterfall);
+  const [sortDirection, setSortDirection] = useState<SortDirection>(SortDirection.Asc);
   const requestsRef = useRef<IRequest[]>([]);
 
   const {
     preserveLog,
     includeJsonRpcLogs,
-    includeWebsocketLogs
+    includeWebsocketLogs,
+    showWaterfallColumn,
+    showStatusColumn,
+    showSizeColumn,
+    showTimeColumn
   } = useSettingsContext();
+
+  const isColumnVisible = {
+    [SortField.Method]: true,
+    [SortField.Waterfall]: showWaterfallColumn,
+    [SortField.Status]: showStatusColumn,
+    [SortField.Size]: showSizeColumn,
+    [SortField.Time]: showTimeColumn
+  };
+
+  const fallbackSortField = showWaterfallColumn ? SortField.Waterfall : SortField.Method;
+  const effectiveSortField = isColumnVisible[sortField] ? sortField : fallbackSortField;
 
   const clear = () => {
     requestsRef.current = [];
@@ -30,6 +64,16 @@ const useRequest = () => {
 
   const clearSelection = () => {
     setSelected(null);
+  };
+
+  const toggleSort = (field: SortField) => {
+    if (field === effectiveSortField) {
+      setSortDirection(sortDirection === SortDirection.Asc ? SortDirection.Desc : SortDirection.Asc);
+      return;
+    }
+
+    setSortField(field);
+    setSortDirection(SortDirection.Asc);
   };
 
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
@@ -56,7 +100,7 @@ const useRequest = () => {
 
   const handleInitialRequestsData = useCallback(async (e: CustomEvent<{
     request: chrome.devtools.network.Request,
-    responseContent: string
+    responseContent: string,
   }[]>) => {
     const requests = await Promise.all(
       e.detail.filter(({ request }) => isJsonRpcRequest(request)).map(
@@ -159,6 +203,17 @@ const useRequest = () => {
       }
 
       return true;
+    }).sort((a, b) => {
+      const aValue = getSortValue(a, effectiveSortField);
+      const bValue = getSortValue(b, effectiveSortField);
+
+      if (aValue === bValue) {
+        return a.startTime - b.startTime;
+      }
+
+      const result = aValue > bValue ? 1 : -1;
+
+      return sortDirection === SortDirection.Asc ? result : -result;
     });
 
     setFilteredRequests(filteredRequests);
@@ -166,10 +221,13 @@ const useRequest = () => {
     if (!filteredRequests.some(({ uuid }) => uuid === selected?.uuid)) {
       clearSelection();
     }
-  }, [requests, filter, includeJsonRpcLogs, includeWebsocketLogs]);
+  }, [requests, filter, includeJsonRpcLogs, includeWebsocketLogs, effectiveSortField, sortDirection]);
 
   return {
     requests: filteredRequests,
+    sortField: effectiveSortField,
+    sortDirection,
+    toggleSort,
     selected,
     filter,
     setSelected,
@@ -188,7 +246,7 @@ export const useRequestContext = (): RequestContextType => (
 );
 
 interface IComponentProps {
-  children: React.ReactElement
+  children: React.ReactElement,
 }
 
 const RequestContextProvider: React.FC<IComponentProps> = ({ children }) => (

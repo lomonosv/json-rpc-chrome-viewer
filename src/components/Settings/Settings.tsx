@@ -12,7 +12,7 @@ import { ExtensionTheme, JsonViewerTheme } from '~/logic/SettingsContext/Theme';
 import styles from './settings.scss';
 
 interface IComponentProps {
-  onClose: () => void
+  onClose: () => void,
 }
 
 const Settings = ({ onClose }: IComponentProps) => {
@@ -39,6 +39,14 @@ const Settings = ({ onClose }: IComponentProps) => {
     setIncludeJsonRpcLogs,
     includeWebsocketLogs,
     setIncludeWebsocketLogs,
+    showWaterfallColumn,
+    setShowWaterfallColumn,
+    showStatusColumn,
+    setShowStatusColumn,
+    showSizeColumn,
+    setShowSizeColumn,
+    showTimeColumn,
+    setShowTimeColumn,
   } = useSettingsContext();
 
   const handlePreserveLogChange: ChangeEventHandler<HTMLInputElement> = (e) => {
@@ -83,6 +91,22 @@ const Settings = ({ onClose }: IComponentProps) => {
 
   const handleIncludeWebsocketLogsChange: ChangeEventHandler<HTMLInputElement> = (e) => {
     setIncludeWebsocketLogs(e.target.checked);
+  };
+
+  const handleShowWaterfallColumnChange: ChangeEventHandler<HTMLInputElement> = (e) => {
+    setShowWaterfallColumn(e.target.checked);
+  };
+
+  const handleShowStatusColumnChange: ChangeEventHandler<HTMLInputElement> = (e) => {
+    setShowStatusColumn(e.target.checked);
+  };
+
+  const handleShowSizeColumnChange: ChangeEventHandler<HTMLInputElement> = (e) => {
+    setShowSizeColumn(e.target.checked);
+  };
+
+  const handleShowTimeColumnChange: ChangeEventHandler<HTMLInputElement> = (e) => {
+    setShowTimeColumn(e.target.checked);
   };
 
   const expandedTreeStateOptions = Object.keys(ExpandTreeStateTitlesMap).map((id) => ({
@@ -178,6 +202,49 @@ const Settings = ({ onClose }: IComponentProps) => {
                 checked={ showWebsocketBadge }
                 isDisabled={ !showRequestUrl }
                 onChange={ handleShowWebsocketBadgeChange }
+              />
+            </div>
+            <div className={ styles.settingsItem }>
+              <span>Columns (Method is always shown): </span>
+            </div>
+            <div className={ styles.settingsItem }>
+              <Input
+                name="showWaterfallColumn"
+                label="Waterfall"
+                wrapperClassName={ styles.settingsItemWrapper }
+                type={ Type.Checkbox }
+                checked={ showWaterfallColumn }
+                onChange={ handleShowWaterfallColumnChange }
+              />
+            </div>
+            <div className={ styles.settingsItem }>
+              <Input
+                name="showStatusColumn"
+                label="Status"
+                wrapperClassName={ styles.settingsItemWrapper }
+                type={ Type.Checkbox }
+                checked={ showStatusColumn }
+                onChange={ handleShowStatusColumnChange }
+              />
+            </div>
+            <div className={ styles.settingsItem }>
+              <Input
+                name="showSizeColumn"
+                label="Size (B)"
+                wrapperClassName={ styles.settingsItemWrapper }
+                type={ Type.Checkbox }
+                checked={ showSizeColumn }
+                onChange={ handleShowSizeColumnChange }
+              />
+            </div>
+            <div className={ styles.settingsItem }>
+              <Input
+                name="showTimeColumn"
+                label="Time (ms)"
+                wrapperClassName={ styles.settingsItemWrapper }
+                type={ Type.Checkbox }
+                checked={ showTimeColumn }
+                onChange={ handleShowTimeColumnChange }
               />
             </div>
             <div className={ styles.settingsItem }>
