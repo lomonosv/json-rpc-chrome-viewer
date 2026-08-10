@@ -65,7 +65,7 @@ const Request = ({ item, timelineStart, timelineEnd }: IComponentProps) => {
               }) }
             />
           ) }
-          { getRequestLabel(item) }
+          <span className={ styles.methodLabel }>{ getRequestLabel(item) }</span>
           { !item.isWebSocket && (
             <Button
               title="Resend Request"
@@ -77,7 +77,7 @@ const Request = ({ item, timelineStart, timelineEnd }: IComponentProps) => {
           ) }
         </div>
         { showRequestUrl && (
-          <>
+          <div className={ styles.urlRow }>
             <div className={ cn(styles.badge, { [styles.isCors]: item.isCors && showCorsBadge }) } />
             <div className={ cn(styles.badge, { [styles.isWebsocket]: item.isWebSocket && showWebsocketBadge }) } />
             { item.isWebSocket && (
@@ -91,7 +91,7 @@ const Request = ({ item, timelineStart, timelineEnd }: IComponentProps) => {
             <div className={ styles.url }>
               <span>{ item.request.url }</span>
             </div>
-          </>
+          </div>
         ) }
       </div>
       <div className={ styles.meta }>
