@@ -14,6 +14,10 @@ const defaultExpandTreeStateValue = ExpandTreeState.Default;
 const defaultExpandedWebsocketMessagesStateValue = ExpandTreeState.Default;
 const defaultJsonViewerThemeValue = JsonViewerTheme.System;
 const defaultAutoScrollValue = true;
+const defaultShowWaterfallColumnValue = true;
+const defaultShowStatusColumnValue = true;
+const defaultShowSizeColumnValue = true;
+const defaultShowTimeColumnValue = true;
 
 const useSettings = () => {
   const [isDevtoolsDarkTheme, setIsDevtoolsDarkTheme] = useState<boolean>(
@@ -32,6 +36,10 @@ const useSettings = () => {
   const [extensionTheme, setExtensionTheme] = useState<ExtensionTheme>(defaultExtensionThemeValue);
   const [jsonViewerTheme, setJsonViewerTheme] = useState<JsonViewerTheme>(defaultJsonViewerThemeValue);
   const [autoScroll, setAutoScroll] = useState<boolean>(defaultAutoScrollValue);
+  const [showWaterfallColumn, setShowWaterfallColumn] = useState<boolean>(defaultShowWaterfallColumnValue);
+  const [showStatusColumn, setShowStatusColumn] = useState<boolean>(defaultShowStatusColumnValue);
+  const [showSizeColumn, setShowSizeColumn] = useState<boolean>(defaultShowSizeColumnValue);
+  const [showTimeColumn, setShowTimeColumn] = useState<boolean>(defaultShowTimeColumnValue);
 
   useEffect(() => {
     // It is available actually in API.
@@ -54,6 +62,10 @@ const useSettings = () => {
     getConfig('settings_extensionTheme', defaultExtensionThemeValue).then(setExtensionTheme);
     getConfig('settings_jsonViewerTheme', defaultJsonViewerThemeValue).then(setJsonViewerTheme);
     getConfig('settings_autoScroll', defaultAutoScrollValue).then(setAutoScroll);
+    getConfig('settings_showWaterfallColumn', defaultShowWaterfallColumnValue).then(setShowWaterfallColumn);
+    getConfig('settings_showStatusColumn', defaultShowStatusColumnValue).then(setShowStatusColumn);
+    getConfig('settings_showSizeColumn', defaultShowSizeColumnValue).then(setShowSizeColumn);
+    getConfig('settings_showTimeColumn', defaultShowTimeColumnValue).then(setShowTimeColumn);
   }, []);
 
   const handlePreserveLogChange = (settings_preserveLog: boolean) => {
@@ -115,6 +127,26 @@ const useSettings = () => {
     chrome.storage.local.set({ settings_autoScroll });
   };
 
+  const handleShowWaterfallColumnChange = (settings_showWaterfallColumn: boolean) => {
+    setShowWaterfallColumn(settings_showWaterfallColumn);
+    chrome.storage.local.set({ settings_showWaterfallColumn });
+  };
+
+  const handleShowStatusColumnChange = (settings_showStatusColumn: boolean) => {
+    setShowStatusColumn(settings_showStatusColumn);
+    chrome.storage.local.set({ settings_showStatusColumn });
+  };
+
+  const handleShowSizeColumnChange = (settings_showSizeColumn: boolean) => {
+    setShowSizeColumn(settings_showSizeColumn);
+    chrome.storage.local.set({ settings_showSizeColumn });
+  };
+
+  const handleShowTimeColumnChange = (settings_showTimeColumn: boolean) => {
+    setShowTimeColumn(settings_showTimeColumn);
+    chrome.storage.local.set({ settings_showTimeColumn });
+  };
+
   return {
     preserveLog,
     includeJsonRpcLogs,
@@ -127,6 +159,10 @@ const useSettings = () => {
     extensionTheme,
     jsonViewerTheme,
     autoScroll,
+    showWaterfallColumn,
+    showStatusColumn,
+    showSizeColumn,
+    showTimeColumn,
     systemJsonViewerTheme: jsonViewerTheme === JsonViewerTheme.System ? getSystemJsonViewerTheme() : jsonViewerTheme,
     isDarkTheme: (isDevtoolsDarkTheme && extensionTheme === ExtensionTheme.System)
       || extensionTheme === ExtensionTheme.Dark,
@@ -140,7 +176,11 @@ const useSettings = () => {
     setExpandTreeState: handleExpandTreeStateChange,
     setExtensionTheme: handleExtensionThemeChange,
     setJsonViewerTheme: handleJsonViewerThemeChange,
-    setAutoScroll: handleAutoScrollChange
+    setAutoScroll: handleAutoScrollChange,
+    setShowWaterfallColumn: handleShowWaterfallColumnChange,
+    setShowStatusColumn: handleShowStatusColumnChange,
+    setShowSizeColumn: handleShowSizeColumnChange,
+    setShowTimeColumn: handleShowTimeColumnChange
   };
 };
 
@@ -153,7 +193,7 @@ export const useSettingsContext = (): SettingsContextType => (
 );
 
 interface IComponentProps {
-  children: React.ReactElement
+  children: React.ReactElement,
 }
 
 const SettingsContextProvider: React.FC<IComponentProps> = ({ children }) => (

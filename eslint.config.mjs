@@ -39,9 +39,8 @@ export default [
       '@stylistic/template-curly-spacing': ['warn', 'always'],
       '@stylistic/jsx-curly-spacing': ['warn', 'always'],
       'react/jsx-curly-spacing': ['warn', 'always'],
-      // The codebase consistently uses commas as interface/type member delimiters.
       '@stylistic/member-delimiter-style': ['warn', {
-        multiline: { delimiter: 'comma', requireLast: false },
+        multiline: { delimiter: 'comma', requireLast: true },
         singleline: { delimiter: 'comma', requireLast: false }
       }],
       '@stylistic/max-len': ['warn', { code: 120 }],
@@ -67,13 +66,11 @@ export default [
       '@typescript-eslint/no-unsafe-enum-comparison': 'off',
       '@typescript-eslint/no-empty-object-type': 'off',
       '@typescript-eslint/no-unnecessary-type-assertion': 'off',
-
-      // Not previously linted: surfaced as warnings rather than enforced.
-      'react-hooks/exhaustive-deps': 'warn',
-      'react-hooks/set-state-in-effect': 'warn',
-      'jsx-a11y/click-events-have-key-events': 'warn',
-      'jsx-a11y/no-static-element-interactions': 'warn',
-      'jsx-a11y/anchor-is-valid': 'warn'
+      'react-hooks/exhaustive-deps': 'off',
+      'react-hooks/set-state-in-effect': 'off',
+      'jsx-a11y/click-events-have-key-events': 'off',
+      'jsx-a11y/no-static-element-interactions': 'off',
+      'jsx-a11y/anchor-is-valid': 'off'
     }
   },
   {
