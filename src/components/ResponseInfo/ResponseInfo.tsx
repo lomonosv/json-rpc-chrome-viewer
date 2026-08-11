@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import cn from 'classnames';
 import Header from '~/components/common/Header';
 import JsonViewer from '~/components/common/JsonViewer';
@@ -6,22 +6,34 @@ import CopyButton from '~/components/common/CopyButton';
 import { IconType } from '~/components/common/Icon';
 import ExpandButton from '~/components/common/ExpandButton';
 import { ExpandTreeState } from '~/components/common/JsonViewer/ExpandTreeState';
+import { expandAllLevels } from '~/components/common/JsonViewer/ExpandLevel';
 import { useRequestContext } from '~/logic/HTTPArchive/HttpArchiveContext';
 import { useSettingsContext } from '~/logic/SettingsContext/SettingsContext';
 import { IRequest } from '~/logic/HTTPArchive/IRequest';
 import { formatJson, convertJsonToTS } from '~/logic/common/helpers';
+import useSearchHighlight, { HighlightName } from '~/logic/common/useSearchHighlight';
 import styles from './responseInfo.scss';
 
 const ResponseInfo = () => {
-  const { selected } = useRequestContext();
-  const { expandTreeState } = useSettingsContext();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const { selected, filter } = useRequestContext();
+  const { expandTreeState, expandLevel, caseSensitiveSearch } = useSettingsContext();
   const [expandTreeStateValue, setExpandTreeStateValue] = useState<ExpandTreeState>(expandTreeState);
+  const [expandLevelValue, setExpandLevelValue] = useState<number>(expandLevel);
   const [selectedRequest, setSelectedRequest] = useState<IRequest>(selected);
 
   useEffect(() => {
     setExpandTreeStateValue(expandTreeState);
+    setExpandLevelValue(expandLevel);
     setSelectedRequest(selected);
-  }, [expandTreeState, selected]);
+  }, [expandTreeState, expandLevel, selected]);
+
+  const handleExpandTreeStateChange = (state: ExpandTreeState) => {
+    setExpandTreeStateValue(state);
+    setExpandLevelValue(expandAllLevels);
+  };
+
+  useSearchHighlight(containerRef, HighlightName.Response, filter, caseSensitiveSearch);
 
   const isJsonResponse = !selectedRequest.isWarning;
   const json = selectedRequest.responseJSON?.result || selectedRequest.responseJSON?.error || {};
@@ -35,7 +47,7 @@ const ResponseInfo = () => {
             <ExpandButton
               className={ styles.expandButton }
               expandedState={ expandTreeStateValue }
-              onChangeState={ setExpandTreeStateValue }
+              onChangeState={ handleExpandTreeStateChange }
             />
           ) }
           <span>Response</span>
@@ -52,13 +64,17 @@ const ResponseInfo = () => {
           <CopyButton text={ isJsonResponse ? formatJson(json) : selectedRequest.rawResponse } />
         </div>
       </Header>
-      <div className={ cn(styles.responseInfoContainer, {
-        [styles.responseNotParsed]: selectedRequest.isWarning
-      }) }>
+      <div
+        ref={ containerRef }
+        className={ cn(styles.responseInfoContainer, {
+          [styles.responseNotParsed]: selectedRequest.isWarning
+        }) }
+      >
         { isJsonResponse ? (
           <JsonViewer
             src={ json }
             expandTreeState={ expandTreeStateValue }
+            expandLevel={ expandLevelValue }
             defaultOpenNodesDepth={ 2 }
           />
         ) : (

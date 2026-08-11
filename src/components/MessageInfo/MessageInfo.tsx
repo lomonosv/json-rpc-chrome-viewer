@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useRequestContext } from '~/logic/HTTPArchive/HttpArchiveContext';
 import { useSettingsContext } from '~/logic/SettingsContext/SettingsContext';
 import { IRequest } from '~/logic/HTTPArchive/IRequest';
+import useSearchHighlight, { HighlightName } from '~/logic/common/useSearchHighlight';
 import Button from '~/components/common/Button';
 import Icon, { IconType } from '~/components/common/Icon';
 import CopyButton from '~/components/common/CopyButton';
@@ -12,8 +13,9 @@ import { ExpandTreeState } from '~/components/common/JsonViewer/ExpandTreeState'
 import styles from './messageInfo.scss';
 
 const MessageInfo = () => {
-  const { selected, clearSelection } = useRequestContext();
-  const { expandedWebsocketMessagesState } = useSettingsContext();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const { selected, clearSelection, filter } = useRequestContext();
+  const { expandedWebsocketMessagesState, caseSensitiveSearch } = useSettingsContext();
   const [expandTreeStateValue, setExpandTreeStateValue] = useState<ExpandTreeState>(expandedWebsocketMessagesState);
   const [selectedRequest, setSelectedRequest] = useState<IRequest>(selected);
 
@@ -21,6 +23,8 @@ const MessageInfo = () => {
     setExpandTreeStateValue(expandedWebsocketMessagesState);
     setSelectedRequest(selected);
   }, [expandedWebsocketMessagesState, selected]);
+
+  useSearchHighlight(containerRef, HighlightName.Message, filter, caseSensitiveSearch);
 
   const json = selectedRequest.websocketJSON || {};
 
@@ -44,7 +48,10 @@ const MessageInfo = () => {
         </div>
         <CopyButton text={ JSON.stringify(json, null, 2) } />
       </Header>
-      <div className={ styles.messageInfoContainer }>
+      <div
+        ref={ containerRef }
+        className={ styles.messageInfoContainer }
+      >
         <JsonViewer
           src={ json }
           expandTreeState={ expandTreeStateValue }
