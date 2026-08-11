@@ -68,8 +68,8 @@
     }
   }
 
-  &:hover .resendRequestButton {
-    display: block;
+  &:hover .rowActions {
+    display: inline-flex;
   }
 }
 
@@ -95,8 +95,9 @@
   align-items: center;
   font-family: monospace;
   font-size: 12px;
-  padding-right: 18px;
+  padding-right: 38px;
   overflow: hidden;
+  position: relative;
 }
 
 .methodLabel {
@@ -106,12 +107,16 @@
   white-space: nowrap;
 }
 
-.resendRequestButton {
+.rowActions {
   display: none;
+  margin-left: 10px;
+  vertical-align: middle;
+  align-items: center;
+  gap: 8px;
+}
+
+.rowActionButton {
   height: 12px;
-  position: relative;
-  left: 18px;
-  margin-left: -12px;
   cursor: pointer;
 }
 

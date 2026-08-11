@@ -1,3 +1,15 @@
-.infoDisabledButton {
+@use "../variables";
+
+.icon {
+  width: 11px;
+  height: 11px;
+}
+
+.isCopied.isCopied {
+  fill: variables.$success;
   cursor: default;
+
+  :global(.isDark) & {
+    fill: variables.$darkSuccess;
+  }
 }
