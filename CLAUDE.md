@@ -110,6 +110,36 @@ The list highlight is rooted at the scroll container and passed `.requestsHeader
 
 Batch requests share one HAR entry, so every row exploded from a batch carries an identical `startTime` and `time` and renders identical bars — and, now, identical timing breakdowns.
 
+### Resizable and reorderable columns
+
+The four meta columns are drag-resizable and drag-reorderable; Method is neither, because it is the flex remainder that absorbs whatever the others give up (`flex: 1 1 auto` with a 300px floor matching `.methodHeader`).
+
+**Three gestures share one header button** — click to sort, drag the divider to resize, drag the body to reorder — and they stay untangled through two mechanisms that must both survive any refactor:
+
+- The resize handle calls `stopPropagation()` on `pointerdown`. That is what keeps a resize from *also* starting a reorder, since the reorder listener lives on the button the handle sits inside. Its `pointermove`/`pointerup` deliberately do not stop propagation; the reorder handlers see them but bail out because no reorder drag was ever started.
+- Both gestures leave a one-shot `suppressClickRef` that `SortableHeader` drains through `shouldIgnoreHeaderClick()` before sorting, because the click closing a drag targets the nearest common ancestor of pointerdown/pointerup — the button, once the pointer has left the 7px handle. **Both flags are read into locals before the `||`**; short-circuiting would leave the second one set and swallow the *next* legitimate sort click.
+
+`useColumnReorder` hit-tests the pointer against live header rects rather than tracking indices arithmetically, since the columns are different widths. Dropping to the right of the origin needs `targetIndex - 1`, because that slot count still includes the column being lifted out. `normaliseColumnOrder` drops unknown fields and appends missing ones, so an order stored by an older build can neither hide a column nor resurrect a dead one; hidden columns stay in the order and keep their place for when they are shown again.
+
+Row cells iterate the same `visibleColumns` array the header maps over — order and visibility are derived identically in `RequestList.tsx` and `Request.tsx`. That is the invariant to protect: rendering the meta cells as bespoke JSX again would let a reorder move the header and leave the rows behind.
+
+Widths live in `RequestList/columns.ts` and reach the DOM as **CSS custom properties** — `getColumnWidthProperties()` sets `--column-waterfall` and friends once on the `.requestList` container, and `getColumnWidthStyle(field)` puts `width: var(--column-*)` on both the header cell and every row cell. That is the point: the header/row parity hazard above stops being an invariant someone has to remember and becomes one value with two readers. This is why the SCSS carries no widths and why `$waterfallColumnWidth` was deleted (its padding sibling remains, since padding is not resizable).
+
+`useColumnResize` is hand-rolled rather than reusing `re-resizable`, which resizes a box by its own edges; a column divider instead has to turn horizontal travel into a width for a sibling header. Two things there are load-bearing:
+
+- **Drag direction is inverted.** The meta group is right-aligned and Method absorbs the remainder, so a column's right edge is pinned by the columns after it — `delta = startX - clientX`, i.e. dragging the divider *left* widens the column. That matches what the eye sees; flipping the sign makes resizing feel like it fights the pointer.
+- **The click after a drag has to be swallowed.** Header cells are `<button>`s that toggle sorting, and the click that closes a drag targets the nearest common ancestor of the pointerdown/pointerup elements — the button itself, once the pointer has left the 7px handle. Stopping propagation on the handle is necessary but *not sufficient*. The drag therefore sets a one-shot `suppressClickRef` that `SortableHeader` consumes via `shouldIgnoreClick()` before sorting. Movement under `dragThresholdPx` is not treated as a drag, so a plain click on the divider still sorts.
+
+Because a drag fires on every `pointermove`, `CacheContext` splits the write: `setColumnWidth` updates state (and a ref mirror) for the live drag, and only `persistColumnWidths` on pointerup touches `chrome.storage`. Restore merges over `defaultColumnWidths` and re-clamps, so a stored width from an older build cannot resurrect a size the current limits disallow.
+
+### Pane dividers
+
+The two pane dividers were always draggable — `re-resizable` renders a 10px (vertical) or 27px (horizontal) invisible grab strip — they just had no visual affordance. Each now paints a 2px line in `$resizeHandleColor` on hover via `::after`, matching the column dividers. The strip stays the full grab target; only the line lights up, so hovering does not put a fat block of colour on screen.
+
+Note where the line goes on the horizontal one: `.resizableBottomHandlerWrapper` is positioned `bottom: -27px`, so the strip sits *below* the Request pane overlapping the Response header, and the actual pane boundary is its **top** edge. The `::after` is pinned to `top: 0` for that reason — centring it would draw the line in the middle of the Response header.
+
+Growing columns past the container pushes the list into horizontal scroll rather than crushing Method. That already worked before this feature: `.requestsHeaderWrapper` is `inline-block; min-width: 100%` and the header is `position: sticky` on **top only**, so it scrolls sideways in lockstep with the rows.
+
 ### Waterfall timing breakdown
 
 `chrome.devtools.network.Request` extends the HAR entry type, so `entry.timings` arrives free with every request; `getPreparedTimings()` in `filters.ts` normalises it onto `IRequest.timings`. Two HAR quirks are handled there and must not be "simplified" away:
@@ -145,6 +175,8 @@ All settings flow through `getConfig()` in `src/logic/common/helpers.ts` into `c
 
 Sort field and direction are **not** persisted — they reset with the panel.
 
+**There is a second, separate family of persisted values.** Layout state — `requestSectionHeight`, `requestListSectionWidth`, `columnWidths`, `columnOrder` — lives in `CacheContext`, is written **without the `settings_` prefix**, and never appears in the Settings dialog. Do not add layout state to `SettingsContext` by following the five-step recipe above; it belongs in `CacheContext`, which also owns the pattern for values that change continuously during a drag (ref mirror + a deferred write, see Resizable columns). `getConfig()` is shared by both and accepts an object default for the two structured keys.
+
 Note the cross-realm coupling: `static/index.js` reads `settings_preserveLog` straight from storage to decide whether to flush its buffer on navigation, so that key name is shared between the bundled app and the unbundled DevTools page.
 
 ### Dependency injection
@@ -172,14 +204,14 @@ Consequence: **only React render/lifecycle errors reaching `ErrorBoundary.compon
 The request-list table is hand-built from flexbox, and these bit repeatedly. When a rule's outcome depends on specificity, **verify against the compiled CSS in `build/application.js`** rather than reasoning about it — the class names are hashed, so grep for the rule text.
 
 - **There is no global `box-sizing: border-box`.** Cells that carry a border or padding must set it explicitly, or `width: 100px` silently becomes 101px and the header stops lining up with the rows.
-- **Header and row geometry must match exactly.** Both `.requestsHeader` and `.requestWrapper` right-align their meta group via `justify-content: space-between`, so any difference in horizontal padding or cell width shifts every separator. The shared `Header` component pads `0 9px`; the list overrides it to `0 7px` to match the rows.
+- **Header and row geometry must match exactly.** Both `.requestsHeader` and `.requestWrapper` right-align their meta group via `justify-content: space-between`, so any difference in horizontal padding or cell width shifts every separator. The shared `Header` component pads `0 9px`; the list overrides it to `0 7px` to match the rows. **Column widths are no longer in SCSS at all** — see Resizable columns below; do not reintroduce a `width` on `.metaHeaders > button` or `.meta > div`, as it would override the shared custom property for one side only and desynchronise the two.
 - **Row vertical padding lives on `.methodWrapper`, not `.requestWrapper`.** Borders paint on the padding box, so padding on the row would make every column separator stop short of the row edges. `.methodWrapper` sets row height instead, and the stretched meta cells inherit it.
 - `.requestWrapper` and `.meta` use `align-items: stretch` so separators span full row height. `.methodWrapper` re-centres its own content with `flex-direction: column; justify-content: center`.
 - **`.sortableHeader` resets `border: none`** for the native `<button>` headers; `.metaHeaders > button` at (0,1,1) re-adds `border-left` and must out-specify it.
 - **`.bar` and `.tick` are applied together** in `Waterfall.tsx`. Their `:global(.isDark)` overrides tie at (0,2,0), so `.tick` must stay declared *after* `.bar` or websocket ticks render blue in dark mode.
 - Header cells are real `<button>`s. Keep it that way — clickable `<div>`s reintroduce the `jsx-a11y` findings this config now suppresses.
 
-Waterfall colours are `$waterfallBar` / `$waterfallTick` and `$darkWaterfallBar` / `$darkWaterfallTick` in `variables.scss`, drawn from the Chrome DevTools palette so the panel reads as native. Note `$greenHeaderBackground` is still neon `#32ff00`, used by the WEBSOCKET badge and the income/outcome triangles.
+Waterfall colours are `$waterfallBar` / `$waterfallTick` and `$darkWaterfallBar` / `$darkWaterfallTick` in `variables.scss`, drawn from the Chrome DevTools palette so the panel reads as native. These now cover only the *unsegmented* bar (a row with no timings) and the websocket tick — a segmented bar and the popover both use the separate `$phase*` palette described under Waterfall timing breakdown, which is deliberately paler. `$resizeHandleColor` is shared by the column dividers and both pane dividers. Note `$greenHeaderBackground` is still neon `#32ff00`, used by the WEBSOCKET badge and the income/outcome triangles.
 
 ## Toolchain constraints
 
