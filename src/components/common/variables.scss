@@ -12,6 +12,9 @@ $borderColor: #cbcdd1;
 $hoverBackground: #f2f6fc;
 $waterfallBar: #4c8bf5;
 $waterfallTick: #1e8e3e;
+
+$waterfallColumnWidth: 200px;
+$waterfallColumnPadding: 8px;
 $searchHighlightBackground: #ffdf5d;
 $searchHighlightColor: #000;
 
@@ -32,3 +35,47 @@ $darkSearchHighlightColor: #fff;
 
 $error: #ee442e;
 $warning: #b8a679;
+
+$phaseIdle: #bfc3c9;
+$phaseSend: #85b0ef;
+$phaseWait: #45a86a;
+$phaseDownload: #4a8ce6;
+
+$darkPhaseIdle: #5f6368;
+$darkPhaseSend: #6b93d6;
+$darkPhaseWait: #81c995;
+$darkPhaseDownload: #8ab4f8;
+
+@mixin phaseTones {
+  .idle {
+    background: $phaseIdle;
+
+    :global(.isDark) & {
+      background: $darkPhaseIdle;
+    }
+  }
+
+  .send {
+    background: $phaseSend;
+
+    :global(.isDark) & {
+      background: $darkPhaseSend;
+    }
+  }
+
+  .wait {
+    background: $phaseWait;
+
+    :global(.isDark) & {
+      background: $darkPhaseWait;
+    }
+  }
+
+  .download {
+    background: $phaseDownload;
+
+    :global(.isDark) & {
+      background: $darkPhaseDownload;
+    }
+  }
+}

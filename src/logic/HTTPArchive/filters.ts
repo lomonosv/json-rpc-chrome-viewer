@@ -1,5 +1,5 @@
 import { v4 as uuid } from 'uuid';
-import { IRequest, JSONValue } from '~/logic/HTTPArchive/IRequest';
+import { IRequest, IRequestTimings, JSONValue } from '~/logic/HTTPArchive/IRequest';
 import { SearchScope } from '~/logic/HTTPArchive/SearchScope';
 
 const jsonRPCRegex = /jsonrpc\\?["']?\s*:\s*\\?["']?2\.0\\?["']?/;
@@ -156,6 +156,27 @@ export const getPreparedMessage = (
   rawResponse: ''
 });
 
+const getPreparedTimings = (request: chrome.devtools.network.Request): IRequestTimings => {
+  const timings = request.timings as IRequestTimings & { _blocked_queueing?: number };
+
+  if (!timings) {
+    return null;
+  }
+
+  const { _blocked_queueing: queueing } = timings;
+
+  return {
+    blocked: timings.blocked,
+    queueing,
+    dns: timings.dns,
+    connect: timings.connect,
+    ssl: timings.ssl,
+    send: timings.send,
+    wait: timings.wait,
+    receive: timings.receive
+  };
+};
+
 export const getPreparedHttpRequest = async (
   request: chrome.devtools.network.Request,
   responseContent?: string
@@ -183,6 +204,7 @@ export const getPreparedHttpRequest = async (
 
     const startedAt = Date.parse(request.startedDateTime);
     const startTime = Number.isNaN(startedAt) ? Date.now() : startedAt;
+    const timings = getPreparedTimings(request);
 
     if (!isBatch) {
       requests.push({
@@ -203,6 +225,7 @@ export const getPreparedHttpRequest = async (
           }
         },
         time: request.time,
+        timings,
         isCors,
         isError: !!responseJSON?.error,
         isWarning: !responseJSON,
@@ -238,6 +261,7 @@ export const getPreparedHttpRequest = async (
             }
           },
           time: request.time,
+          timings,
           isCors,
           isError: !!requestJSONItem?.error,
           isWarning: !requestJSONItem,
