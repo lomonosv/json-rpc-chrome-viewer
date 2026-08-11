@@ -8,6 +8,7 @@ import Input, { Type } from '~/components/common/Input';
 import Select from '~/components/common/Select';
 import { useSettingsContext } from '~/logic/SettingsContext/SettingsContext';
 import { ExpandTreeState, ExpandTreeStateTitlesMap } from '~/components/common/JsonViewer/ExpandTreeState';
+import { expandLevelOptions } from '~/components/common/JsonViewer/ExpandLevel';
 import { ExtensionTheme, JsonViewerTheme } from '~/logic/SettingsContext/Theme';
 import styles from './settings.scss';
 
@@ -27,6 +28,8 @@ const Settings = ({ onClose }: IComponentProps) => {
     setShowWebsocketBadge,
     expandTreeState,
     setExpandTreeState,
+    expandLevel,
+    setExpandLevel,
     expandedWebsocketMessagesState,
     setExpandedWebsocketMessagesState,
     extensionTheme,
@@ -71,6 +74,10 @@ const Settings = ({ onClose }: IComponentProps) => {
 
   const handleExpandTreeStateChange: ChangeEventHandler<HTMLSelectElement> = (e) => {
     setExpandTreeState(+e.target.value);
+  };
+
+  const handleExpandLevelChange: ChangeEventHandler<HTMLSelectElement> = (e) => {
+    setExpandLevel(+e.target.value);
   };
 
   const handleExpandedWebsocketMessagesStateChange: ChangeEventHandler<HTMLSelectElement> = (e) => {
@@ -267,6 +274,18 @@ const Settings = ({ onClose }: IComponentProps) => {
                 onChange={ handleExpandTreeStateChange }
               />
             </div>
+            { expandTreeState === ExpandTreeState.Expanded && (
+              <div className={ styles.settingsItem }>
+                <span>Expand Level: </span>
+                <Select<number>
+                  name="expandLevel"
+                  className={ styles.select }
+                  options={ expandLevelOptions }
+                  value={ expandLevel }
+                  onChange={ handleExpandLevelChange }
+                />
+              </div>
+            ) }
             <div className={ styles.settingsItem }>
               <span>JSON Tree Open State (Websocket Messages): </span>
               <Select<ExpandTreeState>
