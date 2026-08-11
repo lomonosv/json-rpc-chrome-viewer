@@ -1,16 +1,21 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { DevToolsTheme, ExtensionTheme, JsonViewerTheme } from '~/logic/SettingsContext/Theme';
 import { ExpandTreeState } from '~/components/common/JsonViewer/ExpandTreeState';
+import { expandAllLevels } from '~/components/common/JsonViewer/ExpandLevel';
+import { SearchScope } from '~/logic/HTTPArchive/SearchScope';
 import { getConfig } from '~/logic/common/helpers';
 
 const defaultPreserveLogValue = false;
 const defaultIncludeJsonRpcLogsValue = true;
 const defaultIncludeWebsocketLogsValue = false;
+const defaultSearchScopeValue = SearchScope.Method;
+const defaultCaseSensitiveSearchValue = false;
 const defaultShowRequestUrlValue = true;
 const defaultShowCorsBadgeValue = true;
 const defaultShowWebsocketBadgeValue = true;
 const defaultExtensionThemeValue = ExtensionTheme.System;
 const defaultExpandTreeStateValue = ExpandTreeState.Default;
+const defaultExpandLevelValue = expandAllLevels;
 const defaultExpandedWebsocketMessagesStateValue = ExpandTreeState.Default;
 const defaultJsonViewerThemeValue = JsonViewerTheme.System;
 const defaultAutoScrollValue = true;
@@ -26,10 +31,13 @@ const useSettings = () => {
   const [preserveLog, setPreserveLog] = useState<boolean>(defaultPreserveLogValue);
   const [includeJsonRpcLogs, setIncludeJsonRpcLogs] = useState<boolean>(defaultIncludeJsonRpcLogsValue);
   const [includeWebsocketLogs, setIncludeWebsocketLogs] = useState<boolean>(defaultIncludeWebsocketLogsValue);
+  const [searchScope, setSearchScope] = useState<SearchScope>(defaultSearchScopeValue);
+  const [caseSensitiveSearch, setCaseSensitiveSearch] = useState<boolean>(defaultCaseSensitiveSearchValue);
   const [showRequestUrl, setShowRequestUrl] = useState<boolean>(defaultShowRequestUrlValue);
   const [showCorsBadge, setShowCorsBadge] = useState<boolean>(defaultShowCorsBadgeValue);
   const [showWebsocketBadge, setShowWebsocketBadge] = useState<boolean>(defaultShowWebsocketBadgeValue);
   const [expandTreeState, setExpandTreeState] = useState<ExpandTreeState>(defaultExpandTreeStateValue);
+  const [expandLevel, setExpandLevel] = useState<number>(defaultExpandLevelValue);
   const [expandedWebsocketMessagesState, setExpandedWebsocketMessagesState] = useState<ExpandTreeState>(
     defaultExpandedWebsocketMessagesStateValue
   );
@@ -53,10 +61,13 @@ const useSettings = () => {
     getConfig('settings_preserveLog', defaultPreserveLogValue).then(setPreserveLog);
     getConfig('settings_includeJsonRpcLogs', defaultIncludeJsonRpcLogsValue).then(setIncludeJsonRpcLogs);
     getConfig('settings_includeWebsocketLogs', defaultIncludeWebsocketLogsValue).then(setIncludeWebsocketLogs);
+    getConfig('settings_searchScope', defaultSearchScopeValue).then(setSearchScope);
+    getConfig('settings_caseSensitiveSearch', defaultCaseSensitiveSearchValue).then(setCaseSensitiveSearch);
     getConfig('settings_showRequestUrl', defaultShowRequestUrlValue).then(setShowRequestUrl);
     getConfig('settings_showCorsBadge', defaultShowCorsBadgeValue).then(setShowCorsBadge);
     getConfig('settings_showWebsocketBadge', defaultShowWebsocketBadgeValue).then(setShowWebsocketBadge);
     getConfig('settings_expandTreeState', defaultExpandTreeStateValue).then(setExpandTreeState);
+    getConfig('settings_expandLevel', defaultExpandLevelValue).then(setExpandLevel);
     getConfig('settings_expandedWebsocketMessagesState', defaultExpandedWebsocketMessagesStateValue)
       .then(setExpandedWebsocketMessagesState);
     getConfig('settings_extensionTheme', defaultExtensionThemeValue).then(setExtensionTheme);
@@ -83,6 +94,16 @@ const useSettings = () => {
     chrome.storage.local.set({ settings_includeWebsocketLogs });
   };
 
+  const handleSearchScopeChange = (settings_searchScope: SearchScope) => {
+    setSearchScope(settings_searchScope);
+    chrome.storage.local.set({ settings_searchScope });
+  };
+
+  const handleCaseSensitiveSearchChange = (settings_caseSensitiveSearch: boolean) => {
+    setCaseSensitiveSearch(settings_caseSensitiveSearch);
+    chrome.storage.local.set({ settings_caseSensitiveSearch });
+  };
+
   const handleShowRequestUrlChange = (settings_showRequestUrl: boolean) => {
     setShowRequestUrl(settings_showRequestUrl);
     chrome.storage.local.set({ settings_showRequestUrl });
@@ -101,6 +122,11 @@ const useSettings = () => {
   const handleExpandTreeStateChange = (settings_expandTreeState: ExpandTreeState) => {
     setExpandTreeState(settings_expandTreeState);
     chrome.storage.local.set({ settings_expandTreeState });
+  };
+
+  const handleExpandLevelChange = (settings_expandLevel: number) => {
+    setExpandLevel(settings_expandLevel);
+    chrome.storage.local.set({ settings_expandLevel });
   };
 
   const handleExpandedWebsocketMessagesStateChange = (settings_expandedWebsocketMessagesState: ExpandTreeState) => {
@@ -151,11 +177,14 @@ const useSettings = () => {
     preserveLog,
     includeJsonRpcLogs,
     includeWebsocketLogs,
+    searchScope,
+    caseSensitiveSearch,
     expandedWebsocketMessagesState,
     showRequestUrl,
     showCorsBadge,
     showWebsocketBadge,
     expandTreeState,
+    expandLevel,
     extensionTheme,
     jsonViewerTheme,
     autoScroll,
@@ -169,11 +198,14 @@ const useSettings = () => {
     setPreserveLog: handlePreserveLogChange,
     setIncludeJsonRpcLogs: handleIncludeJsonRpcLogsChange,
     setIncludeWebsocketLogs: handleIncludeWebsocketLogsChange,
+    setSearchScope: handleSearchScopeChange,
+    setCaseSensitiveSearch: handleCaseSensitiveSearchChange,
     setExpandedWebsocketMessagesState: handleExpandedWebsocketMessagesStateChange,
     setShowRequestUrl: handleShowRequestUrlChange,
     setShowCorsBadge: handleShowCorsBadgeChange,
     setShowWebsocketBadge: handleShowWebsocketBadgeChange,
     setExpandTreeState: handleExpandTreeStateChange,
+    setExpandLevel: handleExpandLevelChange,
     setExtensionTheme: handleExtensionThemeChange,
     setJsonViewerTheme: handleJsonViewerThemeChange,
     setAutoScroll: handleAutoScrollChange,

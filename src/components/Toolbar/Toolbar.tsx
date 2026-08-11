@@ -1,9 +1,11 @@
 import React, { ChangeEventHandler, useEffect, useRef } from 'react';
 import { useRequestContext } from '~/logic/HTTPArchive/HttpArchiveContext';
 import { useSettingsContext } from '~/logic/SettingsContext/SettingsContext';
+import { SearchScope, searchScopeOptions } from '~/logic/HTTPArchive/SearchScope';
 import Button from '~/components/common/Button';
 import SettingsButton from '~/components/common/SettingsButton';
 import Input, { Type } from '~/components/common/Input';
+import Select from '~/components/common/Select';
 import Icon, { IconType } from '~/components/common/Icon';
 import styles from './toolbar.scss';
 
@@ -16,11 +18,23 @@ const Toolbar = () => {
     includeJsonRpcLogs,
     setIncludeJsonRpcLogs,
     includeWebsocketLogs,
-    setIncludeWebsocketLogs
+    setIncludeWebsocketLogs,
+    searchScope,
+    setSearchScope,
+    caseSensitiveSearch,
+    setCaseSensitiveSearch
   } = useSettingsContext();
 
   const handleFilterChange: ChangeEventHandler<HTMLInputElement> = (e) => {
     setFilter(e.target.value);
+  };
+
+  const handleSearchScopeChange: ChangeEventHandler<HTMLSelectElement> = (e) => {
+    setSearchScope(e.target.value as SearchScope);
+  };
+
+  const handleCaseSensitiveSearchChange: ChangeEventHandler<HTMLInputElement> = (e) => {
+    setCaseSensitiveSearch(e.target.checked);
   };
 
   const handlePreserveLogChange: ChangeEventHandler<HTMLInputElement> = (e) => {
@@ -70,6 +84,22 @@ const Toolbar = () => {
                 />
               </div>
             ) }
+          />
+          <Select
+            name="searchScope"
+            className={ styles.searchScope }
+            value={ searchScope }
+            options={ searchScopeOptions }
+            onChange={ handleSearchScopeChange }
+          />
+          <Input
+            name="caseSensitiveSearch"
+            label="Aa"
+            title="Match case"
+            wrapperClassName={ styles.settingsItemWrapper }
+            type={ Type.Checkbox }
+            checked={ caseSensitiveSearch }
+            onChange={ handleCaseSensitiveSearchChange }
           />
           <Input
             name="preserveLog"

@@ -1,3 +1,5 @@
+@use "./components/common/variables";
+
 html,
 body,
 :global(#application) {
@@ -6,7 +8,23 @@ body,
   height: 100%;
   padding: 0;
   margin: 0;
-  min-width: 650px;
+  min-width: 760px;
+}
+
+::highlight(json-rpc-search-list),
+::highlight(json-rpc-search-request),
+::highlight(json-rpc-search-response),
+::highlight(json-rpc-search-message) {
+  background-color: variables.$searchHighlightBackground;
+  color: variables.$searchHighlightColor;
+}
+
+:global(.isDark) ::highlight(json-rpc-search-list),
+:global(.isDark) ::highlight(json-rpc-search-request),
+:global(.isDark) ::highlight(json-rpc-search-response),
+:global(.isDark) ::highlight(json-rpc-search-message) {
+  background-color: variables.$darkSearchHighlightBackground;
+  color: variables.$darkSearchHighlightColor;
 }
 
 :global(#application) {
