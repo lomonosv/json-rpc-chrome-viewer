@@ -10,6 +10,7 @@ interface IComponentProps {
   className?: string,
   wrapperClassName?: string,
   placeholder?: string,
+  title?: string,
   value?: string,
   checked?: boolean,
   onChange: ChangeEventHandler<HTMLInputElement>,
@@ -24,6 +25,7 @@ const Input = ({
   className,
   wrapperClassName,
   placeholder = '',
+  title,
   value = '',
   checked = false,
   onChange,
@@ -35,6 +37,7 @@ const Input = ({
 }) => (
   <label
     htmlFor={ name }
+    title={ title }
     className={ cn(styles.inputWrapper, wrapperClassName, {
       [styles.checkboxWrapper]: type === Type.Checkbox
     }) }

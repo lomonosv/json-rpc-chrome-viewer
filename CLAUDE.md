@@ -89,13 +89,38 @@ Do not replace this with a `useEffect` that resets `sortField` — that trips `r
 
 `IRequest.startTime` (epoch ms) drives both the waterfall and the default sort. HTTP takes it from the HAR entry's `startedDateTime`, guarded against `NaN` since that would corrupt sort order *and* bar geometry. WebSocket messages have no HAR entry, so they use `Date.now()` at panel arrival — slightly later than wire time, and they render as an instantaneous tick rather than a bar.
 
-`getRequestLabel()` in `filters.ts` derives the Method-column text and is what the Method sort orders by. The filter effect in `HttpArchiveContext` still has its own inline copy of that expression — it relies on `.toLowerCase?.()` short-circuiting for numeric websocket ids, so routing it through `getRequestLabel`'s `String()` coercion would change filter behaviour.
+`getRequestLabel()` in `filters.ts` derives the Method-column text and is what the Method sort orders by. `matchesLabel()` in the same file keeps its own copy of that expression — it relies on `.toLowerCase?.()` short-circuiting for numeric websocket ids, so routing it through `getRequestLabel`'s `String()` coercion would change filter behaviour.
+
+### Search
+
+`matchesFilter(request, filter, scope, isCaseSensitive)` in `filters.ts` is the single matcher; `HttpArchiveContext` calls it from the filter effect and the include-log toggles gate it. `SearchScope` (`SearchScope.ts`) picks the haystack:
+
+- `Method` — the label expression above. **Default, and the only scope that preserves pre-1.9 behaviour**: a websocket row whose sole identifier is a numeric id fails `matchesLabel` even for an empty filter, so it stays hidden. Every other scope shows those rows.
+- `Request` — `method` + serialised `params`.
+- `Response` — serialised `result` + `error` (so error codes and messages match), falling back to `rawResponse` when the body did not parse.
+- `All` — label, request text and response text.
+
+Both haystacks come from `getSearchText()`, memoised in a module-level `WeakMap` keyed on the `IRequest`; requests are immutable once prepared, so this serialises each one once rather than on every keystroke. A websocket frame feeds *both* haystacks from the same `websocketJSON` — direction does not decide which half it is, since a server can push a `method`/`params` notification as an income message.
+
+Matches are painted by `useSearchHighlight` (`src/logic/common/useSearchHighlight.ts`) with the **CSS Custom Highlight API**, not by wrapping text in elements: the JSON panes are rendered by `@microlink/react-json-view` and its DOM is not ours to mutate. The hook walks text nodes into `Range`s and registers them under a name from `HighlightName`; each pane needs its own name because `CSS.highlights` is a page-wide registry. A `MutationObserver` rebuilds the ranges because the viewer mounts a tick late and re-renders on expand/collapse — highlights never touch the DOM, so this cannot feed itself. Ranges are capped at 2000 (they are spread into the `Highlight` constructor).
+
+The `::highlight(...)` rules live in `src/index.scss` because highlight names are global; CSS Modules leaves them alone since they contain no class names. Keep them kebab-case — stylelint's `selector-type-case` reads the argument as a type selector and rejects camelCase. Highlighting is independent of scope: every occurrence in the list and in both panes lights up, whatever the search is filtering on.
+
+The list highlight is rooted at the scroll container and passed `.requestsHeaderWrapper` as a skip selector, since the sticky header lives inside it and would otherwise match on column names.
 
 Batch requests share one HAR entry, so every row exploded from a batch carries an identical `startTime` and `time` and renders identical bars.
 
 ### Persistence
 
-All settings flow through `getConfig()` in `src/logic/common/helpers.ts` into `chrome.storage.local`, keyed with a `settings_` prefix. Adding one means touching five places in `SettingsContext.tsx`: a `default*Value` const, a `useState`, a `getConfig` call in the load effect, a `handle*Change` writer, and two entries in the returned object. Column visibility follows this as `settings_showWaterfallColumn`, `settings_showStatusColumn`, `settings_showSizeColumn`, `settings_showTimeColumn`.
+All settings flow through `getConfig()` in `src/logic/common/helpers.ts` into `chrome.storage.local`, keyed with a `settings_` prefix. Adding one means touching five places in `SettingsContext.tsx`: a `default*Value` const, a `useState`, a `getConfig` call in the load effect, a `handle*Change` writer, and two entries in the returned object. Column visibility follows this as `settings_showWaterfallColumn`, `settings_showStatusColumn`, `settings_showSizeColumn`, `settings_showTimeColumn`. Search scope and case sensitivity follow it too, as `settings_searchScope` and `settings_caseSensitiveSearch` — the search *term* itself stays in `HttpArchiveContext` and is not persisted. `settings_expandLevel` follows it as well; the Settings row for it renders only while `expandTreeState` is `Expanded`, since it has no meaning for the other two states.
+
+### JSON tree open depth
+
+`getCollapsed()` in `JsonViewer.tsx` maps the pane's open state onto react-json-view's `collapsed`, which doubles as a boolean and a depth: `Collapsed` → `true`, `Default` → `defaultOpenNodesDepth` (1, or 2 for the response pane), `Expanded` → the configured `expandLevel`, or `false` for unlimited. `expandAllLevels` (`ExpandLevel.ts`) is that unlimited sentinel and is **0**, which cannot collide with a real depth because "open nothing" is already `ExpandTreeState.Collapsed`. It is also the default, so Expanded keeps meaning fully-expanded for existing users.
+
+`RequestInfo` and `ResponseInfo` mirror `expandLevel` into local state next to `expandTreeStateValue` and reset it to `expandAllLevels` in their `onChangeState` handler. That is deliberate: the pane chevron says "Expand all", so a manual expand must ignore the configured depth — otherwise the button would look broken whenever the tree is already open to that level. The setting governs how a pane *opens*, not what the button does.
+
+`EditRequestModal` hardcodes `ExpandTreeState.Expanded` and passes no level, so the editor stays fully expanded regardless of the setting. Websocket messages run off the separate `expandedWebsocketMessagesState` and have no level of their own.
 
 Sort field and direction are **not** persisted — they reset with the panel.
 
