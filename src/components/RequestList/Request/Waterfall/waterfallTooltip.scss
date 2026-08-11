@@ -1,0 +1,111 @@
+@use "../../../common/variables";
+
+.tooltip {
+  position: fixed;
+  z-index: 3;
+  box-sizing: border-box;
+  width: 340px;
+  max-width: calc(100vw - 16px);
+  padding: 10px 12px;
+  border: 1px solid variables.$borderColor;
+  border-radius: 4px;
+  background: variables.$background;
+  color: variables.$color;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 25%);
+  font-size: 11px;
+  line-height: 1.4;
+  white-space: normal;
+  user-select: none;
+
+  :global(.isDark) & {
+    border-color: variables.$darkBorderColor;
+    background: variables.$darkBlurBackground;
+    color: variables.$darkHighLightedColor;
+  }
+}
+
+.startedAt {
+  margin-bottom: 8px;
+  font-weight: bold;
+}
+
+.group + .group {
+  margin-top: 8px;
+}
+
+.groupHeader {
+  display: flex;
+  justify-content: space-between;
+  padding-bottom: 2px;
+  color: variables.$iconColor;
+  font-size: 10px;
+  letter-spacing: 0.02em;
+
+  :global(.isDark) & {
+    color: variables.$darkColor;
+  }
+}
+
+.phase {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 1px 0;
+  border-radius: 2px;
+}
+
+.isHighlighted {
+  background: variables.$selectedBackground;
+
+  :global(.isDark) & {
+    background: variables.$darkSelectedBackground;
+  }
+}
+
+.isDimmed {
+  opacity: 0.45;
+}
+
+.phaseLabel {
+  flex: 0 0 130px;
+  overflow-wrap: break-word;
+}
+
+.isNested {
+  padding-left: 10px;
+}
+
+.phaseChart {
+  position: relative;
+  flex: 1;
+  height: 9px;
+}
+
+.phaseBar {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  min-width: 1px;
+  border-radius: 2px;
+}
+
+@include variables.phaseTones;
+
+.phaseDuration {
+  flex: 0 0 66px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.total {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  padding-top: 6px;
+  border-top: 1px solid variables.$borderColor;
+  font-weight: bold;
+
+  :global(.isDark) & {
+    border-top-color: variables.$darkBorderColor;
+  }
+}

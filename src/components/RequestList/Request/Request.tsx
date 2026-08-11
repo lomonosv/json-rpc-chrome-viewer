@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import cn from 'classnames';
 import { useRequestContext } from '~/logic/HTTPArchive/HttpArchiveContext';
 import { useSettingsContext } from '~/logic/SettingsContext/SettingsContext';
@@ -17,7 +17,9 @@ interface IComponentProps {
 }
 
 const Request = ({ item, timelineStart, timelineEnd }: IComponentProps) => {
+  const rowRef = useRef<HTMLDivElement>(null);
   const { selected, setSelected } = useRequestContext();
+  const isSelected = item.uuid === selected?.uuid;
   const {
     showCorsBadge,
     showWebsocketBadge,
@@ -34,6 +36,12 @@ const Request = ({ item, timelineStart, timelineEnd }: IComponentProps) => {
     hideEditRequestModal
   } = useEditRequestModal();
 
+  useEffect(() => {
+    if (isSelected) {
+      rowRef.current?.scrollIntoView({ block: 'nearest' });
+    }
+  }, [isSelected]);
+
   const handleClick = () => {
     setSelected(item);
   };
@@ -45,8 +53,9 @@ const Request = ({ item, timelineStart, timelineEnd }: IComponentProps) => {
 
   return (
     <div
+      ref={ rowRef }
       className={ cn(styles.requestWrapper, {
-        [styles.isSelected]: item.uuid === selected?.uuid,
+        [styles.isSelected]: isSelected,
         [styles.error]: item.isError,
         [styles.responseNotParsed]: item.isWarning
       }) }
