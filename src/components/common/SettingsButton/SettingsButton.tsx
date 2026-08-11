@@ -19,6 +19,7 @@ const SettingsButton = () => {
     <>
       <Button
         onClick={ handleSettingsModalShow }
+        className={ styles.settingsButton }
         title="Settings"
       >
         <Icon

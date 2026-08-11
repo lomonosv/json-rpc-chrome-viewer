@@ -12,6 +12,9 @@ $borderColor: #cbcdd1;
 $hoverBackground: #f2f6fc;
 $waterfallBar: #4c8bf5;
 $waterfallTick: #1e8e3e;
+
+$waterfallColumnPadding: 8px;
+$resizeHandleColor: #4c8bf5;
 $searchHighlightBackground: #ffdf5d;
 $searchHighlightColor: #000;
 
@@ -27,8 +30,55 @@ $darkBorderColor: #4a4c50;
 $darkHoverBackground: #192436;
 $darkWaterfallBar: #8ab4f8;
 $darkWaterfallTick: #81c995;
+$darkResizeHandleColor: #8ab4f8;
 $darkSearchHighlightBackground: #a1741b;
 $darkSearchHighlightColor: #fff;
 
+$success: #2e7d4f;
 $error: #ee442e;
 $warning: #b8a679;
+$darkSuccess: #81c995;
+
+$phaseIdle: #bfc3c9;
+$phaseSend: #85b0ef;
+$phaseWait: #45a86a;
+$phaseDownload: #4a8ce6;
+
+$darkPhaseIdle: #5f6368;
+$darkPhaseSend: #6b93d6;
+$darkPhaseWait: #81c995;
+$darkPhaseDownload: #8ab4f8;
+
+@mixin phaseTones {
+  .idle {
+    background: $phaseIdle;
+
+    :global(.isDark) & {
+      background: $darkPhaseIdle;
+    }
+  }
+
+  .send {
+    background: $phaseSend;
+
+    :global(.isDark) & {
+      background: $darkPhaseSend;
+    }
+  }
+
+  .wait {
+    background: $phaseWait;
+
+    :global(.isDark) & {
+      background: $darkPhaseWait;
+    }
+  }
+
+  .download {
+    background: $phaseDownload;
+
+    :global(.isDark) & {
+      background: $darkPhaseDownload;
+    }
+  }
+}
