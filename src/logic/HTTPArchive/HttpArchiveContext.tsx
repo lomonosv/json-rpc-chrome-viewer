@@ -6,6 +6,7 @@ import {
   getPreparedHttpRequest,
   getPreparedMessage,
   getRequestLabel,
+  matchesFilter,
   parseJsonRpcMessage
 } from '~/logic/HTTPArchive/filters';
 import { IRequest } from '~/logic/HTTPArchive/IRequest';
@@ -39,6 +40,8 @@ const useRequest = () => {
     preserveLog,
     includeJsonRpcLogs,
     includeWebsocketLogs,
+    searchScope,
+    caseSensitiveSearch,
     showWaterfallColumn,
     showStatusColumn,
     showSizeColumn,
@@ -181,25 +184,12 @@ const useRequest = () => {
 
   useEffect(() => {
     const filteredRequests = requests.filter((request) => {
-      if (request.isWebSocket && includeWebsocketLogs) {
-        return !!(
-          request.websocketJSON.method ||
-          request.websocketJSON.id ||
-          request.websocketJSON.error?.message ||
-          `${ request.websocketMessageType } message`
-        ).toLowerCase?.().includes(filter.toLowerCase());
+      if (request.isWebSocket) {
+        return includeWebsocketLogs && matchesFilter(request, filter, searchScope, caseSensitiveSearch);
       }
 
-      if (request.isWebSocket && !includeWebsocketLogs) {
-        return false;
-      }
-
-      if (request.requestJSON && includeJsonRpcLogs) {
-        return !!request.requestJSON.method?.toLowerCase?.().includes(filter.toLowerCase());
-      }
-
-      if (request.requestJSON && !includeJsonRpcLogs) {
-        return false;
+      if (request.requestJSON) {
+        return includeJsonRpcLogs && matchesFilter(request, filter, searchScope, caseSensitiveSearch);
       }
 
       return true;
@@ -221,7 +211,16 @@ const useRequest = () => {
     if (!filteredRequests.some(({ uuid }) => uuid === selected?.uuid)) {
       clearSelection();
     }
-  }, [requests, filter, includeJsonRpcLogs, includeWebsocketLogs, effectiveSortField, sortDirection]);
+  }, [
+    requests,
+    filter,
+    searchScope,
+    caseSensitiveSearch,
+    includeJsonRpcLogs,
+    includeWebsocketLogs,
+    effectiveSortField,
+    sortDirection
+  ]);
 
   return {
     requests: filteredRequests,

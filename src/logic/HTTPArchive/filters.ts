@@ -1,5 +1,6 @@
 import { v4 as uuid } from 'uuid';
 import { IRequest, JSONValue } from '~/logic/HTTPArchive/IRequest';
+import { SearchScope } from '~/logic/HTTPArchive/SearchScope';
 
 const jsonRPCRegex = /jsonrpc\\?["']?\s*:\s*\\?["']?2\.0\\?["']?/;
 
@@ -45,6 +46,88 @@ export const getRequestLabel = (request: IRequest): string => String(
       : request.requestJSON?.method
   ) ?? ''
 );
+
+const includes = (text: string, filter: string, isCaseSensitive: boolean): boolean => (
+  isCaseSensitive
+    ? text.includes(filter)
+    : text.toLowerCase().includes(filter.toLowerCase())
+);
+
+const stringify = (value: JSONValue): string => {
+  if (value === undefined || value === null) {
+    return '';
+  }
+
+  try {
+    return typeof value === 'string' ? value : JSON.stringify(value);
+  } catch (e) {
+    return '';
+  }
+};
+
+const searchTextCache = new WeakMap<IRequest, { request: string, response: string }>();
+
+const getSearchText = (request: IRequest): { request: string, response: string } => {
+  const cached = searchTextCache.get(request);
+
+  if (cached) {
+    return cached;
+  }
+
+  const requestJSON = request.isWebSocket ? request.websocketJSON : request.requestJSON;
+  const responseJSON = request.isWebSocket ? request.websocketJSON : request.responseJSON;
+
+  const text = {
+    request: [requestJSON?.method, stringify(requestJSON?.params as JSONValue)]
+      .filter(Boolean)
+      .join(' '),
+    response: responseJSON
+      ? [stringify(responseJSON.result), stringify(responseJSON.error)].filter(Boolean).join(' ')
+      : request.rawResponse
+  };
+
+  searchTextCache.set(request, text);
+
+  return text;
+};
+
+const matchesLabel = (request: IRequest, filter: string, isCaseSensitive: boolean): boolean => {
+  const label = request.isWebSocket
+    ? request.websocketJSON.method ||
+      request.websocketJSON.id ||
+      request.websocketJSON.error?.message ||
+      `${ request.websocketMessageType } message`
+    : request.requestJSON?.method;
+
+  return isCaseSensitive
+    ? !!label?.includes?.(filter)
+    : !!label?.toLowerCase?.().includes(filter.toLowerCase());
+};
+
+export const matchesFilter = (
+  request: IRequest,
+  filter: string,
+  scope: SearchScope,
+  isCaseSensitive: boolean
+): boolean => {
+  if (scope === SearchScope.Method) {
+    return matchesLabel(request, filter, isCaseSensitive);
+  }
+
+  const searchText = getSearchText(request);
+
+  if (scope === SearchScope.Request) {
+    return includes(searchText.request, filter, isCaseSensitive);
+  }
+
+  if (scope === SearchScope.Response) {
+    return includes(searchText.response, filter, isCaseSensitive);
+  }
+
+  return matchesLabel(request, filter, isCaseSensitive) ||
+    includes(searchText.request, filter, isCaseSensitive) ||
+    includes(searchText.response, filter, isCaseSensitive);
+};
 
 export const getPreparedMessage = (
   type: 'income' | 'outcome',
