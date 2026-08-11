@@ -6,6 +6,7 @@
   justify-content: space-between;
   white-space: nowrap;
   padding: 0 7px;
+  scroll-margin-top: 28px;
 
   &:nth-child(2n) {
     background: variables.$evenRowBackground;
@@ -42,8 +43,8 @@
     }
 
     > .waterfallCell {
-      width: 200px;
-      padding: 0 8px;
+      width: variables.$waterfallColumnWidth;
+      padding: 0 variables.$waterfallColumnPadding;
     }
   }
 

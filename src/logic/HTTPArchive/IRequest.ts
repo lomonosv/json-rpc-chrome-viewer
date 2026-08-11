@@ -11,6 +11,17 @@ export interface IJSONObject {
 
 interface IJSONArray extends Array<JSONValue> { }
 
+export interface IRequestTimings {
+  blocked?: number,
+  queueing?: number,
+  dns?: number,
+  connect?: number,
+  ssl?: number,
+  send?: number,
+  wait?: number,
+  receive?: number,
+}
+
 export interface IRequest {
   uuid: string,
   isCors: boolean,
@@ -44,6 +55,7 @@ export interface IRequest {
   },
   startTime: number,
   time: number,
+  timings?: IRequestTimings,
   requestJSON?: {
     id: string,
     jsonrpc: string,

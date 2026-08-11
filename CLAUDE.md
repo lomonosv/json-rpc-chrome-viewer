@@ -76,7 +76,7 @@ export default ({ children }) => <XContext.Provider value={ useX() }>{ children 
 
 `RequestList` renders a Method column plus four optional meta columns — Waterfall, Status, Size, Time — each gated on a `SettingsContext` flag. Method is deliberately not hideable; it is what identifies a row.
 
-**Sorting lives in `HttpArchiveContext`, not in the component.** Keyboard navigation (↑/↓) walks the same `filteredRequests` array, so sorting anywhere else would let the arrow keys traverse a different order than the one on screen. Default is `SortField.Waterfall` ascending; clicking a header toggles asc/desc, clicking a different one resets to asc. Ties break on `startTime`, because arrival order is *completion* order for HTTP.
+**Sorting lives in `HttpArchiveContext`, not in the component.** Keyboard navigation (↑/↓) walks the same `filteredRequests` array, so sorting anywhere else would let the arrow keys traverse a different order than the one on screen. Those handlers only move `selected` — they never scroll, so `Request.tsx` scrolls itself into view with `scrollIntoView({ block: 'nearest' })` when it becomes selected. `nearest` is what keeps a click on an already-visible row from jolting the list, and `.requestWrapper` carries `scroll-margin-top: 28px` so a row scrolled to the top edge is not tucked under the sticky header. Without this the arrows appear to work while descending — autoscroll has already parked the list at the bottom — and visibly break when ↑/↓ wrap around to the first row. Default is `SortField.Waterfall` ascending; clicking a header toggles asc/desc, clicking a different one resets to asc. Ties break on `startTime`, because arrival order is *completion* order for HTTP.
 
 Sorting by a hidden column is handled by **deriving** rather than storing a correction:
 
@@ -108,7 +108,28 @@ The `::highlight(...)` rules live in `src/index.scss` because highlight names ar
 
 The list highlight is rooted at the scroll container and passed `.requestsHeaderWrapper` as a skip selector, since the sticky header lives inside it and would otherwise match on column names.
 
-Batch requests share one HAR entry, so every row exploded from a batch carries an identical `startTime` and `time` and renders identical bars.
+Batch requests share one HAR entry, so every row exploded from a batch carries an identical `startTime` and `time` and renders identical bars — and, now, identical timing breakdowns.
+
+### Waterfall timing breakdown
+
+`chrome.devtools.network.Request` extends the HAR entry type, so `entry.timings` arrives free with every request; `getPreparedTimings()` in `filters.ts` normalises it onto `IRequest.timings`. Two HAR quirks are handled there and must not be "simplified" away:
+
+- **`-1` means "does not apply"**, not zero — a reused connection reports `dns`/`connect`/`ssl` as `-1`. `isMeasured()` in `timings.ts` is the only gate; treating negatives as durations renders backwards bars and inflates the total.
+- **Queueing is Chrome-specific.** It arrives as `_blocked_queueing` nested inside HAR's standard `blocked`, so `Stalled = blocked - queueing`. It is destructured (not read with dot access) purely to keep `no-underscore-dangle` quiet at that one boundary.
+
+`getTimingGroups()` walks the phases in wire order and accumulates an `offset` per phase, which is what lets the tooltip lay the bars out end to end against a single `total`. **SSL is deliberately excluded from that accumulator**: HAR nests the TLS handshake *inside* `connect` rather than reporting it alongside, so adding it would count the same milliseconds twice and push the total past the request's real duration. It is instead spliced in as a nested row positioned at the tail of the connection. The resulting total matches HAR's own `entry.time` — a useful invariant to check against when changing this.
+
+**Every bar with timings is segmented, however narrow, and every one of those tooltips is interactive.** An earlier version segmented only above a 12px width threshold and tied tooltip interactivity to segmentation. Do not reintroduce either: at session-length timelines most bars fall under any such threshold (a 588 ms call over a 30 s session renders ~3.6px), so the fallback became the common case and the feature the exception — and since the fallback colour was `$waterfallBar`, a *blue* bar, it read as a real phase rather than as "no detail here". Two interaction modes that depend on a width the user cannot see is worse than a few sub-pixel segments.
+
+Segments skip `isNested` phases for the same reason SSL is excluded from the total: it would paint on top of "Initial connection" rather than extending the bar.
+
+Hovering a phase row in the tooltip highlights the matching bar segment and dims the rest, which is why the tooltip takes the pointer. Two consequences are handled explicitly: closing is deferred by `closeDelayMs`, because the pointer crosses a gap between the row and the portalled tooltip which fires `mouseleave` before the tooltip's `mouseenter`; and a `mousedown` closes it immediately, so an interactive tooltip covering the rows beneath does not silently swallow a click aimed at one.
+
+The phase palette lives in `variables.scss` as `$phaseIdle`/`$phaseSend`/`$phaseWait`/`$phaseDownload` (plus `$dark*`), emitted into both `waterfall.scss` and `waterfallTooltip.scss` through the `phaseTones` mixin so the bar and the popover cannot drift apart — CSS Modules hashes the class names per file, so they stay component-scoped despite the shared definition. The names match `TimingTone`. **The light values are deliberately paler than `$waterfallBar` / `$waterfallTick`**: a segmented bar is a solid block of colour on every row, and the saturated versions read as far too heavy down a full list.
+
+`WaterfallTooltip` is portalled out of the list because the row sits inside the `overflow: auto` scroll container and would otherwise be clipped. It is therefore positioned against the viewport by hand in a `useLayoutEffect` — measured, flipped above the row when it will not fit below, and clamped horizontally — and stays `visibility: hidden` until that first measurement lands to avoid a flash in the wrong corner.
+
+Rows with no timings — every websocket message, since those have no HAR entry — fall back to the original `title` attribute. The rich tooltip and the native one are mutually exclusive on purpose; rendering both gives you two overlapping tooltips.
 
 ### Persistence
 

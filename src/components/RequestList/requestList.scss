@@ -75,8 +75,8 @@
   }
 
   > .waterfallHeader {
-    width: 200px;
+    width: variables.$waterfallColumnWidth;
     justify-content: flex-start;
-    padding: 0 8px;
+    padding: 0 variables.$waterfallColumnPadding;
   }
 }
