@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-Manifest V3 Chrome extension that adds a **JSON-RPC Chrome Viewer** panel to DevTools. It captures JSON-RPC traffic over both HTTP and WebSocket, normalises it into one request model, and renders it with filtering, resizable panes, resend, themes and keyboard navigation.
+Manifest V3 Chrome extension that adds a **JSON-RPC Chrome Viewer** panel to DevTools. It captures JSON-RPC traffic over both HTTP and WebSocket, normalises it into one request model, and renders it with scoped search, a phase-segmented waterfall with timing breakdowns, sortable/resizable/reorderable columns, resizable panes, resend, themes and keyboard navigation.
 
 ## Commands
 
@@ -110,6 +110,14 @@ The list highlight is rooted at the scroll container and passed `.requestsHeader
 
 Batch requests share one HAR entry, so every row exploded from a batch carries an identical `startTime` and `time` and renders identical bars — and, now, identical timing breakdowns.
 
+### Row actions
+
+Each row carries a `.rowActions` slot after the method label — a copy button (all rows, copying `getRequestLabel(item)`) and a resend button (HTTP only). It is `display: none` until the row is hovered.
+
+The wrapper **stops click propagation**, and must keep doing so: the row's own `onClick` selects the request, so without it copying a method name would also change the selection and swap out both info panes.
+
+`CopyButton` confirms a copy by tinting its icon `$success` for 700ms rather than swapping to the word "Copied". That keeps its width fixed, which is what lets it sit in a row slot beside the resend button — restoring a text confirmation would reflow the method label mid-hover. The behaviour is shared by every copy button in the app, including the pane headers.
+
 ### Resizable and reorderable columns
 
 The four meta columns are drag-resizable and drag-reorderable; Method is neither, because it is the flex remainder that absorbs whatever the others give up (`flex: 1 1 auto` with a 300px floor matching `.methodHeader`).
@@ -208,6 +216,7 @@ The request-list table is hand-built from flexbox, and these bit repeatedly. Whe
 - **Row vertical padding lives on `.methodWrapper`, not `.requestWrapper`.** Borders paint on the padding box, so padding on the row would make every column separator stop short of the row edges. `.methodWrapper` sets row height instead, and the stretched meta cells inherit it.
 - `.requestWrapper` and `.meta` use `align-items: stretch` so separators span full row height. `.methodWrapper` re-centres its own content with `flex-direction: column; justify-content: center`.
 - **`.sortableHeader` resets `border: none`** for the native `<button>` headers; `.metaHeaders > button` at (0,1,1) re-adds `border-left` and must out-specify it.
+- **`.isCopied.isCopied` in `copyButton.scss` is doubled on purpose, not a typo.** `Button` paints `fill` from its own `.button` rule at (0,1,0) in a *different* stylesheet, so a single class here would win or lose on bundle order rather than on intent. Doubling it to (0,2,0) makes it deterministic.
 - **`.bar` and `.tick` are applied together** in `Waterfall.tsx`. Their `:global(.isDark)` overrides tie at (0,2,0), so `.tick` must stay declared *after* `.bar` or websocket ticks render blue in dark mode.
 - Header cells are real `<button>`s. Keep it that way — clickable `<div>`s reintroduce the `jsx-a11y` findings this config now suppresses.
 
