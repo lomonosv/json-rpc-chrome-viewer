@@ -23,7 +23,7 @@ Every JSON-RPC call to a given endpoint hits the same URL with the same method (
 - Side-by-side request and response panes with a collapsible JSON tree
 - **Convert a response to TypeScript types** with one click
 - **Resend a request** after editing its body
-- Copy request or response to the clipboard
+- Copy request or response to the clipboard, or **copy a method name** straight from its row
 - Error and unparseable-response rows are colour-coded
 - **CORS badge** for cross-origin calls, **WebSocket badge** for socket messages
 
@@ -92,7 +92,7 @@ Settings persist in `chrome.storage.local`, along with pane sizes and column wid
 | --- | --- |
 | `storage` | Persist settings, pane sizes and column widths/order |
 | `activeTab`, `scripting` | Register the WebSocket interceptor in the page |
-| `clipboardWrite` | Copy request/response payloads |
+| `clipboardWrite` | Copy request/response payloads and method names |
 | `http://*/*`, `https://*/*` | Observe traffic on the inspected page |
 
 Captured traffic stays local — it is held in memory in the DevTools panel and is not transmitted anywhere. The only outbound requests the extension makes are optional crash reports from its own panel code, sent when a `SENTRY_DSN` is configured at build time.
