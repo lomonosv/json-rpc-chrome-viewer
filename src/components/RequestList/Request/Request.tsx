@@ -5,6 +5,7 @@ import { useSettingsContext } from '~/logic/SettingsContext/SettingsContext';
 import { useCacheContext } from '~/logic/CacheContext/CacheContext';
 import useEditRequestModal from './EditRequestModal/useEditRequestModal';
 import Button from '~/components/common/Button';
+import CopyButton from '~/components/common/CopyButton';
 import Icon, { IconType } from '~/components/common/Icon';
 import Waterfall from './Waterfall';
 import { getRequestLabel } from '~/logic/HTTPArchive/filters';
@@ -114,15 +115,25 @@ const Request = ({ item, timelineStart, timelineEnd }: IComponentProps) => {
             />
           ) }
           <span className={ styles.methodLabel }>{ getRequestLabel(item) }</span>
-          { !item.isWebSocket && (
-            <Button
-              title="Resend Request"
-              onClick={ handleResendButtonClick }
-              className={ styles.resendRequestButton }
-            >
-              <Icon type={ IconType.Update }></Icon>
-            </Button>
-          ) }
+          <div
+            className={ styles.rowActions }
+            onClick={ (e) => e.stopPropagation() }
+          >
+            <CopyButton
+              text={ getRequestLabel(item) }
+              hint="Copy method name"
+              className={ styles.rowActionButton }
+            />
+            { !item.isWebSocket && (
+              <Button
+                title="Resend Request"
+                onClick={ handleResendButtonClick }
+                className={ styles.rowActionButton }
+              >
+                <Icon type={ IconType.Update }></Icon>
+              </Button>
+            ) }
+          </div>
         </div>
         { showRequestUrl && (
           <div className={ styles.urlRow }>
