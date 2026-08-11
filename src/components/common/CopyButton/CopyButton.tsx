@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import cn from 'classnames';
 import copyToClipboard from 'copy-to-clipboard';
 import Button from '~/components/common/Button';
 import Icon, { IconType } from '~/components/common/Icon';
@@ -15,7 +16,7 @@ const CopyButton = ({
   text,
   className,
   hint = 'Copy to clipboard',
-  iconType = IconType.Copy
+  iconType = IconType.Copy,
 }: IComponentProps) => {
   const [isCopied, setIsCopied] = useState<boolean>(false);
 
@@ -30,8 +31,13 @@ const CopyButton = ({
 
   if (isCopied) {
     return (
-      <Button className={ styles.infoDisabledButton }>
-        Copied
+      <Button
+        title="Copied"
+        className={ cn(className, styles.isCopied) }
+      >
+        <Icon
+          className={ styles.icon }
+          type={ iconType } />
       </Button>
     );
   }
@@ -42,7 +48,10 @@ const CopyButton = ({
       className={ className }
       onClick={ handleCopy }
     >
-      <Icon type={ iconType } />
+      <Icon
+        className={ styles.icon }
+        type={ iconType }
+      />
     </Button>
   );
 };

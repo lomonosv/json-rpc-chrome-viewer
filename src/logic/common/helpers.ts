@@ -1,7 +1,10 @@
 import { Json2Ts } from 'json2ts/src/json2ts';
 import { JSONValue } from '~/logic/HTTPArchive/IRequest';
 
-export const getConfig = (key: string, defaultValue: boolean | string | number) => new Promise((resolve) => {
+export const getConfig = (
+  key: string,
+  defaultValue: boolean | string | number | object
+) => new Promise((resolve) => {
   chrome.storage.local.get([key], (result) => {
     if (result[key] !== undefined) {
       resolve(result[key]);
