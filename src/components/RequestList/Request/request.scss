@@ -30,7 +30,6 @@
     flex-shrink: 0;
 
     > div {
-      width: 100px;
       box-sizing: border-box;
       display: flex;
       align-items: center;
@@ -43,7 +42,6 @@
     }
 
     > .waterfallCell {
-      width: variables.$waterfallColumnWidth;
       padding: 0 variables.$waterfallColumnPadding;
     }
   }
