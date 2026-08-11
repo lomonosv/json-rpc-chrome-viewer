@@ -45,3 +45,32 @@
   width: calc(100% - 100px) !important;
   z-index: 2;
 }
+
+.resizableBottomHandlerWrapper::before {
+  content: "";
+  position: absolute;
+  top: 27px;
+  left: -30px;
+  right: -70px;
+  height: 2px;
+}
+
+.resizableBottomHandlerWrapper::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -30px;
+  right: -70px;
+  height: 2px;
+}
+
+.resizableBottomHandlerWrapper:hover::before,,
+.resizableBottomHandlerWrapper:hover::after,
+.resizableBottomHandlerWrapper:active::before,
+.resizableBottomHandlerWrapper:active::after {
+  background: variables.$resizeHandleColor;
+
+  :global(.isDark) & {
+    background: variables.$darkResizeHandleColor;
+  }
+}
