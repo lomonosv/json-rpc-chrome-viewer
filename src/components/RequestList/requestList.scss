@@ -64,7 +64,7 @@
   align-items: stretch;
 
   > button {
-    width: 100px;
+    position: relative;
     box-sizing: border-box;
     justify-content: center;
     border-left: 1px solid variables.$borderColor;
@@ -75,8 +75,61 @@
   }
 
   > .waterfallHeader {
-    width: 200px;
     justify-content: flex-start;
-    padding: 0 8px;
+    padding: 0 variables.$waterfallColumnPadding;
   }
+}
+
+.resizeHandle {
+  position: absolute;
+  top: 0;
+  left: -4px;
+  width: 7px;
+  height: 100%;
+  cursor: col-resize;
+  z-index: 1;
+
+  &:hover,
+  &.isResizing {
+    background: variables.$resizeHandleColor;
+
+    :global(.isDark) & {
+      background: variables.$darkResizeHandleColor;
+    }
+  }
+}
+
+.paneResizeHandle::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 2px;
+  transform: translateX(-50%);
+  z-index: 1;
+}
+
+.paneResizeHandle:hover::after,
+.paneResizeHandle:active::after {
+  background: variables.$resizeHandleColor;
+
+  :global(.isDark) & {
+    background: variables.$darkResizeHandleColor;
+  }
+}
+
+.dropIndicator {
+  align-self: stretch;
+  width: 0;
+  border-left: 2px solid variables.$resizeHandleColor;
+  margin: 0 -1px;
+
+  :global(.isDark) & {
+    border-left-color: variables.$darkResizeHandleColor;
+  }
+}
+
+.isDragging {
+  opacity: 0.4;
 }

@@ -8,6 +8,14 @@ import { useSettingsContext } from '~/logic/SettingsContext/SettingsContext';
 import useSearchHighlight, { HighlightName } from '~/logic/common/useSearchHighlight';
 import Header from '~/components/common/Header';
 import Request from './Request';
+import useColumnResize from './useColumnResize';
+import useColumnReorder from './useColumnReorder';
+import {
+  ResizableColumn,
+  columnLabels,
+  getColumnWidthProperties,
+  getColumnWidthStyle
+} from './columns';
 import styles from './requestList.scss';
 
 const minLeftSideWidth = 200;
@@ -15,20 +23,41 @@ const minLeftSideWidth = 200;
 interface ISortableHeaderProps {
   field: SortField,
   className?: string,
+  resizeHandle?: React.ReactElement,
+  shouldIgnoreClick?: () => boolean,
+  reorderProps?: object,
   children: string,
 }
 
-const SortableHeader = ({ field, className, children }: ISortableHeaderProps) => {
+const SortableHeader = ({
+  field,
+  className,
+  resizeHandle,
+  shouldIgnoreClick,
+  reorderProps,
+  children
+}: ISortableHeaderProps) => {
   const { sortField, sortDirection, toggleSort } = useRequestContext();
   const isSorted = sortField === field;
+
+  const handleClick = () => {
+    if (shouldIgnoreClick?.()) {
+      return;
+    }
+
+    toggleSort(field);
+  };
 
   return (
     <button
       type="button"
       title={ `Sort by ${ field }` }
       className={ cn(styles.sortableHeader, className) }
-      onClick={ () => toggleSort(field) }
+      style={ field === SortField.Method ? undefined : getColumnWidthStyle(field as ResizableColumn) }
+      onClick={ handleClick }
+      { ...reorderProps }
     >
+      { resizeHandle }
       { children }
       { isSorted && (
         <span className={ styles.sortIndicator }>
@@ -47,7 +76,16 @@ const RequestList = ({ className }: IComponentProps) => {
   const resizableRef = useRef<Resizable>(null);
   const requestsWrapperRef = useRef<HTMLDivElement>(null);
   const { requests, selected, filter } = useRequestContext();
-  const { requestListSectionWidth, updateRequestListSectionWidth } = useCacheContext();
+  const {
+    requestListSectionWidth,
+    updateRequestListSectionWidth,
+    columnWidths,
+    getColumnWidth,
+    setColumnWidth,
+    persistColumnWidths,
+    columnOrder,
+    updateColumnOrder
+  } = useCacheContext();
   const {
     autoScroll,
     caseSensitiveSearch,
@@ -56,6 +94,47 @@ const RequestList = ({ className }: IComponentProps) => {
     showSizeColumn,
     showTimeColumn
   } = useSettingsContext();
+
+  const {
+    resizingField,
+    getResizeHandleProps,
+    consumeClickSuppression: consumeResizeClick
+  } = useColumnResize(
+    getColumnWidth,
+    setColumnWidth,
+    persistColumnWidths
+  );
+
+  const isColumnVisible: Record<ResizableColumn, boolean> = {
+    [SortField.Waterfall]: showWaterfallColumn,
+    [SortField.Status]: showStatusColumn,
+    [SortField.Size]: showSizeColumn,
+    [SortField.Time]: showTimeColumn
+  };
+
+  const visibleColumns = columnOrder.filter((field) => isColumnVisible[field]);
+
+  const {
+    draggingField,
+    dropIndex,
+    getReorderProps,
+    consumeClickSuppression: consumeReorderClick
+  } = useColumnReorder(columnOrder, visibleColumns, updateColumnOrder);
+
+  const renderResizeHandle = (field: ResizableColumn) => (
+    <span
+      aria-hidden="true"
+      className={ cn(styles.resizeHandle, { [styles.isResizing]: resizingField === field }) }
+      { ...getResizeHandleProps(field) }
+    />
+  );
+
+  const shouldIgnoreHeaderClick = () => {
+    const afterResize = consumeResizeClick();
+    const afterReorder = consumeReorderClick();
+
+    return afterResize || afterReorder;
+  };
 
   useSearchHighlight(
     requestsWrapperRef,
@@ -121,32 +200,42 @@ const RequestList = ({ className }: IComponentProps) => {
         height: '100%'
       } }
       onResizeStop={ handleResize }
+      handleClasses={ {
+        right: styles.paneResizeHandle
+      } }
     >
       <div
         ref={ requestsWrapperRef }
         className={ styles.requestListWrapper }
       >
-        <div className={ styles.requestList }>
+        <div
+          className={ styles.requestList }
+          style={ getColumnWidthProperties(columnWidths) }
+        >
           <div className={ styles.requestsHeaderWrapper }>
             <Header className={ styles.requestsHeader }>
               <SortableHeader field={ SortField.Method } className={ styles.methodHeader }>
                 Method
               </SortableHeader>
               <div className={ styles.metaHeaders }>
-                { showWaterfallColumn && (
-                  <SortableHeader field={ SortField.Waterfall } className={ styles.waterfallHeader }>
-                    Waterfall
-                  </SortableHeader>
-                ) }
-                { showStatusColumn && (
-                  <SortableHeader field={ SortField.Status }>Status</SortableHeader>
-                ) }
-                { showSizeColumn && (
-                  <SortableHeader field={ SortField.Size }>Size (B)</SortableHeader>
-                ) }
-                { showTimeColumn && (
-                  <SortableHeader field={ SortField.Time }>Time (ms)</SortableHeader>
-                ) }
+                { visibleColumns.map((field, index) => (
+                  <React.Fragment key={ field }>
+                    { dropIndex === index && <span className={ styles.dropIndicator } /> }
+                    <SortableHeader
+                      field={ field }
+                      className={ cn({
+                        [styles.waterfallHeader]: field === SortField.Waterfall,
+                        [styles.isDragging]: draggingField === field
+                      }) }
+                      resizeHandle={ renderResizeHandle(field) }
+                      shouldIgnoreClick={ shouldIgnoreHeaderClick }
+                      reorderProps={ getReorderProps(field) }
+                    >
+                      { columnLabels[field] }
+                    </SortableHeader>
+                  </React.Fragment>
+                )) }
+                { dropIndex === visibleColumns.length && <span className={ styles.dropIndicator } /> }
               </div>
             </Header>
           </div>

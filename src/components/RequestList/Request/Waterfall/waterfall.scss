@@ -20,6 +20,36 @@
   }
 }
 
+.isSegmented {
+  overflow: hidden;
+  background: none;
+
+  :global(.isDark) & {
+    background: none;
+  }
+}
+
+.segment {
+  position: absolute;
+  top: 0;
+  height: 100%;
+}
+
+@include variables.phaseTones;
+
+.isDimmed {
+  opacity: 0.35;
+}
+
+.isHighlighted {
+  outline: 1px solid variables.$highLightedColor;
+  outline-offset: -1px;
+
+  :global(.isDark) & {
+    outline-color: variables.$darkHighLightedColor;
+  }
+}
+
 .tick {
   width: 2px;
   border-radius: 1px;

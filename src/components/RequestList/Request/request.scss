@@ -6,6 +6,7 @@
   justify-content: space-between;
   white-space: nowrap;
   padding: 0 7px;
+  scroll-margin-top: 28px;
 
   &:nth-child(2n) {
     background: variables.$evenRowBackground;
@@ -29,7 +30,6 @@
     flex-shrink: 0;
 
     > div {
-      width: 100px;
       box-sizing: border-box;
       display: flex;
       align-items: center;
@@ -42,8 +42,7 @@
     }
 
     > .waterfallCell {
-      width: 200px;
-      padding: 0 8px;
+      padding: 0 variables.$waterfallColumnPadding;
     }
   }
 
@@ -69,8 +68,8 @@
     }
   }
 
-  &:hover .resendRequestButton {
-    display: block;
+  &:hover .rowActions {
+    display: inline-flex;
   }
 }
 
@@ -96,8 +95,9 @@
   align-items: center;
   font-family: monospace;
   font-size: 12px;
-  padding-right: 18px;
+  padding-right: 5px;
   overflow: hidden;
+  position: relative;
 }
 
 .methodLabel {
@@ -107,12 +107,16 @@
   white-space: nowrap;
 }
 
-.resendRequestButton {
+.rowActions {
   display: none;
+  margin-left: 10px;
+  vertical-align: middle;
+  align-items: center;
+  gap: 8px;
+}
+
+.rowActionButton {
   height: 12px;
-  position: relative;
-  left: 18px;
-  margin-left: -12px;
   cursor: pointer;
 }
 
