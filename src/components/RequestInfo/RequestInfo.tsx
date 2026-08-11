@@ -4,6 +4,7 @@ import { useRequestContext } from '~/logic/HTTPArchive/HttpArchiveContext';
 import { useCacheContext } from '~/logic/CacheContext/CacheContext';
 import { useSettingsContext } from '~/logic/SettingsContext/SettingsContext';
 import { IRequest } from '~/logic/HTTPArchive/IRequest';
+import useSearchHighlight, { HighlightName } from '~/logic/common/useSearchHighlight';
 import Button from '~/components/common/Button';
 import Icon, { IconType } from '~/components/common/Icon';
 import CopyButton from '~/components/common/CopyButton';
@@ -11,20 +12,31 @@ import ExpandButton from '~/components/common/ExpandButton';
 import Header from '~/components/common/Header';
 import JsonViewer from '~/components/common/JsonViewer';
 import { ExpandTreeState } from '~/components/common/JsonViewer/ExpandTreeState';
+import { expandAllLevels } from '~/components/common/JsonViewer/ExpandLevel';
 import styles from './requestInfo.scss';
 
 const RequestInfo = () => {
   const resizableRef = useRef<Resizable>(null);
-  const { selected, clearSelection } = useRequestContext();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const { selected, clearSelection, filter } = useRequestContext();
   const { requestSectionHeight, updateRequestSectionHeight } = useCacheContext();
-  const { expandTreeState } = useSettingsContext();
+  const { expandTreeState, expandLevel, caseSensitiveSearch } = useSettingsContext();
   const [expandTreeStateValue, setExpandTreeStateValue] = useState<ExpandTreeState>(expandTreeState);
+  const [expandLevelValue, setExpandLevelValue] = useState<number>(expandLevel);
   const [selectedRequest, setSelectedRequest] = useState<IRequest>(selected);
 
   useEffect(() => {
     setExpandTreeStateValue(expandTreeState);
+    setExpandLevelValue(expandLevel);
     setSelectedRequest(selected);
-  }, [expandTreeState, selected]);
+  }, [expandTreeState, expandLevel, selected]);
+
+  const handleExpandTreeStateChange = (state: ExpandTreeState) => {
+    setExpandTreeStateValue(state);
+    setExpandLevelValue(expandAllLevels);
+  };
+
+  useSearchHighlight(containerRef, HighlightName.Request, filter, caseSensitiveSearch);
 
   const json = selectedRequest.requestJSON.params || {};
 
@@ -68,16 +80,20 @@ const RequestInfo = () => {
           <ExpandButton
             className={ styles.expandButton }
             expandedState={ expandTreeStateValue }
-            onChangeState={ setExpandTreeStateValue }
+            onChangeState={ handleExpandTreeStateChange }
           />
           <span>Request</span>
         </div>
         <CopyButton text={ JSON.stringify(json, null, 2) } />
       </Header>
-      <div className={ styles.requestInfoContainer }>
+      <div
+        ref={ containerRef }
+        className={ styles.requestInfoContainer }
+      >
         <JsonViewer
           src={ json }
           expandTreeState={ expandTreeStateValue }
+          expandLevel={ expandLevelValue }
         />
       </div>
     </Resizable>

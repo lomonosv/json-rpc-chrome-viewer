@@ -5,6 +5,7 @@ import { useRequestContext } from '~/logic/HTTPArchive/HttpArchiveContext';
 import { SortDirection, SortField } from '~/logic/HTTPArchive/SortField';
 import { useCacheContext } from '~/logic/CacheContext/CacheContext';
 import { useSettingsContext } from '~/logic/SettingsContext/SettingsContext';
+import useSearchHighlight, { HighlightName } from '~/logic/common/useSearchHighlight';
 import Header from '~/components/common/Header';
 import Request from './Request';
 import styles from './requestList.scss';
@@ -25,7 +26,7 @@ const SortableHeader = ({ field, className, children }: ISortableHeaderProps) =>
     <button
       type="button"
       title={ `Sort by ${ field }` }
-      className={ cn(styles.sortableHeader, className, { [styles.isSorted]: isSorted }) }
+      className={ cn(styles.sortableHeader, className) }
       onClick={ () => toggleSort(field) }
     >
       { children }
@@ -45,15 +46,24 @@ interface IComponentProps {
 const RequestList = ({ className }: IComponentProps) => {
   const resizableRef = useRef<Resizable>(null);
   const requestsWrapperRef = useRef<HTMLDivElement>(null);
-  const { requests, selected } = useRequestContext();
+  const { requests, selected, filter } = useRequestContext();
   const { requestListSectionWidth, updateRequestListSectionWidth } = useCacheContext();
   const {
     autoScroll,
+    caseSensitiveSearch,
     showWaterfallColumn,
     showStatusColumn,
     showSizeColumn,
     showTimeColumn
   } = useSettingsContext();
+
+  useSearchHighlight(
+    requestsWrapperRef,
+    HighlightName.List,
+    filter,
+    caseSensitiveSearch,
+    `.${ styles.requestsHeaderWrapper }`
+  );
 
   useEffect(() => {
     resizableRef.current.updateSize({
