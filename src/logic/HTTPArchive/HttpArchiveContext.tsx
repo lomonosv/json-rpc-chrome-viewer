@@ -5,12 +5,14 @@ import {
   isJsonRpcMessage,
   getPreparedHttpRequest,
   getPreparedMessage,
+  getPreparedMockedRequest,
   getRequestLabel,
   matchesFilter,
   parseJsonRpcMessage
 } from '~/logic/HTTPArchive/filters';
 import { IRequest } from '~/logic/HTTPArchive/IRequest';
 import { SortDirection, SortField } from '~/logic/HTTPArchive/SortField';
+import { IMockedRequestPayload } from '~/logic/Mocks/IMockRule';
 
 const getSortValue = (request: IRequest, field: SortField): string | number => {
   switch (field) {
@@ -140,9 +142,24 @@ const useRequest = () => {
   const handleRuntimeMessage = useCallback((
     message: {
       type: string,
-      payload: { type: 'income' | 'outcome', url: string, message: string },
+      payload: { type: 'income' | 'outcome', url: string, message: string } & IMockedRequestPayload,
     }
   ) => {
+    if (message.type === 'JSON_RPC_MOCKED_REQUEST') {
+      const preparedRequests = getPreparedMockedRequest(message.payload);
+
+      if (!preparedRequests.length) return;
+
+      requestsRef.current = [
+        ...requestsRef.current,
+        ...preparedRequests
+      ];
+
+      setRequests(requestsRef.current);
+
+      return;
+    }
+
     if (message.type === 'JSON_RPC_WEBSOCKET_MESSAGE' && isJsonRpcMessage(message.payload.message)) {
       const json = parseJsonRpcMessage(message.payload.message);
 

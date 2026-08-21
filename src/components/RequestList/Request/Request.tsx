@@ -114,6 +114,9 @@ const Request = ({ item, timelineStart, timelineEnd }: IComponentProps) => {
               }) }
             />
           ) }
+          { item.isMocked && (
+            <div className={ cn(styles.badge, styles.isMocked) } />
+          ) }
           <span className={ styles.methodLabel }>{ getRequestLabel(item) }</span>
           <div
             className={ styles.rowActions }

@@ -39,6 +39,12 @@ $error: #ee442e;
 $warning: #b8a679;
 $darkSuccess: #81c995;
 
+// Chrome DevTools' own warning amber, used for the single toolbar alert that stands in for
+// the badge Chrome paints on its Network tab. Deliberately louder than `$warning`, which
+// stays muted because it tints whole rows down the list.
+$warningAccent: #e37400;
+$darkWarningAccent: #f29900;
+
 $phaseIdle: #bfc3c9;
 $phaseSend: #85b0ef;
 $phaseWait: #45a86a;

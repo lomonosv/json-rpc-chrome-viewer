@@ -11,6 +11,8 @@ import collapse from './icons/collapse.svg';
 import copy from './icons/copy.svg';
 import typescript from './icons/typescript.svg';
 import update from './icons/update.svg';
+import mock from './icons/mock.svg';
+import warning from './icons/warning.svg';
 
 export enum IconType {
   Settings,
@@ -20,7 +22,9 @@ export enum IconType {
   Collapse,
   Copy,
   Typescript,
-  Update
+  Update,
+  Mock,
+  Warning
 }
 
 export const IconMap = {
@@ -31,5 +35,7 @@ export const IconMap = {
   [IconType.Collapse]: collapse,
   [IconType.Copy]: copy,
   [IconType.Typescript]: typescript,
-  [IconType.Update]: update
+  [IconType.Update]: update,
+  [IconType.Mock]: mock,
+  [IconType.Warning]: warning
 };

@@ -1,5 +1,8 @@
-import React, { ChangeEventHandler, useEffect, useRef } from 'react';
+import React, { ChangeEventHandler, useEffect, useRef, useState } from 'react';
+import cn from 'classnames';
 import { useRequestContext } from '~/logic/HTTPArchive/HttpArchiveContext';
+import { useMocksContext } from '~/logic/Mocks/MocksContext';
+import Mocks from '~/components/Mocks';
 import { useSettingsContext } from '~/logic/SettingsContext/SettingsContext';
 import { SearchScope, searchScopeOptions } from '~/logic/HTTPArchive/SearchScope';
 import Button from '~/components/common/Button';
@@ -11,7 +14,10 @@ import styles from './toolbar.scss';
 
 const Toolbar = () => {
   const inputRef = useRef<HTMLInputElement>(null);
+  const [isMocksVisible, setIsMocksVisible] = useState(false);
   const { filter, clear, setFilter } = useRequestContext();
+  const { rules, mocksEnabled } = useMocksContext();
+  const activeRuleCount = rules.filter(({ enabled }) => enabled).length;
   const {
     preserveLog,
     setPreserveLog,
@@ -56,6 +62,21 @@ const Toolbar = () => {
   return (
       <div className={ styles.toolbarContainer }>
         <div className={ styles.toolbarSection }>
+          { mocksEnabled && (
+            <Button
+              onClick={ () => setIsMocksVisible(true) }
+              className={ styles.mocksWarning }
+              title={ activeRuleCount
+                ? `Responses are being mocked — ${ activeRuleCount } active rule${
+                  activeRuleCount === 1 ? '' : 's' }`
+                : 'Mocking is enabled, but no rule is active' }
+            >
+              <Icon
+                className={ styles.mocksWarningIcon }
+                type={ IconType.Warning }
+              />
+            </Button>
+          ) }
           <Button
             onClick={ clear }
             className={ styles.clearButton }
@@ -127,8 +148,19 @@ const Toolbar = () => {
           />
         </div>
         <div className={ styles.toolbarSection }>
+          <Button
+            onClick={ () => setIsMocksVisible(true) }
+            className={ styles.mocksButton }
+            title={ mocksEnabled ? 'Response mocks (active)' : 'Response mocks' }
+          >
+            <Icon
+              className={ cn(styles.mocksIcon, { [styles.isActive]: mocksEnabled }) }
+              type={ IconType.Mock }
+            />
+          </Button>
           <SettingsButton />
         </div>
+        { isMocksVisible && <Mocks onClose={ () => setIsMocksVisible(false) } /> }
       </div>
   );
 };

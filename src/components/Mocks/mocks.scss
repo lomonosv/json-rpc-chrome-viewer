@@ -1,0 +1,155 @@
+@use "../common/variables";
+
+.mocksWrapper {
+  display: flex;
+  flex-direction: column;
+  background: variables.$background;
+  color: variables.$color;
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+
+  :global(.isDark) & {
+    background: variables.$darkBackground;
+    color: variables.$darkColor;
+  }
+}
+
+.mocksToolbar {
+  display: flex;
+  align-items: center;
+  padding: 10px 10px 0;
+}
+
+.mocksEnabled {
+  margin-right: 15px;
+}
+
+.addButton {
+  cursor: pointer;
+  background: variables.$background;
+  padding: 3px 10px;
+  border: 1px solid variables.$borderColor;
+  border-radius: 0.25rem;
+
+  &:hover {
+    background: variables.$hoverBackground;
+  }
+
+  :global(.isDark) & {
+    background: variables.$darkBackground;
+    border: 1px solid variables.$darkBorderColor;
+
+    &:hover {
+      background: variables.$darkHoverBackground;
+    }
+  }
+}
+
+.hint {
+  padding: 8px 10px 0;
+  opacity: 0.7;
+  font-size: 11px;
+  max-width: 720px;
+}
+
+.mocksContainer {
+  flex-grow: 1;
+  overflow: auto;
+  padding: 10px;
+}
+
+.empty {
+  opacity: 0.6;
+  padding: 10px 0;
+}
+
+.rule {
+  border: 1px solid variables.$borderColor;
+  border-radius: 3px;
+  padding: 8px;
+  margin-bottom: 10px;
+
+  :global(.isDark) & {
+    border-color: variables.$darkBorderColor;
+  }
+
+  &.isDisabled {
+    opacity: 0.5;
+  }
+}
+
+.ruleRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.ruleField {
+  flex-shrink: 0;
+}
+
+.methodInput {
+  width: 220px;
+}
+
+.urlInput {
+  width: 220px;
+}
+
+.numberInput {
+  width: 60px;
+}
+
+.removeButton {
+  cursor: pointer;
+  margin-left: auto;
+
+  > i {
+    width: 11px;
+    height: 11px;
+  }
+}
+
+.body {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 80px;
+  margin-top: 8px;
+  padding: 6px;
+  font-family: monospace;
+  font-size: 12px;
+  background: variables.$background;
+  color: variables.$color;
+  border: 1px solid variables.$borderColor;
+  border-radius: 3px;
+  resize: vertical;
+
+  :global(.isDark) & {
+    background: variables.$darkBackground;
+    color: variables.$darkColor;
+    border-color: variables.$darkBorderColor;
+  }
+
+  &.isInvalid {
+    border-color: variables.$warning;
+  }
+}
+
+.invalidHint {
+  color: variables.$warning;
+  font-size: 11px;
+  padding-top: 4px;
+}
+
+.closeButton {
+  position: absolute;
+  right: 9px;
+  top: 7px;
+
+  > i {
+    width: 13px;
+    height: 13px;
+  }
+}

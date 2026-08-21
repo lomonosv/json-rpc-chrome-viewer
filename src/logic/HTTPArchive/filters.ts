@@ -1,6 +1,7 @@
 import { v4 as uuid } from 'uuid';
 import { IRequest, IRequestTimings, JSONValue } from '~/logic/HTTPArchive/IRequest';
 import { SearchScope } from '~/logic/HTTPArchive/SearchScope';
+import { IMockedRequestPayload } from '~/logic/Mocks/IMockRule';
 
 const jsonRPCRegex = /jsonrpc\\?["']?\s*:\s*\\?["']?2\.0\\?["']?/;
 
@@ -155,6 +156,62 @@ export const getPreparedMessage = (
   rawRequest: '',
   rawResponse: ''
 });
+
+export const getPreparedMockedRequest = (payload: IMockedRequestPayload): IRequest[] => {
+  const requestJSON = parse(payload.requestBody);
+  const responseJSON = parse(payload.responseBody);
+
+  if (!requestJSON) {
+    return [];
+  }
+
+  const startTime = Date.now() - payload.time;
+  const isBatch = Array.isArray(requestJSON) && Array.isArray(responseJSON);
+
+  const getBase = (json, response) => ({
+    uuid: uuid(),
+    startTime,
+    request: {
+      url: payload.url,
+      method: payload.method,
+      headers: payload.headers,
+      postData: {
+        text: payload.requestBody
+      }
+    },
+    response: {
+      status: payload.status,
+      content: {
+        size: payload.responseBody?.length || 0
+      }
+    },
+    time: payload.time,
+    // A mocked call has no HAR entry, so it renders as an unsegmented bar.
+    timings: null as IRequestTimings,
+    isCors: false,
+    isError: !!response?.error,
+    isWarning: !response,
+    isWebSocket: false,
+    isMocked: true,
+    requestJSON: json,
+    rawRequest: payload.requestBody,
+    responseJSON: response,
+    rawResponse: payload.responseBody
+  });
+
+  if (!isBatch) {
+    return [getBase(requestJSON, responseJSON)];
+  }
+
+  const responseJSONIndex = responseJSON.reduce((acc, item) => {
+    acc[item.id] = item;
+    return acc;
+  }, {});
+
+  return requestJSON.map(
+    (requestJSONItem) => getBase(requestJSONItem, responseJSONIndex[requestJSONItem.id])
+  );
+};
 
 const getPreparedTimings = (request: chrome.devtools.network.Request): IRequestTimings => {
   const timings = request.timings as IRequestTimings & { _blocked_queueing?: number };

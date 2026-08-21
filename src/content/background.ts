@@ -3,7 +3,7 @@ import RegisteredContentScript = chrome.scripting.RegisteredContentScript;
 chrome.runtime.onInstalled.addListener(async () => {
   const scripts = [{
     id: 'websockets',
-    js: ['content/websockets.js'],
+    js: ['content/websockets.js', 'content/mocks.js'],
     matches: ['*://*/*'],
     runAt: 'document_start',
     world: 'MAIN'

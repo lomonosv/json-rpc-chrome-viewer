@@ -147,6 +147,25 @@
     content: "CORS";
   }
 
+  &.isMocked {
+    opacity: 1;
+    flex-shrink: 0;
+
+    &::before {
+      content: "MOCK";
+      opacity: 1;
+      background: variables.$warning;
+      color: #fff;
+      border-color: variables.$warning;
+
+      :global(.isDark) & {
+        background: variables.$warning;
+        color: #fff;
+        border-color: variables.$warning;
+      }
+    }
+  }
+
   &.isWebsocket::before {
     content: "WEBSOCKET";
     background: variables.$greenHeaderBackground;

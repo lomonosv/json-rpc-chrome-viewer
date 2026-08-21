@@ -3,6 +3,7 @@ import Layout from '~/components/Layout';
 import SettingsContext from '~/logic/SettingsContext/SettingsContext';
 import HttpArchiveContext from '~/logic/HTTPArchive/HttpArchiveContext';
 import CacheContext from '~/logic/CacheContext/CacheContext';
+import MocksContext from '~/logic/Mocks/MocksContext';
 import { createContainer } from '~/logic/DI';
 import ErrorBoundary from './ErrorBoundary';
 
@@ -11,7 +12,9 @@ const Application = () => (
     <SettingsContext>
       <HttpArchiveContext>
         <CacheContext>
-          <Layout />
+          <MocksContext>
+            <Layout />
+          </MocksContext>
         </CacheContext>
       </HttpArchiveContext>
     </SettingsContext>

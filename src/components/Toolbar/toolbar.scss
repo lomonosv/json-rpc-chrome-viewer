@@ -74,6 +74,45 @@
   font-size: 8px;
 }
 
+.mocksButton {
+  height: 14px;
+  margin-right: 10px;
+}
+
+// `Button` paints `fill` on the anchor, and `.button:hover` repaints it. Declaring `fill`
+// on the icon itself sidesteps that entirely — a direct declaration always beats an
+// inherited value, whatever the two selectors' specificities are.
+.mocksIcon {
+  width: 14px;
+  height: 14px;
+
+  &.isActive {
+    fill: variables.$warningAccent;
+
+    :global(.isDark) & {
+      fill: variables.$darkWarningAccent;
+    }
+  }
+}
+
+// Stands in for the warning badge Chrome paints on its own Network tab while throttling is
+// on: there is no API to badge an extension panel's tab, so it lives at the toolbar's left
+// edge instead.
+.mocksWarning {
+  height: 14px;
+  margin-right: 10px;
+}
+
+.mocksWarningIcon {
+  width: 14px;
+  height: 14px;
+  fill: variables.$warningAccent;
+
+  :global(.isDark) & {
+    fill: variables.$darkWarningAccent;
+  }
+}
+
 .settingsItemWrapper:not(:last-child) {
   margin-right: 10px;
 }
