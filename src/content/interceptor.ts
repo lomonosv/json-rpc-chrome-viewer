@@ -7,7 +7,8 @@ import {
 import { findRule, getRuleResponse, getRuleStatus } from '~/logic/Interceptor/rules';
 
 (function overrideFetch() {
-  const nativeFetch = window.fetch.bind(window);
+  const originalFetch = window.fetch;
+  const nativeFetch = originalFetch.bind(window);
   const jsonRPCRegex = /jsonrpc\\?["']?\s*:\s*\\?["']?2\.0\\?["']?/;
 
   const rulesTimeoutMs = 1000;
@@ -22,19 +23,6 @@ import { findRule, getRuleResponse, getRuleStatus } from '~/logic/Interceptor/ru
       isReady = true;
       resolve();
     };
-  });
-  const readyTimer = setTimeout(resolveReady, rulesTimeoutMs);
-
-  window.addEventListener('message', (event) => {
-    if (event.source !== window || event.data?.type !== MessageType.InterceptorRules) {
-      return;
-    }
-
-    rules = event.data.payload?.rules || [];
-    isEnabled = !!event.data.payload?.isEnabled;
-
-    clearTimeout(readyTimer);
-    resolveReady();
   });
 
   const isArmed = (): boolean => isEnabled && !!rules.length;
@@ -231,11 +219,35 @@ import { findRule, getRuleResponse, getRuleStatus } from '~/logic/Interceptor/ru
     });
   };
 
-  window.fetch = function fetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
+  const patchedFetch = function fetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
     if (isReady && !isArmed()) {
       return nativeFetch(input, init);
     }
 
     return interceptFetch(input, init);
   };
+
+  const applyPatch = () => {
+    window.fetch = !isReady || isArmed() ? patchedFetch : originalFetch;
+  };
+
+  const readyTimer = setTimeout(() => {
+    resolveReady();
+    applyPatch();
+  }, rulesTimeoutMs);
+
+  window.addEventListener('message', (event) => {
+    if (event.source !== window || event.data?.type !== MessageType.InterceptorRules) {
+      return;
+    }
+
+    rules = event.data.payload?.rules || [];
+    isEnabled = !!event.data.payload?.isEnabled;
+
+    clearTimeout(readyTimer);
+    resolveReady();
+    applyPatch();
+  });
+
+  applyPatch();
 }());

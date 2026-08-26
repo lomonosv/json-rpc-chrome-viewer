@@ -188,7 +188,8 @@ A consequence worth having: rules now apply **only to the inspected tab**, since
 
 Three things in the patch are load-bearing:
 
-- **`window.fetch` is not `async`.** It is a plain function that returns `nativeFetch(...)` directly whenever the rules have arrived and nothing is armed, and only delegates to the `async interceptFetch` otherwise. This runs on *every page the user visits*, armed or not, so the common path must not cost even the extra microtask an `async` passthrough would add.
+- **The patch is installed at `document_start` and withdrawn when disarmed.** `applyPatch()` puts `patchedFetch` on `window.fetch` only while the state is still unknown (`!isReady`) or armed, and otherwise restores the *original* `window.fetch` object — not the bound copy — so a disarmed page runs the genuine native function, `toString()` and all. It is called once at startup, from the ready timeout, and on every rules delivery, so arming and disarming from the panel swap the patch live. Accepted cost: a page that captured `window.fetch` before arming keeps the native one and is never intercepted.
+- **`patchedFetch` is not `async`.** It is a plain function that returns `nativeFetch(...)` directly in the transient ready-but-disarmed window before `applyPatch` restores the original, and only delegates to the `async interceptFetch` otherwise — the pre-state window still applies to every page, so the passthrough must stay cheap.
 - **The `ready` promise closes the document_start race.** Both scripts register at `document_start`, but `content.ts` can only push rules after an async round-trip to the service worker, so an early page fetch could otherwise beat them. `interceptFetch` awaits the first delivery — with a 1s timeout so a page is never held hostage if the answer never comes. The disarmed reply is a delivery too, which is what releases the gate when no panel is open.
 - **Only the intercepted half of a batch is reported to the panel.** A partially mocked batch is re-issued to the server carrying just the unmatched items (`sendItems`), and that re-issued call is a real request that `chrome.devtools.network` reports on its own. Reporting it here as well would list it twice.
 
@@ -222,7 +223,7 @@ Known gaps and side effects on the MAIN world, all deliberate:
 
 - **Only `fetch` is patched**, and only in the top frame — XHR, WebSocket frames, worker requests and iframes are untouched (`registerContentScripts` defaults `allFrames` to false).
 - **Rules apply only to the inspected tab, and only while its panel is open** — see the arming rules above. The url field narrows further, by endpoint.
-- **The patch is detectable.** `window.fetch.toString()` no longer reports `[native code]`, so integrity checks and bot-detection scripts can see it. The `window.WebSocket` patch has always had this property; the interceptor does not make it worse, but it does apply to every page rather than only those opening sockets.
+- **The patch is detectable, but only while it is installed.** `window.fetch.toString()` stops reporting `[native code]` while armed and during the pre-state window (~a round-trip, capped at 1s); a disarmed page gets the original native `fetch` back. The `window.WebSocket` patch has always had this property and keeps it permanently on every page.
 - **A synthetic `Response` is not a network one.** `response.url` is empty, `type` is `default` rather than `cors`/`basic`, `redirected` is false, and only `Content-Type` is set — a page reading custom response headers off a mocked call sees none.
 - **A partially mocked batch reaches the server with a different body than the page sent**, carrying only the unmatched items. That is the point of the feature, but it means server-side logging of a mocked session will not match what the app believes it sent.
 
@@ -271,6 +272,7 @@ Consequence: **only React render/lifecycle errors reaching `ErrorBoundary.compon
 - Dark theme is a `body.isDark` class toggled in `Layout.tsx`, so theme overrides are written as nested `:global(.isDark) & { … }`, never a media query.
 - **`process.env.X` is not substituted by esbuild.** `scripts/envSubstitute.js` rewrites those tokens textually across `build/` after bundling, using `.env`. Env values therefore only exist after a full `npm run build`, never after a bare `node scripts/build.js`.
 - Path aliases `~/logic/*` and `~/components/*` come from `tsconfig.json` and are resolved by esbuild from there.
+- **Content-script bundles are content-hashed after bundling.** `hashContentScripts()` renames every `build/content/*.js` (and its map) to `<name>.<md5-8>.js`, then rewrites the references that point at them: the `content/websockets.js` / `content/interceptor.js` string literals inside the built `background.js` — which is hashed *last* so its own hash covers the rewritten paths — and the `content_scripts` / `service_worker` entries in `build/manifest.json`. Source files keep the plain names; only `build/` is rewritten. Stale hashed files from a previous no-clean build are deleted first, and the hash is deterministic, so unchanged sources keep their names.
 
 ## Styling pitfalls
 
