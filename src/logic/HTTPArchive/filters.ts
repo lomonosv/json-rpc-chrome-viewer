@@ -1,6 +1,7 @@
 import { v4 as uuid } from 'uuid';
 import { IRequest, IRequestTimings, JSONValue } from '~/logic/HTTPArchive/IRequest';
 import { SearchScope } from '~/logic/HTTPArchive/SearchScope';
+import { IInterceptedRequestPayload } from '~/logic/Interceptor/IInterceptorRule';
 
 const jsonRPCRegex = /jsonrpc\\?["']?\s*:\s*\\?["']?2\.0\\?["']?/;
 
@@ -156,6 +157,78 @@ export const getPreparedMessage = (
   rawResponse: ''
 });
 
+interface IPreparedRequestBase {
+  startTime: number,
+  time: number,
+  timings: IRequestTimings,
+  isCors: boolean,
+  isIntercepted?: boolean,
+  request: IRequest['request'],
+  response: IRequest['response'],
+}
+
+const getPreparedJsonRpcRequests = (
+  base: IPreparedRequestBase,
+  rawRequest: string,
+  rawResponse: string
+): IRequest[] => {
+  const requestJSON = parse(rawRequest);
+
+  if (!requestJSON) {
+    return [];
+  }
+
+  const responseJSON = parse(rawResponse);
+  const isBatch = Array.isArray(requestJSON) && Array.isArray(responseJSON);
+
+  const build = (request, response): IRequest => ({
+    ...base,
+    uuid: uuid(),
+    isError: !!response?.error,
+    isWarning: !response,
+    isWebSocket: false,
+    requestJSON: request,
+    rawRequest,
+    responseJSON: response,
+    rawResponse
+  });
+
+  if (!isBatch) {
+    return [build(requestJSON, responseJSON)];
+  }
+
+  const responseJSONIndex = responseJSON.reduce((acc, item) => {
+    acc[item?.id] = item;
+    return acc;
+  }, {});
+
+  return requestJSON.map((item) => build(item, responseJSONIndex[item?.id]));
+};
+
+export const getPreparedInterceptedRequest = (payload: IInterceptedRequestPayload): IRequest[] => (
+  getPreparedJsonRpcRequests({
+    startTime: payload.startTime,
+    time: payload.time,
+    timings: null,
+    isCors: false,
+    isIntercepted: true,
+    request: {
+      url: payload.url,
+      method: payload.method,
+      headers: payload.headers,
+      postData: {
+        text: payload.rawRequest
+      }
+    },
+    response: {
+      status: payload.status,
+      content: {
+        size: payload.rawResponse?.length || 0
+      }
+    }
+  }, payload.rawRequest, payload.rawResponse)
+);
+
 const getPreparedTimings = (request: chrome.devtools.network.Request): IRequestTimings => {
   const timings = request.timings as IRequestTimings & { _blocked_queueing?: number };
 
@@ -181,99 +254,31 @@ export const getPreparedHttpRequest = async (
   request: chrome.devtools.network.Request,
   responseContent?: string
 ): Promise<IRequest[]> => new Promise((resolve) => {
-  const requests: IRequest[] = [];
-
   request.getContent((body) => {
-    const rawRequest = request.request.postData.text;
-    const rawResponse = responseContent || body;
-    const requestJSON = JSON.parse(rawRequest);
-    let responseJSON;
-
-    try {
-      responseJSON = JSON.parse(rawResponse);
-    } catch (e) {
-      responseJSON = null;
-    }
-
-    const isBatch = Array.isArray(requestJSON) && Array.isArray(responseJSON);
-
     const referer = request.request.headers.find(({ name }) => name.toLowerCase() === 'referer');
     const host = referer ? referer.value.replace(/(.+:\/\/)([^/]+)(\/?.*)/, '$2') : '';
-
-    const isCors = !request.request.url.includes(host);
-
+    // Guarded against NaN, which would corrupt both the sort order and the bar geometry.
     const startedAt = Date.parse(request.startedDateTime);
-    const startTime = Number.isNaN(startedAt) ? Date.now() : startedAt;
-    const timings = getPreparedTimings(request);
 
-    if (!isBatch) {
-      requests.push({
-        uuid: uuid(),
-        startTime,
-        request: {
-          url: request.request.url,
-          method: request.request.method,
-          headers: request.request.headers,
-          postData: {
-            text: request.request.postData.text
-          }
-        },
-        response: {
-          status: request.response.status,
-          content: {
-            size: request.response.content.size
-          }
-        },
-        time: request.time,
-        timings,
-        isCors,
-        isError: !!responseJSON?.error,
-        isWarning: !responseJSON,
-        isWebSocket: false,
-        requestJSON,
-        rawRequest,
-        responseJSON,
-        rawResponse
-      });
-      resolve(requests);
-    } else {
-      const responseJSONIndex = responseJSON.reduce((acc, item) => {
-        acc[item.id] = item;
-        return acc;
-      }, {});
-
-      requestJSON.forEach((requestJSONItem) => {
-        requests.push({
-          uuid: uuid(),
-          startTime,
-          request: {
-            url: request.request.url,
-            method: request.request.method,
-            headers: request.request.headers,
-            postData: {
-              text: request.request.postData.text
-            }
-          },
-          response: {
-            status: request.response.status,
-            content: {
-              size: request.response.content.size
-            }
-          },
-          time: request.time,
-          timings,
-          isCors,
-          isError: !!requestJSONItem?.error,
-          isWarning: !requestJSONItem,
-          isWebSocket: false,
-          requestJSON: requestJSONItem,
-          rawRequest,
-          responseJSON: responseJSONIndex[requestJSONItem.id],
-          rawResponse
-        });
-      });
-
-      resolve(requests);
-    }
+    resolve(getPreparedJsonRpcRequests({
+      startTime: Number.isNaN(startedAt) ? Date.now() : startedAt,
+      time: request.time,
+      timings: getPreparedTimings(request),
+      isCors: !request.request.url.includes(host),
+      request: {
+        url: request.request.url,
+        method: request.request.method,
+        headers: request.request.headers,
+        postData: {
+          text: request.request.postData.text
+        }
+      },
+      response: {
+        status: request.response.status,
+        content: {
+          size: request.response.content.size
+        }
+      }
+    }, request.request.postData.text, responseContent || body));
   });
 });

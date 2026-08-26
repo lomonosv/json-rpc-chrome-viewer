@@ -1,6 +1,6 @@
 # JSON-RPC Chrome Viewer
 
-A Chrome DevTools extension for working with **JSON-RPC** traffic. It adds a dedicated panel that captures JSON-RPC calls over both HTTP and WebSocket, decodes them, and presents them in a way that is actually readable — instead of hunting through the Network tab for POSTs that all share the same URL.
+A Chrome DevTools extension for working with **JSON-RPC** traffic. It adds a dedicated panel that captures JSON-RPC calls over both HTTP and WebSocket, decodes them, and presents them in a way that is actually readable - instead of hunting through the Network tab for POSTs that all share the same URL.
 
 Built on Manifest V3. MIT licensed.
 
@@ -12,10 +12,10 @@ Every JSON-RPC call to a given endpoint hits the same URL with the same method (
 
 **Capture**
 
-- Detects JSON-RPC 2.0 requests automatically — no configuration or URL patterns to set up
-- **WebSocket support** — intercepts `window.WebSocket` to capture RPC messages over sockets, including SockJS-style encoded frames
+- Detects JSON-RPC 2.0 requests automatically - no configuration or URL patterns to set up
+- **WebSocket support** - intercepts `window.WebSocket` to capture RPC messages over sockets, including SockJS-style encoded frames
 - **Batch requests** are split into one row per call, with responses correlated back by `id`
-- **Background accumulation** — requests are buffered from the moment DevTools opens, so calls made before you switch to the panel are not lost
+- **Background accumulation** - requests are buffered from the moment DevTools opens, so calls made before you switch to the panel are not lost
 - **Preserve log** across page navigations
 
 **Inspect**
@@ -30,11 +30,11 @@ Every JSON-RPC call to a given endpoint hits the same URL with the same method (
 **Navigate**
 
 - **Waterfall column** showing each request's start offset and duration on a shared timeline, with the bar split into connection / request / waiting / download phases
-- **Timing breakdown on hover** — Queueing, Stalled, DNS, connection, SSL, request sent, waiting and content download, like the Network panel's popover. Hovering a phase highlights it on the bar
-- **Search** across method names, request params, response results and error codes/messages — switch scope between Method, Request, Response or All, with an optional case-sensitive toggle. Matches are highlighted in the list and in both JSON panes
-- **Sortable columns** — click any header to sort ascending/descending
-- **Resizable and reorderable columns** — drag a column's left divider to resize it, or drag the header itself to change the order. Both persist
-- **Configurable columns** — show or hide Waterfall, Status, Size and Time
+- **Timing breakdown on hover** - Queueing, Stalled, DNS, connection, SSL, request sent, waiting and content download, like the Network panel's popover. Hovering a phase highlights it on the bar
+- **Search** across method names, request params, response results and error codes/messages - switch scope between Method, Request, Response or All, with an optional case-sensitive toggle. Matches are highlighted in the list and in both JSON panes
+- **Sortable columns** - click any header to sort ascending/descending
+- **Resizable and reorderable columns** - drag a column's left divider to resize it, or drag the header itself to change the order. Both persist
+- **Configurable columns** - show or hide Waterfall, Status, Size and Time
 - Keyboard navigation with <kbd>↑</kbd> / <kbd>↓</kbd>, scrolling the selection into view
 - Resizable panes that remember their size
 - Autoscroll to the latest request
@@ -43,7 +43,7 @@ Every JSON-RPC call to a given endpoint hits the same URL with the same method (
 
 - Dark and light themes, following the DevTools theme by default
 - ~35 selectable JSON tree viewer colour themes
-- Configurable default JSON tree open state, separately for HTTP and WebSocket messages — and when set to Expanded, how many levels deep to open
+- Configurable default JSON tree open state, separately for HTTP and WebSocket messages - and when set to Expanded, how many levels deep to open
 
 ## Install
 
@@ -62,7 +62,7 @@ npm run build
 
 Then open `chrome://extensions`, enable **Developer mode**, choose **Load unpacked**, and select the generated `build/` directory.
 
-Building requires a `.env` file in the project root — see [Environment](#environment).
+Building requires a `.env` file in the project root - see [Environment](#environment).
 
 ## Usage
 
@@ -84,7 +84,7 @@ A request is treated as JSON-RPC when it is a POST with an `application/json` bo
 
 Search scope and case sensitivity live in the toolbar rather than this dialog, but persist the same way.
 
-Settings persist in `chrome.storage.local`, along with pane sizes and column widths/order. The Method column is always shown, since it identifies the row, and is the only one that cannot be resized or reordered — it absorbs whatever width the other columns give up.
+Settings persist in `chrome.storage.local`, along with pane sizes and column widths/order. The Method column is always shown, since it identifies the row, and is the only one that cannot be resized or reordered - it absorbs whatever width the other columns give up.
 
 ## Permissions
 
@@ -95,7 +95,7 @@ Settings persist in `chrome.storage.local`, along with pane sizes and column wid
 | `clipboardWrite` | Copy request/response payloads and method names |
 | `http://*/*`, `https://*/*` | Observe traffic on the inspected page |
 
-Captured traffic stays local — it is held in memory in the DevTools panel and is not transmitted anywhere. The only outbound requests the extension makes are optional crash reports from its own panel code, sent when a `SENTRY_DSN` is configured at build time.
+Captured traffic stays local - it is held in memory in the DevTools panel and is not transmitted anywhere. The only outbound requests the extension makes are optional crash reports from its own panel code, sent when a `SENTRY_DSN` is configured at build time.
 
 ## Development
 
@@ -123,9 +123,9 @@ SENTRY_DSN=<your sentry dsn>
 ENVIRONMENT=development
 ```
 
-`scripts/envSubstitute.js` inlines these into the bundle after esbuild runs, so they only take effect via the full `npm run build` — not a bare `node scripts/build.js`. The build exits non-zero if `.env` is missing.
+`scripts/envSubstitute.js` inlines these into the bundle after esbuild runs, so they only take effect via the full `npm run build` - not a bare `node scripts/build.js`. The build exits non-zero if `.env` is missing.
 
-`SENTRY_AUTH_TOKEN` is optional and only used to upload source maps during a release build. If it is set in your shell, a local build will upload to Sentry — unset it (`SENTRY_AUTH_TOKEN= npm run build`) to avoid that.
+`SENTRY_AUTH_TOKEN` is optional and only used to upload source maps during a release build. If it is set in your shell, a local build will upload to Sentry - unset it (`SENTRY_AUTH_TOKEN= npm run build`) to avoid that.
 
 ### Project layout
 
@@ -150,7 +150,7 @@ Runs `release-it`: lints, typechecks, builds, bumps the version in both `package
 
 ## Contributing
 
-Feature requests, bug reports and pull requests are welcome — please open an [issue](https://github.com/lomonosv/json-rpc-chrome-viewer/issues) or a PR.
+Feature requests, bug reports and pull requests are welcome - please open an [issue](https://github.com/lomonosv/json-rpc-chrome-viewer/issues) or a PR.
 
 ## License
 

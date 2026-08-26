@@ -1,0 +1,239 @@
+@use "../common/variables";
+
+.interceptorButton {
+  height: 14px;
+  margin-right: 10px;
+}
+
+.interceptorIcon {
+  width: 14px;
+  height: 14px;
+
+  &.isActive {
+    fill: variables.$interceptorAccent;
+
+    :global(.isDark) & {
+      fill: variables.$darkInterceptorAccent;
+    }
+  }
+}
+
+.interceptorWrapper {
+  display: flex;
+  flex-direction: column;
+  background: variables.$background;
+  color: variables.$color;
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+
+  :global(.isDark) & {
+    background: variables.$darkBackground;
+    color: variables.$darkColor;
+  }
+}
+
+.interceptorToolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 15px;
+  padding: 10px 10px 0;
+}
+
+.headerTitle {
+  overflow: hidden;
+  min-width: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding-right: 20px;
+}
+
+.addButton {
+  cursor: pointer;
+  background: variables.$background;
+  padding: 3px 10px;
+  border: 1px solid variables.$borderColor;
+  border-radius: 3px;
+
+  &:hover {
+    background: variables.$hoverBackground;
+  }
+
+  :global(.isDark) & {
+    background: variables.$darkBackground;
+    border-color: variables.$darkBorderColor;
+
+    &:hover {
+      background: variables.$darkHoverBackground;
+    }
+  }
+}
+
+.hint {
+  padding: 8px 10px 0;
+  opacity: 0.85;
+  font-size: 11px;
+  max-width: 720px;
+}
+
+.interceptorContainer {
+  flex-grow: 1;
+  overflow: auto;
+  padding: 10px;
+}
+
+.empty {
+  opacity: 0.6;
+  padding: 10px 0;
+}
+
+.rule {
+  border: 1px solid variables.$borderColor;
+  border-radius: 3px;
+  padding: 8px;
+  margin-bottom: 10px;
+
+  :global(.isDark) & {
+    border-color: variables.$darkBorderColor;
+  }
+
+  &.isDisabled {
+    opacity: 0.5;
+  }
+}
+
+.ruleRow {
+  display: flex;
+  align-items: baseline;
+  gap: 6px 14px;
+}
+
+.ruleConfiguration {
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px 14px;
+  flex-wrap: wrap;
+}
+
+.ruleField {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex: 0 0 auto;
+  min-width: 0;
+}
+
+.ruleFieldWide {
+  flex: 1 1 180px;
+  min-width: 150px;
+}
+
+.inputGrow {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.fieldLabel {
+  opacity: 0.65;
+  white-space: nowrap;
+}
+
+.fieldSuffix {
+  opacity: 0.65;
+}
+
+.responseTypeSelect {
+  padding: 0 3px;
+}
+
+.patternInput {
+  border: 1px solid variables.$borderColor;
+  padding: 1px 4px;
+  width: 100%;
+  min-width: 0;
+  vertical-align: middle;
+
+  :global(.isDark) & {
+    border-color: variables.$darkBorderColor;
+  }
+}
+
+.numberInput {
+  border: 1px solid variables.$borderColor;
+  padding: 1px 4px;
+  width: 52px;
+  vertical-align: middle;
+
+  :global(.isDark) & {
+    border-color: variables.$darkBorderColor;
+  }
+}
+
+.bodyLabel {
+  display: block;
+  margin-top: 10px;
+  opacity: 0.65;
+
+  > code {
+    font-size: 11px;
+  }
+}
+
+.removeButton {
+  cursor: pointer;
+  margin-left: auto;
+  margin-right: 8px;
+
+  > i {
+    width: 11px;
+    height: 11px;
+  }
+}
+
+.body {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 80px;
+  margin-top: 8px;
+  padding: 6px;
+  font-family: monospace;
+  font-size: 12px;
+  background: variables.$background;
+  color: variables.$color;
+  border: 1px solid variables.$borderColor;
+  border-radius: 3px;
+  resize: vertical;
+
+  &:focus {
+    outline: 1px solid variables.$focusOutlineColor;
+  }
+
+  :global(.isDark) & {
+    background: variables.$darkBackground;
+    color: variables.$darkColor;
+    border-color: variables.$darkBorderColor;
+  }
+
+  &.isInvalid {
+    border-color: variables.$error;
+  }
+}
+
+.invalidHint {
+  color: variables.$error;
+  font-size: 11px;
+  padding-top: 4px;
+}
+
+.closeButton {
+  position: absolute;
+  right: 9px;
+  top: 7px;
+
+  > i {
+    width: 13px;
+    height: 13px;
+  }
+}

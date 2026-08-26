@@ -3,6 +3,7 @@ import { useRequestContext } from '~/logic/HTTPArchive/HttpArchiveContext';
 import { useSettingsContext } from '~/logic/SettingsContext/SettingsContext';
 import { SearchScope, searchScopeOptions } from '~/logic/HTTPArchive/SearchScope';
 import Button from '~/components/common/Button';
+import InterceptorButton from '~/components/Interceptor';
 import SettingsButton from '~/components/common/SettingsButton';
 import Input, { Type } from '~/components/common/Input';
 import Select from '~/components/common/Select';
@@ -127,6 +128,7 @@ const Toolbar = () => {
           />
         </div>
         <div className={ styles.toolbarSection }>
+          <InterceptorButton />
           <SettingsButton />
         </div>
       </div>

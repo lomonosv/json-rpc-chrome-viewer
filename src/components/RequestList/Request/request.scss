@@ -155,6 +155,24 @@
       background: variables.$greenHeaderBackground;
     }
   }
+
+  &.isIntercepted {
+    flex-shrink: 0;
+
+    &::before {
+      content: "MOCK";
+      opacity: 1;
+      background: variables.$interceptorAccent;
+      border-color: variables.$interceptorAccent;
+      color: #fff;
+
+      :global(.isDark) & {
+        background: variables.$darkInterceptorAccent;
+        border-color: variables.$darkInterceptorAccent;
+        color: #fff;
+      }
+    }
+  }
 }
 
 .badgeMessageType {

@@ -114,6 +114,9 @@ const Request = ({ item, timelineStart, timelineEnd }: IComponentProps) => {
               }) }
             />
           ) }
+          { item.isIntercepted && (
+            <div className={ cn(styles.badge, styles.isIntercepted) } />
+          ) }
           <span className={ styles.methodLabel }>{ getRequestLabel(item) }</span>
           <div
             className={ styles.rowActions }

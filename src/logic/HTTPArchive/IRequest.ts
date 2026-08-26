@@ -28,6 +28,7 @@ export interface IRequest {
   isError: boolean,
   isWarning: boolean,
   isWebSocket: boolean,
+  isIntercepted?: boolean,
   websocketMessageType?: 'income' | 'outcome',
   websocketJSON?: JSONValue & {
     id: string,

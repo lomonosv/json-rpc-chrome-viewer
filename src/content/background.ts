@@ -1,15 +1,71 @@
+import { MessageType, interceptorPortName } from '~/logic/common/messages';
+import { enabledStorageKey, normaliseRules, rulesStorageKey } from '~/logic/Interceptor/rules';
 import RegisteredContentScript = chrome.scripting.RegisteredContentScript;
 
 chrome.runtime.onInstalled.addListener(async () => {
   const scripts = [{
-    id: 'websockets',
-    js: ['content/websockets.js'],
+    id: 'main-world',
+    js: ['content/websockets.js', 'content/interceptor.js'],
     matches: ['*://*/*'],
     runAt: 'document_start',
     world: 'MAIN'
   }];
-  const ids = scripts.map((s) => s.id);
 
-  await chrome.scripting.unregisterContentScripts({ ids }).catch(() => {});
+  await chrome.scripting.unregisterContentScripts().catch(() => {});
   await chrome.scripting.registerContentScripts(scripts as RegisteredContentScript[]).catch(() => {});
+});
+
+const panelPorts = new Map<number, chrome.runtime.Port>();
+
+const getInterceptorState = async (tabId: number) => {
+  const stored = await chrome.storage.local.get([rulesStorageKey, enabledStorageKey]);
+
+  return {
+    rules: normaliseRules(stored[rulesStorageKey]),
+    isEnabled: !!stored[enabledStorageKey] && panelPorts.has(tabId)
+  };
+};
+
+const pushInterceptorState = async (tabId: number) => {
+  const payload = await getInterceptorState(tabId);
+
+  chrome.tabs.sendMessage(tabId, { type: MessageType.InterceptorState, payload }).catch(() => {});
+};
+
+chrome.runtime.onConnect.addListener((port) => {
+  if (port.name !== interceptorPortName) {
+    return;
+  }
+
+  port.onMessage.addListener(({ tabId }: { tabId: number }) => {
+    panelPorts.set(tabId, port);
+    pushInterceptorState(tabId);
+  });
+
+  port.onDisconnect.addListener(() => {
+    panelPorts.forEach((openPort, tabId) => {
+      if (openPort === port) {
+        panelPorts.delete(tabId);
+        pushInterceptorState(tabId);
+      }
+    });
+  });
+});
+
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message?.type !== MessageType.InterceptorStateRequest || !sender.tab) {
+    return false;
+  }
+
+  getInterceptorState(sender.tab.id).then(sendResponse);
+
+  return true;
+});
+
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area !== 'local' || !(rulesStorageKey in changes || enabledStorageKey in changes)) {
+    return;
+  }
+
+  panelPorts.forEach((port, tabId) => pushInterceptorState(tabId));
 });

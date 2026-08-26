@@ -4,6 +4,7 @@ import {
   isJsonRpcRequest,
   isJsonRpcMessage,
   getPreparedHttpRequest,
+  getPreparedInterceptedRequest,
   getPreparedMessage,
   getRequestLabel,
   matchesFilter,
@@ -11,6 +12,8 @@ import {
 } from '~/logic/HTTPArchive/filters';
 import { IRequest } from '~/logic/HTTPArchive/IRequest';
 import { SortDirection, SortField } from '~/logic/HTTPArchive/SortField';
+import { MessageType } from '~/logic/common/messages';
+import { IInterceptedRequestPayload } from '~/logic/Interceptor/IInterceptorRule';
 
 const getSortValue = (request: IRequest, field: SortField): string | number => {
   switch (field) {
@@ -139,11 +142,22 @@ const useRequest = () => {
 
   const handleRuntimeMessage = useCallback((
     message: {
-      type: string,
-      payload: { type: 'income' | 'outcome', url: string, message: string },
+      type: MessageType,
+      payload: IInterceptedRequestPayload & { type: 'income' | 'outcome', message: string },
     }
   ) => {
-    if (message.type === 'JSON_RPC_WEBSOCKET_MESSAGE' && isJsonRpcMessage(message.payload.message)) {
+    if (message.type === MessageType.InterceptedRequest) {
+      requestsRef.current = [
+        ...requestsRef.current,
+        ...getPreparedInterceptedRequest(message.payload)
+      ];
+
+      setRequests(requestsRef.current);
+
+      return;
+    }
+
+    if (message.type === MessageType.WebsocketMessage && isJsonRpcMessage(message.payload.message)) {
       const json = parseJsonRpcMessage(message.payload.message);
 
       if (!json) return;

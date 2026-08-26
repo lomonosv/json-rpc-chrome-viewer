@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-Manifest V3 Chrome extension that adds a **JSON-RPC Chrome Viewer** panel to DevTools. It captures JSON-RPC traffic over both HTTP and WebSocket, normalises it into one request model, and renders it with scoped search, a phase-segmented waterfall with timing breakdowns, sortable/resizable/reorderable columns, resizable panes, resend, themes and keyboard navigation.
+Manifest V3 Chrome extension that adds a **JSON-RPC Chrome Viewer** panel to DevTools. It captures JSON-RPC traffic over both HTTP and WebSocket, normalises it into one request model, and renders it with scoped search, a phase-segmented waterfall with timing breakdowns, sortable/resizable/reorderable columns, resizable panes, resend, themes and keyboard navigation. It can also **intercept** responses, answering matched methods from a local rule instead of the network.
 
 ## Commands
 
@@ -35,7 +35,9 @@ The single most important thing to understand: code here runs in four separate J
 1. **DevTools page** — `static/index.js`. Plain JS, **not bundled or type-checked**, copied verbatim into the build. Registers the panel.
 2. **Panel app** — `src/index.tsx` → React, bundled to `build/application.js`, hosted by `static/application.html`.
 3. **Content script (ISOLATED world)** — `src/content/content.ts`. Declared in the manifest.
-4. **Page script (MAIN world)** — `src/content/websockets.ts`. Registered *dynamically* by the service worker (`src/content/background.ts`) with `world: 'MAIN'`, because it must monkey-patch `window.WebSocket` inside the page's own realm, which an isolated content script cannot reach.
+4. **Page scripts (MAIN world)** — `src/content/websockets.ts` and `src/content/interceptor.ts`. Registered *dynamically* by the service worker (`src/content/background.ts`) under one `main-world` id with `world: 'MAIN'`, because they must monkey-patch `window.WebSocket` and `window.fetch` inside the page's own realm, which an isolated content script cannot reach. `background.ts` calls `unregisterContentScripts()` with **no filter** before registering: the id changed when the interceptor joined the websocket patch, and unregistering by the new id alone would leave an upgrade running the old registration too.
+
+Message names for every hop live in `src/logic/common/messages.ts` (`MessageType`). They sit under `~/logic` rather than beside the scripts because **the build globs every top-level `.ts` in `src/content/` into its own bundle** — a shared module placed there would emit a stray entry point. The same applies to any other code shared with a page script; put it under `~/logic`, or the build will hand you an extra file in `build/content/`.
 
 ### The cold-start buffer
 
@@ -43,22 +45,25 @@ The single most important thing to understand: code here runs in four separate J
 
 This is why requests made before you open the panel still appear, and why listener registration is split across two files. Changing one side without the other silently drops the backlog.
 
-### Two capture paths, one model
+### Three capture paths, one model
 
 - **HTTP**: `chrome.devtools.network.onRequestFinished` → `isJsonRpcRequest()` → `getPreparedHttpRequest()`.
 - **WebSocket**: page `WebSocket` → `InterceptedWebSocket` (MAIN) → `window.postMessage` → `content.ts` (ISOLATED) → `chrome.runtime.sendMessage` → `handleRuntimeMessage` in the panel.
+- **Intercepted HTTP**: page `fetch` → `interceptor.ts` (MAIN) → the same postMessage/relay hops → `getPreparedInterceptedRequest()`. A mocked call never reaches the network, so `chrome.devtools.network` never reports it and the page has to hand it over itself.
 
-Both normalise into `IRequest` (`src/logic/HTTPArchive/IRequest.ts`), discriminated by `isWebSocket`. Detection is a regex for `"jsonrpc": "2.0"` against the raw body, not a JSON parse, so it tolerates SockJS's double-encoded string frames — `parseJsonRpcMessage()` unwraps those. **JSON-RPC batches are exploded into one `IRequest` per batch item**, with responses correlated back by `id`.
+All three normalise into `IRequest` (`src/logic/HTTPArchive/IRequest.ts`), discriminated by `isWebSocket`. Detection is a regex for `"jsonrpc": "2.0"` against the raw body, not a JSON parse, so it tolerates SockJS's double-encoded string frames — `parseJsonRpcMessage()` unwraps those. **JSON-RPC batches are exploded into one `IRequest` per batch item**, with responses correlated back by `id`.
+
+Both HTTP paths share **one** builder, `getPreparedJsonRpcRequests(base, rawRequest, rawResponse)` in `filters.ts`: the caller supplies an `IPreparedRequestBase` with everything the JSON payload cannot say (timings, status, size, url, `isCors`, `isIntercepted`) and the builder does the parse, the batch explode and the id correlation. Keep it that way — the batch-correlation code existed twice before the interceptor landed, and the two copies had already drifted (the batch branch read `isError` off the *request* item instead of the response, so an erroring item in a batch never coloured its row red).
 
 ### State
 
 Nested providers in `src/components/Application.tsx`, and **the order is load-bearing**:
 
 ```
-ErrorBoundary → SettingsContext → HttpArchiveContext → CacheContext → Layout
+ErrorBoundary → SettingsContext → HttpArchiveContext → CacheContext → InterceptorContext → Layout
 ```
 
-`HttpArchiveContext` reads `preserveLog`, the include-log filters and the column-visibility flags from `SettingsContext`, so it must nest inside it.
+`HttpArchiveContext` reads `preserveLog`, the include-log filters and the column-visibility flags from `SettingsContext`, so it must nest inside it. `InterceptorContext` reads nothing from the others and nothing reads from it, which is why it sits innermost — moving it out would suggest a dependency that does not exist.
 
 Every context follows the same shape — match it when adding one:
 
@@ -167,7 +172,65 @@ The phase palette lives in `variables.scss` as `$phaseIdle`/`$phaseSend`/`$phase
 
 `WaterfallTooltip` is portalled out of the list because the row sits inside the `overflow: auto` scroll container and would otherwise be clipped. It is therefore positioned against the viewport by hand in a `useLayoutEffect` — measured, flipped above the row when it will not fit below, and clamped horizontally — and stays `visibility: hidden` until that first measurement lands to avoid a flash in the wrong corner.
 
-Rows with no timings — every websocket message, since those have no HAR entry — fall back to the original `title` attribute. The rich tooltip and the native one are mutually exclusive on purpose; rendering both gives you two overlapping tooltips.
+Rows with no timings — every websocket message, since those have no HAR entry — fall back to the original `title` attribute. The rich tooltip and the native one are mutually exclusive on purpose; rendering both gives you two overlapping tooltips. Intercepted rows land here too: a mocked call has no HAR entry either, so it draws an unsegmented bar sized from the `startTime`/`time` the page reported.
+
+### Response interceptor
+
+A rule matches a JSON-RPC **method** (exact, or a glob using `*`) optionally narrowed by a url substring, and answers with a `result` or an `error` body, a transport status and a delay. `src/content/interceptor.ts` patches `window.fetch` in the MAIN world; the panel edits rules through `InterceptorContext`, and `src/components/Interceptor/` renders the dialog and the toolbar button.
+
+**Interception is armed by a live signal, never by the stored flag — and this is a safety property, not a detail.** The service worker keeps `panelPorts: Map<tabId, Port>`; the panel holds a `chrome.runtime.connect` port open for exactly as long as it exists, and `isEnabled` is only ever `storedFlag && panelPorts.has(tabId)`. `content.ts` therefore **asks** the worker on load (`InterceptorStateRequest`) rather than reading storage, and the worker pushes `InterceptorState` whenever the answer changes.
+
+Do not "simplify" this back into a `chrome.storage.onChanged` listener in `content.ts`. That was the original design and it was dangerous: storage outlives the panel, so interception survived closing DevTools *and* page reloads, silently mocking a page whose only warning indicator — the amber toolbar button — lives inside the panel that just went away.
+
+The port's disconnect is the signal because it is the only one that survives the panel being torn down without warning; `pagehide` does not. The map lives in worker memory on purpose: if the worker is recycled the map dies with it *and so does every port that filled it*, so the two can never disagree — a restarted worker starts disarmed and the panel's `onDisconnect` reconnect re-arms it. Every failure mode lands on "off".
+
+A consequence worth having: rules now apply **only to the inspected tab**, since arming is keyed on `tabId`. A devtools page is not a tab, so `port.sender.tab` is undefined and the panel must send `chrome.devtools.inspectedWindow.tabId` itself.
+
+Three things in the patch are load-bearing:
+
+- **`window.fetch` is not `async`.** It is a plain function that returns `nativeFetch(...)` directly whenever the rules have arrived and nothing is armed, and only delegates to the `async interceptFetch` otherwise. This runs on *every page the user visits*, armed or not, so the common path must not cost even the extra microtask an `async` passthrough would add.
+- **The `ready` promise closes the document_start race.** Both scripts register at `document_start`, but `content.ts` can only push rules after an async round-trip to the service worker, so an early page fetch could otherwise beat them. `interceptFetch` awaits the first delivery — with a 1s timeout so a page is never held hostage if the answer never comes. The disarmed reply is a delivery too, which is what releases the gate when no panel is open.
+- **Only the intercepted half of a batch is reported to the panel.** A partially mocked batch is re-issued to the server carrying just the unmatched items (`sendItems`), and that re-issued call is a real request that `chrome.devtools.network` reports on its own. Reporting it here as well would list it twice.
+
+The merged response is rebuilt in the order the page asked, by indexing both halves on `id`, so a batch response lines up with its request. The **first** matched rule owns the HTTP status, because one response cannot carry a different status per batch item. Notifications (no `id`) are never mocked — there is no response to substitute.
+
+**Latency is synthetic only.** `delay` holds the answer back with a timer; a mocked call never makes a real request, so there is no round-trip to preserve. A `keepLatency` flag that sent the page's request anyway and answered with the mock once it returned was built and then rolled back — if it comes up again, note what it cost: the real call lands in the list as its own row beside the MOCK one (`chrome.devtools.network` reports it like any other request), so one logical call renders as two, and a rule whose endpoint is down waits out a full timeout before mocking. `delay` takes a `max()` across matched rules for the same reason the status comes from the first: a single HTTP response cannot arrive at two different times.
+
+**The failure contract: a bug in interception must never break the page's request.** This is structural, not a sprinkling of try/catch, and the split is what enforces it:
+
+- `planInterception()` holds everything that can throw and returns `null` to mean "leave this call alone" — a throw inside it is just another way of spelling `null`. It touches **no** network, which is what makes the fallback safe: `interceptFetch` can return `nativeFetch(input, init)` afterwards with no risk of double-sending.
+- Nothing after `sendItems()` may throw, because by then the passthrough half has already gone out and falling back would re-send it. That is why `getRuleStatus()` clamps and `getHeaders()` swallows.
+- The `return nativeFetch(...)` early exits must stay **outside** any `try`. In an `async` function a returned promise is awaited by the async machinery, so a `try` wrapped around them would catch genuine network rejections and retry them.
+
+Three specific throws are guarded because each is reachable from ordinary use, and all three were live defects in the draft:
+
+- **`new Response()` throws a RangeError outside 200-599.** The status field is free text, so `0` or `1000` would have turned every matched call into a rejected fetch. `getRuleStatus()` clamps at the point of use rather than on input, so typing `5` toward `500` is not rewritten under the cursor.
+- **`new Headers()` throws on a malformed name or value.** Headers are diagnostic only — shown in the panel's request pane — so `getHeaders()` returns `[]` rather than failing the call.
+- **`Request.clone()` throws on an already-consumed body.** Caught by `planInterception`, and the fallback is then faithful: native `fetch` rejects on a used `Request` with the identical `TypeError`, so the patch stays transparent in that mode too.
+
+**Aborts are honoured.** A mocked response is not exempt from the page's `AbortController`: `throwIfAborted()` runs before the work and again after the delay, and `sleep()` rejects on the signal, so a delayed mock cannot resolve for a call the page already dropped. The signal is read from `init` *or* the `Request`, since either can carry it. Without this a `delay` rule would silently break abort semantics — the exact case a loading-state test is trying to exercise.
+
+`content.ts` guards every `chrome.*` call with `isExtensionAlive()`. Reloading or updating the extension orphans the content scripts already running in open tabs, and every `chrome.*` call from one then throws "Extension context invalidated" **synchronously** — which `lastError` does not cover. Nothing is recoverable there, but it must not spray uncaught errors into the page console on every relayed frame.
+
+A rule whose body is not valid JSON is **inert**: `findRule` gates on `isValidRuleBody` and so does the editor's invalid styling, so what the UI marks red is exactly what the page declines to mock. The editor keeps the body as raw text — a half-typed rule must not take effect mid-keystroke, and JSON-parsing on every change would destroy the text the user is editing.
+
+`isIntercepted` on `IRequest` drives the amber MOCK badge, which sits in the method row rather than the url row and is not gated on a setting: unlike CORS and WEBSOCKET, a mocked response is something you must not miss while reading the list. The toolbar button turns `$interceptorAccent` on the same principle, standing in for the warning badge Chrome paints on its own Network tab — there is no API to badge an extension panel's tab.
+
+**No new manifest permissions.** The interceptor rides entirely on what the websocket patch already needed: `scripting` for the dynamic MAIN-world registration, `storage` for the rules, and the existing `*://*/*` host permissions. Nothing here uses `webRequest` or `declarativeNetRequest` — substitution happens inside the page, not in the network stack. Keep it that way: reaching for a network-layer API would widen the install-time permission prompt for a feature most users never enable.
+
+Known gaps and side effects on the MAIN world, all deliberate:
+
+- **Only `fetch` is patched**, and only in the top frame — XHR, WebSocket frames, worker requests and iframes are untouched (`registerContentScripts` defaults `allFrames` to false).
+- **Rules apply only to the inspected tab, and only while its panel is open** — see the arming rules above. The url field narrows further, by endpoint.
+- **The patch is detectable.** `window.fetch.toString()` no longer reports `[native code]`, so integrity checks and bot-detection scripts can see it. The `window.WebSocket` patch has always had this property; the interceptor does not make it worse, but it does apply to every page rather than only those opening sockets.
+- **A synthetic `Response` is not a network one.** `response.url` is empty, `type` is `default` rather than `cors`/`basic`, `redirected` is false, and only `Content-Type` is set — a page reading custom response headers off a mocked call sees none.
+- **A partially mocked batch reaches the server with a different body than the page sent**, carrying only the unmatched items. That is the point of the feature, but it means server-side logging of a mocked session will not match what the app believes it sent.
+
+Resend is unaffected by all of this — `EditRequestModal` runs its `fetch` through `chrome.scripting.executeScript` in the ISOLATED world, which never sees the MAIN-world patch.
+
+**The side-effect disclaimer is the `.hint` line in the dialog, and it is two lines on purpose.** It names only the three things that actually surprise people — mocked calls never reach the network, rules apply in *every tab*, and only `fetch` is intercepted — because the two support questions this feature generates are "why isn't my rule firing" (it was XHR) and "why did my other tab break" (rules are global). Everything else lives here, not in the UI. Resist growing it: it is styled at `opacity: 0.85` rather than help-text muting precisely so it gets read, and a disclaimer people skip is worth less than no disclaimer at all. There is deliberately no "Beta" badge — the label adds a word without adding information, and the concrete caveats do the work.
+
+`interceptor_rules` persists whatever shape `IInterceptorRule` had when it was written, so **restore goes through `normaliseRules()`** — it rebuilds each rule field by field, filling gaps and dropping anything unknown, so a rule saved by an older build can neither reach `findRule` half-shaped nor resurrect a dead field. Rules without an `id` are discarded; nothing can key off them. `normaliseRule` is also what `createRule` is built from, which is the point: a new field cannot be added to the factory and forgotten in the migration, because they are the same function. Add fields there and nowhere else.
 
 ### Persistence
 
@@ -184,6 +247,8 @@ All settings flow through `getConfig()` in `src/logic/common/helpers.ts` into `c
 Sort field and direction are **not** persisted — they reset with the panel.
 
 **There is a second, separate family of persisted values.** Layout state — `requestSectionHeight`, `requestListSectionWidth`, `columnWidths`, `columnOrder` — lives in `CacheContext`, is written **without the `settings_` prefix**, and never appears in the Settings dialog. Do not add layout state to `SettingsContext` by following the five-step recipe above; it belongs in `CacheContext`, which also owns the pattern for values that change continuously during a drag (ref mirror + a deferred write, see Resizable columns). `getConfig()` is shared by both and accepts an object default for the two structured keys.
+
+**And a third family: interceptor rules.** `interceptor_rules` and `interceptor_enabled` live in `InterceptorContext` and carry their own `interceptor_` prefix, which marks them as read outside the panel — the *service worker* reads them, and gates them on a panel actually being open before any page sees them (see Response interceptor). Do not fold these into `SettingsContext`, and note that `interceptor_enabled` persisting does **not** mean interception persists: it is remembered for the checkbox, not honoured on its own.
 
 Note the cross-realm coupling: `static/index.js` reads `settings_preserveLog` straight from storage to decide whether to flush its buffer on navigation, so that key name is shared between the bundled app and the unbundled DevTools page.
 
@@ -220,7 +285,9 @@ The request-list table is hand-built from flexbox, and these bit repeatedly. Whe
 - **`.bar` and `.tick` are applied together** in `Waterfall.tsx`. Their `:global(.isDark)` overrides tie at (0,2,0), so `.tick` must stay declared *after* `.bar` or websocket ticks render blue in dark mode.
 - Header cells are real `<button>`s. Keep it that way — clickable `<div>`s reintroduce the `jsx-a11y` findings this config now suppresses.
 
-Waterfall colours are `$waterfallBar` / `$waterfallTick` and `$darkWaterfallBar` / `$darkWaterfallTick` in `variables.scss`, drawn from the Chrome DevTools palette so the panel reads as native. These now cover only the *unsegmented* bar (a row with no timings) and the websocket tick — a segmented bar and the popover both use the separate `$phase*` palette described under Waterfall timing breakdown, which is deliberately paler. `$resizeHandleColor` is shared by the column dividers and both pane dividers. Note `$greenHeaderBackground` is still neon `#32ff00`, used by the WEBSOCKET badge and the income/outcome triangles.
+Waterfall colours are `$waterfallBar` / `$waterfallTick` and `$darkWaterfallBar` / `$darkWaterfallTick` in `variables.scss`, drawn from the Chrome DevTools palette so the panel reads as native. These now cover only the *unsegmented* bar (a row with no timings) and the websocket tick — a segmented bar and the popover both use the separate `$phase*` palette described under Waterfall timing breakdown, which is deliberately paler. `$resizeHandleColor` is shared by the column dividers and both pane dividers. Note `$greenHeaderBackground` is still neon `#32ff00`, used by the WEBSOCKET badge and the income/outcome triangles. `$interceptorAccent` / `$darkInterceptorAccent` is DevTools' alert amber, shared by the MOCK badge and the toolbar button — deliberately louder than `$warning`, which stays muted because it tints whole rows down the list.
+
+The MOCK badge repeats its own `:global(.isDark)` override inside `&.isIntercepted::before` rather than inheriting the base badge's. `.badge.isIntercepted::before` and `.isDark .badge::before` both land at (0,2,1), so without the repeat the theme colour would be decided by source order rather than by intent — the same hazard `.isCopied.isCopied` doubles itself to avoid.
 
 ## Toolchain constraints
 
