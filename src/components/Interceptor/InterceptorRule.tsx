@@ -38,7 +38,7 @@ const getInactiveReason = (rule: IInterceptorRule, isBodyValid: boolean, isDisab
 };
 
 const InterceptorRule = ({ rule, isDisabled, onChange, onRemove }: IComponentProps) => {
-  const [isExpanded, setIsExpanded] = useState<boolean>(true);
+  const [isExpanded, setIsExpanded] = useState<boolean>(rule.isEnabled);
   const isBodyValid = isValidRuleBody(rule.body);
   const inactiveReason = getInactiveReason(rule, isBodyValid, isDisabled);
   const areFieldsDisabled = isDisabled || !rule.isEnabled;

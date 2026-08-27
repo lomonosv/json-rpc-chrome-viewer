@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { DevToolsTheme, ExtensionTheme, JsonViewerTheme } from '~/logic/SettingsContext/Theme';
+import { ViewMode } from '~/logic/SettingsContext/ViewMode';
 import { ExpandTreeState } from '~/components/common/JsonViewer/ExpandTreeState';
 import { expandAllLevels } from '~/components/common/JsonViewer/ExpandLevel';
 import { SearchScope } from '~/logic/HTTPArchive/SearchScope';
@@ -23,6 +24,7 @@ const defaultShowWaterfallColumnValue = true;
 const defaultShowStatusColumnValue = true;
 const defaultShowSizeColumnValue = true;
 const defaultShowTimeColumnValue = true;
+const defaultViewModeValue = ViewMode.Panes;
 
 const useSettings = () => {
   const [isDevtoolsDarkTheme, setIsDevtoolsDarkTheme] = useState<boolean>(
@@ -48,6 +50,7 @@ const useSettings = () => {
   const [showStatusColumn, setShowStatusColumn] = useState<boolean>(defaultShowStatusColumnValue);
   const [showSizeColumn, setShowSizeColumn] = useState<boolean>(defaultShowSizeColumnValue);
   const [showTimeColumn, setShowTimeColumn] = useState<boolean>(defaultShowTimeColumnValue);
+  const [viewMode, setViewMode] = useState<ViewMode>(defaultViewModeValue);
 
   useEffect(() => {
     // It is available actually in API.
@@ -77,6 +80,7 @@ const useSettings = () => {
     getConfig('settings_showStatusColumn', defaultShowStatusColumnValue).then(setShowStatusColumn);
     getConfig('settings_showSizeColumn', defaultShowSizeColumnValue).then(setShowSizeColumn);
     getConfig('settings_showTimeColumn', defaultShowTimeColumnValue).then(setShowTimeColumn);
+    getConfig('settings_viewMode', defaultViewModeValue).then(setViewMode);
   }, []);
 
   const handlePreserveLogChange = (settings_preserveLog: boolean) => {
@@ -173,6 +177,11 @@ const useSettings = () => {
     chrome.storage.local.set({ settings_showTimeColumn });
   };
 
+  const handleViewModeChange = (settings_viewMode: ViewMode) => {
+    setViewMode(settings_viewMode);
+    chrome.storage.local.set({ settings_viewMode });
+  };
+
   return {
     preserveLog,
     includeJsonRpcLogs,
@@ -192,6 +201,7 @@ const useSettings = () => {
     showStatusColumn,
     showSizeColumn,
     showTimeColumn,
+    viewMode,
     systemJsonViewerTheme: jsonViewerTheme === JsonViewerTheme.System ? getSystemJsonViewerTheme() : jsonViewerTheme,
     isDarkTheme: (isDevtoolsDarkTheme && extensionTheme === ExtensionTheme.System)
       || extensionTheme === ExtensionTheme.Dark,
@@ -212,7 +222,8 @@ const useSettings = () => {
     setShowWaterfallColumn: handleShowWaterfallColumnChange,
     setShowStatusColumn: handleShowStatusColumnChange,
     setShowSizeColumn: handleShowSizeColumnChange,
-    setShowTimeColumn: handleShowTimeColumnChange
+    setShowTimeColumn: handleShowTimeColumnChange,
+    setViewMode: handleViewModeChange
   };
 };
 

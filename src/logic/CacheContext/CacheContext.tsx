@@ -11,10 +11,12 @@ import {
 
 const defaultRequestSectionHeight = 115;
 const defaultRequestListSectionWidth = 200;
+const defaultAccordionSectionHeight = 320;
 
 const useCache = () => {
   const [requestSectionHeight, setRequestSectionHeight] = useState<number>(defaultRequestSectionHeight);
   const [requestListSectionWidth, setRequestListSectionWidth] = useState<number>(defaultRequestListSectionWidth);
+  const [accordionSectionHeight, setAccordionSectionHeight] = useState<number>(defaultAccordionSectionHeight);
   const [columnWidths, setColumnWidths] = useState<Record<ResizableColumn, number>>(defaultColumnWidths);
   const columnWidthsRef = useRef<Record<ResizableColumn, number>>(defaultColumnWidths);
   const [columnOrder, setColumnOrder] = useState<ResizableColumn[]>(defaultColumnOrder);
@@ -23,6 +25,7 @@ const useCache = () => {
   useEffect(() => {
     getConfig('requestSectionHeight', defaultRequestSectionHeight).then(setRequestSectionHeight);
     getConfig('requestListSectionWidth', defaultRequestListSectionWidth).then(setRequestListSectionWidth);
+    getConfig('accordionSectionHeight', defaultAccordionSectionHeight).then(setAccordionSectionHeight);
     getConfig('columnWidths', defaultColumnWidths).then((stored) => {
       const merged = { ...defaultColumnWidths, ...(stored as Record<ResizableColumn, number>) };
 
@@ -51,6 +54,11 @@ const useCache = () => {
     chrome.storage.local.set({ requestListSectionWidth });
   };
 
+  const updateAccordionSectionHeight = (accordionSectionHeight) => {
+    setAccordionSectionHeight(accordionSectionHeight);
+    chrome.storage.local.set({ accordionSectionHeight });
+  };
+
   const getColumnWidth = (field: ResizableColumn) => columnWidthsRef.current[field];
 
   const setColumnWidth = (field: ResizableColumn, width: number) => {
@@ -75,6 +83,8 @@ const useCache = () => {
     updateRequestSectionHeight,
     requestListSectionWidth,
     updateRequestListSectionWidth,
+    accordionSectionHeight,
+    updateAccordionSectionHeight,
     columnWidths,
     getColumnWidth,
     setColumnWidth,
