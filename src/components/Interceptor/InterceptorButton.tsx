@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import cn from 'classnames';
 import Button from '~/components/common/Button';
 import Icon, { IconType } from '~/components/common/Icon';
@@ -7,17 +7,14 @@ import Interceptor from './Interceptor';
 import styles from './interceptor.scss';
 
 const InterceptorButton = () => {
-  const [isInterceptorVisible, setIsInterceptorVisible] = useState(false);
-  const { isEnabled, activeRulesCount } = useInterceptorContext();
+  const {
+    isEnabled,
+    activeRulesCount,
+    isInterceptorVisible,
+    showInterceptor,
+    hideInterceptor
+  } = useInterceptorContext();
   const isActive = isEnabled && !!activeRulesCount;
-
-  const handleInterceptorShow = () => {
-    setIsInterceptorVisible(true);
-  };
-
-  const handleInterceptorHide = () => {
-    setIsInterceptorVisible(false);
-  };
 
   const title = isActive
     ? `Responses are being mocked - ${ activeRulesCount } active rule${ activeRulesCount === 1 ? '' : 's' }`
@@ -26,7 +23,7 @@ const InterceptorButton = () => {
   return (
     <>
       <Button
-        onClick={ handleInterceptorShow }
+        onClick={ showInterceptor }
         className={ styles.interceptorButton }
         title={ title }
       >
@@ -35,7 +32,7 @@ const InterceptorButton = () => {
           type={ IconType.Interceptor }
         />
       </Button>
-      { isInterceptorVisible && <Interceptor onClose={ handleInterceptorHide }/> }
+      { isInterceptorVisible && <Interceptor onClose={ hideInterceptor }/> }
     </>
   );
 };

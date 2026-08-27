@@ -1,13 +1,17 @@
 import React, { useEffect, useMemo, useRef } from 'react';
 import cn from 'classnames';
-import { Resizable } from 're-resizable';
+import { Resizable, ResizeCallback } from 're-resizable';
 import { useRequestContext } from '~/logic/HTTPArchive/HttpArchiveContext';
 import { SortDirection, SortField } from '~/logic/HTTPArchive/SortField';
 import { useCacheContext } from '~/logic/CacheContext/CacheContext';
 import { useSettingsContext } from '~/logic/SettingsContext/SettingsContext';
+import { ViewMode } from '~/logic/SettingsContext/ViewMode';
 import useSearchHighlight, { HighlightName } from '~/logic/common/useSearchHighlight';
 import Header from '~/components/common/Header';
 import Request from './Request';
+import RequestInfo from '~/components/RequestInfo';
+import ResponseInfo from '~/components/ResponseInfo';
+import MessageInfo from '~/components/MessageInfo';
 import useColumnResize from './useColumnResize';
 import useColumnReorder from './useColumnReorder';
 import {
@@ -79,6 +83,8 @@ const RequestList = ({ className }: IComponentProps) => {
   const {
     requestListSectionWidth,
     updateRequestListSectionWidth,
+    accordionSectionHeight,
+    updateAccordionSectionHeight,
     columnWidths,
     getColumnWidth,
     setColumnWidth,
@@ -92,8 +98,11 @@ const RequestList = ({ className }: IComponentProps) => {
     showWaterfallColumn,
     showStatusColumn,
     showSizeColumn,
-    showTimeColumn
+    showTimeColumn,
+    viewMode
   } = useSettingsContext();
+  const isAccordionView = viewMode === ViewMode.Accordion;
+  const isSideBySide = !!selected && !isAccordionView;
 
   const {
     resizingField,
@@ -146,17 +155,17 @@ const RequestList = ({ className }: IComponentProps) => {
 
   useEffect(() => {
     resizableRef.current.updateSize({
-      width: selected ? requestListSectionWidth : '100%',
+      width: isSideBySide ? requestListSectionWidth : '100%',
       height: '100%'
     });
-  }, [selected]);
+  }, [isSideBySide]);
 
   useEffect(() => {
     resizableRef.current.updateSize({
-      width: selected ? requestListSectionWidth : '100%',
+      width: isSideBySide ? requestListSectionWidth : '100%',
       height: '100%'
     });
-  }, [selected]);
+  }, [isSideBySide]);
 
   useEffect(() => {
     if (autoScroll && !selected) {
@@ -179,12 +188,16 @@ const RequestList = ({ className }: IComponentProps) => {
     updateRequestListSectionWidth(resizableRef.current.size.width);
   };
 
+  const handleAccordionResizeStop: ResizeCallback = (event, direction, elementRef) => {
+    updateAccordionSectionHeight(elementRef.offsetHeight);
+  };
+
   return (
     <Resizable
       ref={ resizableRef }
       enable={ {
         top: false,
-        right: !!selected,
+        right: isSideBySide,
         bottom: false,
         left: false,
         topRight: false,
@@ -194,9 +207,9 @@ const RequestList = ({ className }: IComponentProps) => {
       } }
       className={ className }
       minWidth={ minLeftSideWidth }
-      maxWidth={ selected ? '80%' : '100%' }
+      maxWidth={ isSideBySide ? '80%' : '100%' }
       defaultSize={ {
-        width: selected ? requestListSectionWidth : '100%',
+        width: isSideBySide ? requestListSectionWidth : '100%',
         height: '100%'
       } }
       onResizeStop={ handleResize }
@@ -241,12 +254,46 @@ const RequestList = ({ className }: IComponentProps) => {
           </div>
           {
             requests.map((item, index) => (
-              <Request
-                key={ `${ item.request.url } - ${ index }` }
-                item={ item }
-                timelineStart={ timelineStart }
-                timelineEnd={ timelineEnd }
-              />
+              <React.Fragment key={ `${ item.request.url } - ${ index }` }>
+                <Request
+                  item={ item }
+                  timelineStart={ timelineStart }
+                  timelineEnd={ timelineEnd }
+                />
+                { isAccordionView && selected?.uuid === item.uuid && (
+                  <Resizable
+                    className={ styles.accordionDetail }
+                    enable={ {
+                      top: false,
+                      right: false,
+                      bottom: true,
+                      left: false,
+                      topRight: false,
+                      bottomRight: false,
+                      bottomLeft: false,
+                      topLeft: false
+                    } }
+                    minHeight={ 120 }
+                    defaultSize={ {
+                      width: '100%',
+                      height: accordionSectionHeight
+                    } }
+                    onResizeStop={ handleAccordionResizeStop }
+                    handleClasses={ {
+                      bottom: styles.accordionResizeHandle
+                    } }
+                  >
+                    { item.isWebSocket ? (
+                      <MessageInfo />
+                    ) : (
+                      <>
+                        <RequestInfo />
+                        <ResponseInfo />
+                      </>
+                    ) }
+                  </Resizable>
+                ) }
+              </React.Fragment>
             ))
           }
         </div>

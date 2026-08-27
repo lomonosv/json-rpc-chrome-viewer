@@ -1,8 +1,10 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import cn from 'classnames';
 import { useRequestContext } from '~/logic/HTTPArchive/HttpArchiveContext';
 import { useSettingsContext } from '~/logic/SettingsContext/SettingsContext';
+import { ViewMode } from '~/logic/SettingsContext/ViewMode';
 import { useCacheContext } from '~/logic/CacheContext/CacheContext';
+import { useInterceptorContext } from '~/logic/Interceptor/InterceptorContext';
 import useEditRequestModal from './EditRequestModal/useEditRequestModal';
 import Button from '~/components/common/Button';
 import CopyButton from '~/components/common/CopyButton';
@@ -22,7 +24,7 @@ interface IComponentProps {
 
 const Request = ({ item, timelineStart, timelineEnd }: IComponentProps) => {
   const rowRef = useRef<HTMLDivElement>(null);
-  const { selected, setSelected } = useRequestContext();
+  const { selected, setSelected, clearSelection } = useRequestContext();
   const isSelected = item.uuid === selected?.uuid;
   const { columnOrder } = useCacheContext();
   const {
@@ -32,14 +34,20 @@ const Request = ({ item, timelineStart, timelineEnd }: IComponentProps) => {
     showWaterfallColumn,
     showStatusColumn,
     showSizeColumn,
-    showTimeColumn
+    showTimeColumn,
+    viewMode
   } = useSettingsContext();
+  const isAccordionView = viewMode === ViewMode.Accordion;
+  const isDimmed = isAccordionView && !!selected && !isSelected;
+  const isAccordionSelected = isAccordionView && isSelected;
   const {
     EditRequestModal,
     isEditRequestModalVisible,
     showEditRequestModal,
     hideEditRequestModal
   } = useEditRequestModal();
+  const { addRuleFromRequest } = useInterceptorContext();
+  const [isRuleAdded, setIsRuleAdded] = useState<boolean>(false);
 
   useEffect(() => {
     if (isSelected) {
@@ -83,6 +91,12 @@ const Request = ({ item, timelineStart, timelineEnd }: IComponentProps) => {
   };
 
   const handleClick = () => {
+    if (isAccordionView && isSelected) {
+      clearSelection();
+
+      return;
+    }
+
     setSelected(item);
   };
 
@@ -91,11 +105,23 @@ const Request = ({ item, timelineStart, timelineEnd }: IComponentProps) => {
     showEditRequestModal();
   };
 
+  const handleAddInterceptorRuleClick = (e: React.MouseEvent<HTMLElement>) => {
+    e.stopPropagation();
+    addRuleFromRequest(item);
+    setIsRuleAdded(true);
+
+    setTimeout(() => {
+      setIsRuleAdded(false);
+    }, 700);
+  };
+
   return (
     <div
       ref={ rowRef }
       className={ cn(styles.requestWrapper, {
         [styles.isSelected]: isSelected,
+        [styles.isAccordionSelected]: isAccordionSelected,
+        [styles.isDimmed]: isDimmed,
         [styles.error]: item.isError,
         [styles.responseNotParsed]: item.isWarning
       }) }
@@ -134,6 +160,15 @@ const Request = ({ item, timelineStart, timelineEnd }: IComponentProps) => {
                 className={ styles.rowActionButton }
               >
                 <Icon type={ IconType.Update }></Icon>
+              </Button>
+            ) }
+            { !item.isWebSocket && (
+              <Button
+                title="Add interceptor rule from this response"
+                onClick={ handleAddInterceptorRuleClick }
+                className={ cn(styles.rowActionButton, { [styles.isRuleAdded]: isRuleAdded }) }
+              >
+                <Icon type={ IconType.Interceptor }></Icon>
               </Button>
             ) }
           </div>

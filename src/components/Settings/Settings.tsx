@@ -10,6 +10,7 @@ import { useSettingsContext } from '~/logic/SettingsContext/SettingsContext';
 import { ExpandTreeState, ExpandTreeStateTitlesMap } from '~/components/common/JsonViewer/ExpandTreeState';
 import { expandLevelOptions } from '~/components/common/JsonViewer/ExpandLevel';
 import { ExtensionTheme, JsonViewerTheme } from '~/logic/SettingsContext/Theme';
+import { ViewMode, viewModeOptions } from '~/logic/SettingsContext/ViewMode';
 import styles from './settings.scss';
 
 interface IComponentProps {
@@ -50,6 +51,8 @@ const Settings = ({ onClose }: IComponentProps) => {
     setShowSizeColumn,
     showTimeColumn,
     setShowTimeColumn,
+    viewMode,
+    setViewMode,
   } = useSettingsContext();
 
   const handlePreserveLogChange: ChangeEventHandler<HTMLInputElement> = (e) => {
@@ -116,6 +119,10 @@ const Settings = ({ onClose }: IComponentProps) => {
     setShowTimeColumn(e.target.checked);
   };
 
+  const handleViewModeChange: ChangeEventHandler<HTMLSelectElement> = (e) => {
+    setViewMode(e.target.value as ViewMode);
+  };
+
   const expandedTreeStateOptions = Object.keys(ExpandTreeStateTitlesMap).map((id) => ({
     key: +id,
     value: ExpandTreeStateTitlesMap[id]
@@ -169,6 +176,16 @@ const Settings = ({ onClose }: IComponentProps) => {
           </div>
           <div className={ styles.settingsSection }>
             <h4>Appearance</h4>
+            <div className={ styles.settingsItem }>
+              <span>Request view: </span>
+              <Select<ViewMode>
+                name="viewMode"
+                className={ styles.select }
+                options={ viewModeOptions }
+                value={ viewMode }
+                onChange={ handleViewModeChange }
+              />
+            </div>
             <div className={ styles.settingsItem }>
               <span>Theme: </span>
               <Select<ExtensionTheme>

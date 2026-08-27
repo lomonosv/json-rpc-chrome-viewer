@@ -133,3 +133,39 @@
 .isDragging {
   opacity: 0.4;
 }
+
+.accordionDetail {
+  display: flex;
+  flex-direction: column;
+  border-bottom: 1px solid transparent;
+  box-shadow: 0 5px 5px -5px #000;
+
+  :global(.isDark) & {
+    border-bottom-color: variables.$darkBorderColor;
+  }
+}
+
+.accordionResizeHandle {
+  height: 8px !important;
+  bottom: -8px !important;
+  cursor: row-resize;
+  z-index: 2;
+}
+
+.accordionResizeHandle::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 0;
+  right: 0;
+  height: 2px;
+}
+
+.accordionResizeHandle:hover::after,
+.accordionResizeHandle:active::after {
+  background: variables.$resizeHandleColor;
+
+  :global(.isDark) & {
+    background: variables.$darkResizeHandleColor;
+  }
+}

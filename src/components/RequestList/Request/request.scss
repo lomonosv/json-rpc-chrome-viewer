@@ -81,6 +81,21 @@
   }
 }
 
+.isAccordionSelected {
+  box-shadow: 0 -5px 5px -5px #000;
+}
+
+.isDimmed {
+  opacity: 0.45;
+  filter: blur(1px);
+  transition: opacity 0.1s ease-in-out, filter 0.1s ease-in-out;
+
+  &:hover {
+    opacity: 1;
+    filter: none;
+  }
+}
+
 .methodWrapper {
   min-width: 300px;
   padding: 7px 0;
@@ -118,6 +133,14 @@
 .rowActionButton {
   height: 12px;
   cursor: pointer;
+}
+
+.isRuleAdded.isRuleAdded {
+  fill: variables.$success;
+
+  :global(.isDark) & {
+    fill: variables.$darkSuccess;
+  }
 }
 
 .badge {
