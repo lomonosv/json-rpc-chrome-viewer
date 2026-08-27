@@ -3,7 +3,7 @@ import cn from 'classnames';
 import styles from './button.scss';
 
 interface IComponentProps {
-  children?: string | React.ReactElement,
+  children?: React.ReactNode,
   onClick?: (e: React.MouseEvent<HTMLElement>) => void,
   className?: string,
   title?: string,
