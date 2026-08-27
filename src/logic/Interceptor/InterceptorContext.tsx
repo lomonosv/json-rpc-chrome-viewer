@@ -3,8 +3,10 @@ import { v4 as uuid } from 'uuid';
 import { getConfig } from '~/logic/common/helpers';
 import { interceptorPortName } from '~/logic/common/messages';
 import { IInterceptorRule } from '~/logic/Interceptor/IInterceptorRule';
+import { IRequest } from '~/logic/HTTPArchive/IRequest';
 import {
   createRule,
+  createRuleFromRequest,
   enabledStorageKey,
   normaliseRules,
   rulesStorageKey
@@ -16,6 +18,7 @@ const defaultIsEnabled = false;
 const useInterceptor = () => {
   const [rules, setRules] = useState<IInterceptorRule[]>(defaultRules);
   const [isEnabled, setIsEnabled] = useState<boolean>(defaultIsEnabled);
+  const [isInterceptorVisible, setIsInterceptorVisible] = useState<boolean>(false);
 
   useEffect(() => {
     getConfig(rulesStorageKey, defaultRules).then((stored) => {
@@ -63,6 +66,19 @@ const useInterceptor = () => {
     persistRules([...rules, createRule(uuid())]);
   };
 
+  const addRuleFromRequest = (item: IRequest) => {
+    persistRules([...rules, createRuleFromRequest(uuid(), item)]);
+    setIsInterceptorVisible(true);
+  };
+
+  const showInterceptor = () => {
+    setIsInterceptorVisible(true);
+  };
+
+  const hideInterceptor = () => {
+    setIsInterceptorVisible(false);
+  };
+
   const updateRule = (id: string, patch: Partial<IInterceptorRule>) => {
     persistRules(rules.map((rule) => (rule.id === id ? { ...rule, ...patch } : rule)));
   };
@@ -77,8 +93,12 @@ const useInterceptor = () => {
     activeRulesCount: rules.filter((rule) => rule.isEnabled).length,
     setIsEnabled: updateIsEnabled,
     addRule,
+    addRuleFromRequest,
     updateRule,
-    removeRule
+    removeRule,
+    isInterceptorVisible,
+    showInterceptor,
+    hideInterceptor
   };
 };
 

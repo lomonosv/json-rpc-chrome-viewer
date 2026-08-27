@@ -3,6 +3,7 @@ import {
   IJsonRpcItem,
   InterceptorResponseType
 } from '~/logic/Interceptor/IInterceptorRule';
+import { IRequest } from '~/logic/HTTPArchive/IRequest';
 
 export const rulesStorageKey = 'interceptor_rules';
 export const enabledStorageKey = 'interceptor_enabled';
@@ -19,6 +20,19 @@ const normaliseRule = (rule: Partial<IInterceptorRule>): IInterceptorRule => ({
 });
 
 export const createRule = (id: string): IInterceptorRule => normaliseRule({ id });
+
+export const createRuleFromRequest = (id: string, item: IRequest): IInterceptorRule => {
+  const hasResult = item.responseJSON?.result !== undefined;
+  const responseType = hasResult ? InterceptorResponseType.Result : InterceptorResponseType.Error;
+  const responseValue = hasResult ? item.responseJSON?.result : item.responseJSON?.error;
+
+  return normaliseRule({
+    id,
+    method: item.requestJSON?.method ?? '',
+    responseType,
+    body: JSON.stringify(responseValue ?? {}, null, 2)
+  });
+};
 
 export const normaliseRules = (stored: unknown): IInterceptorRule[] => (
   Array.isArray(stored)
