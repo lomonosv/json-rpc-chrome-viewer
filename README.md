@@ -39,11 +39,19 @@ Every JSON-RPC call to a given endpoint hits the same URL with the same method (
 - Resizable panes that remember their size
 - Autoscroll to the latest request
 
+**Intercept**
+
+- **Mock a JSON-RPC response** without touching the network - a rule matches a method (exact, or a `*` glob) optionally narrowed by a URL substring, and answers with a `result` or `error` body, a custom HTTP status and an optional delay
+- Matched calls never reach the server; unmatched items in a partially-mocked batch are still sent for real
+- **Seed a rule from any request** with one click on its row - it copies the method name and the current response straight into a new rule and opens the rule dialog on it
+- Rules apply only to the inspected tab, and only while the panel is open and interception is armed - closing DevTools or the page never leaves a tab silently mocked
+
 **Appearance**
 
 - Dark and light themes, following the DevTools theme by default
 - ~35 selectable JSON tree viewer colour themes
 - Configurable default JSON tree open state, separately for HTTP and WebSocket messages - and when set to Expanded, how many levels deep to open
+- **Request view** - Panes (default), with the request list beside a fixed request/response pane, or **Accordion**, where selecting a row expands its request and response inline, directly underneath it in the list
 
 ## Install
 
@@ -79,7 +87,7 @@ A request is treated as JSON-RPC when it is a POST with an `application/json` bo
 | Section | Setting |
 | --- | --- |
 | General | Preserve log · Autoscroll to the latest request |
-| Appearance | Theme · Show url for each request · Show CORS badge · Show Websocket badge · Columns (Waterfall, Status, Size, Time) · JSON Tree Viewer Theme · JSON Tree Open State · Expand Level (shown only when Open State is Expanded) · JSON Tree Open State (Websocket Messages) |
+| Appearance | Request view (Panes / Accordion) · Theme · Show url for each request · Show CORS badge · Show Websocket badge · Columns (Waterfall, Status, Size, Time) · JSON Tree Viewer Theme · JSON Tree Open State · Expand Level (shown only when Open State is Expanded) · JSON Tree Open State (Websocket Messages) |
 | Filters | Include JSON-RPC Logs · Include Websocket Logs |
 
 Search scope and case sensitivity live in the toolbar rather than this dialog, but persist the same way.
