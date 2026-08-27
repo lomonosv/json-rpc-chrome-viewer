@@ -1,4 +1,4 @@
-import React, { ChangeEventHandler } from 'react';
+import React, { ChangeEventHandler, useState } from 'react';
 import cn from 'classnames';
 import Button from '~/components/common/Button';
 import Icon, { IconType } from '~/components/common/Icon';
@@ -14,6 +14,7 @@ import styles from './interceptor.scss';
 
 interface IComponentProps {
   rule: IInterceptorRule,
+  isDisabled: boolean,
   onChange: (id: string, patch: Partial<IInterceptorRule>) => void,
   onRemove: (id: string) => void,
 }
@@ -24,8 +25,23 @@ const toNumber = (value: string, fallback: number): number => {
   return Number.isNaN(parsed) ? fallback : parsed;
 };
 
-const InterceptorRule = ({ rule, onChange, onRemove }: IComponentProps) => {
+const getInactiveReason = (rule: IInterceptorRule, isBodyValid: boolean, isDisabled: boolean): string => {
+  if (!rule.isEnabled || isDisabled) {
+    return '';
+  }
+
+  if (!rule.method) {
+    return 'Needs a method';
+  }
+
+  return isBodyValid ? '' : 'Invalid JSON';
+};
+
+const InterceptorRule = ({ rule, isDisabled, onChange, onRemove }: IComponentProps) => {
+  const [isExpanded, setIsExpanded] = useState<boolean>(true);
   const isBodyValid = isValidRuleBody(rule.body);
+  const inactiveReason = getInactiveReason(rule, isBodyValid, isDisabled);
+  const areFieldsDisabled = isDisabled || !rule.isEnabled;
   const fieldId = (field: string) => `${ rule.id }-${ field }`;
 
   const handleIsEnabledChange: ChangeEventHandler<HTMLInputElement> = (e) => {
@@ -56,75 +72,66 @@ const InterceptorRule = ({ rule, onChange, onRemove }: IComponentProps) => {
     onChange(rule.id, { body: e.target.value });
   };
 
+  const handleExpandedClick = () => {
+    setIsExpanded(!isExpanded);
+  };
+
   const handleRemoveClick = () => {
     onRemove(rule.id);
   };
 
   return (
-    <div className={ cn(styles.rule, { [styles.isDisabled]: !rule.isEnabled }) }>
-      <div className={ styles.ruleRow }>
-        <div className={ styles.ruleConfiguration }>
-          <Input
-            name={ fieldId('isEnabled') }
-            label="Enabled"
-            wrapperClassName={ styles.ruleField }
-            type={ Type.Checkbox }
-            checked={ rule.isEnabled }
-            onChange={ handleIsEnabledChange }
+    <div
+      className={ cn(styles.rule, {
+        [styles.isDisabled]: !rule.isEnabled,
+        [styles.isInactive]: isDisabled
+      }) }
+    >
+      <div className={ styles.ruleHeader }>
+        <Input
+          name={ fieldId('isEnabled') }
+          title={ rule.isEnabled ? 'Disable rule' : 'Enable rule' }
+          wrapperClassName={ styles.ruleCheckbox }
+          type={ Type.Checkbox }
+          checked={ rule.isEnabled }
+          isDisabled={ isDisabled }
+          onChange={ handleIsEnabledChange }
+        />
+        <Button
+          className={ styles.ruleToggle }
+          title={ isExpanded ? 'Collapse rule' : 'Expand rule' }
+          onClick={ handleExpandedClick }
+        >
+          <span className={ cn(styles.ruleTitle, { [styles.isUntitled]: !rule.method }) }>
+            { rule.method || 'Untitled rule' }
+          </span>
+          { !!rule.url && (
+            <>
+              on{ ' ' }
+              <span className={ styles.ruleUrl }>{ rule.url }</span>
+            </>
+          ) }
+          <span className={ styles.ruleMeta }>
+            { !!inactiveReason && (
+              <span className={ cn(styles.tag, styles.isWarning) }>{ inactiveReason }</span>
+            ) }
+            <span
+              className={ cn(styles.tag, {
+                [styles.isError]: rule.responseType === InterceptorResponseType.Error
+              }) }
+            >
+              { rule.responseType }
+            </span>
+            <span className={ styles.tag }>{ rule.status }</span>
+            { rule.delay > 0 && (
+              <span className={ styles.tag }>{ rule.delay } ms</span>
+            ) }
+          </span>
+          <Icon
+            className={ styles.ruleChevron }
+            type={ isExpanded ? IconType.Collapse : IconType.Expand }
           />
-          <div className={ cn(styles.ruleField, styles.ruleFieldWide) }>
-            <span className={ styles.fieldLabel }>Method</span>
-            <Input
-              wrapperClassName={ styles.inputGrow }
-              name={ fieldId('method') }
-              placeholder="getUser or get*"
-              className={ styles.patternInput }
-              value={ rule.method }
-              onChange={ handleMethodChange }
-            />
-          </div>
-          <div className={ cn(styles.ruleField, styles.ruleFieldWide) }>
-            <span className={ styles.fieldLabel }>URL contains</span>
-            <Input
-              wrapperClassName={ styles.inputGrow }
-              name={ fieldId('url') }
-              placeholder="any url"
-              className={ styles.patternInput }
-              value={ rule.url }
-              onChange={ handleUrlChange }
-            />
-          </div>
-          <div className={ styles.ruleField }>
-            <span className={ styles.fieldLabel }>Respond with</span>
-            <Select<InterceptorResponseType>
-              className={ styles.responseTypeSelect }
-              name={ fieldId('responseType') }
-              options={ interceptorResponseTypeOptions }
-              value={ rule.responseType }
-              onChange={ handleResponseTypeChange }
-            />
-          </div>
-          <div className={ styles.ruleField }>
-            <span className={ styles.fieldLabel }>Status</span>
-            <Input
-              name={ fieldId('status') }
-              title="Clamped to 200-599"
-              className={ styles.numberInput }
-              value={ String(rule.status) }
-              onChange={ handleStatusChange }
-            />
-          </div>
-          <div className={ styles.ruleField }>
-            <span className={ styles.fieldLabel }>Delay</span>
-            <Input
-              name={ fieldId('delay') }
-              className={ styles.numberInput }
-              value={ String(rule.delay) }
-              onChange={ handleDelayChange }
-            />
-            <span className={ styles.fieldSuffix }>ms</span>
-          </div>
-        </div>
+        </Button>
         <Button
           className={ styles.removeButton }
           title="Remove rule"
@@ -133,16 +140,91 @@ const InterceptorRule = ({ rule, onChange, onRemove }: IComponentProps) => {
           <Icon type={ IconType.Close } />
         </Button>
       </div>
-      <textarea
-        name={ fieldId('body') }
-        className={ cn(styles.body, { [styles.isInvalid]: !isBodyValid }) }
-        spellCheck={ false }
-        value={ rule.body }
-        onChange={ handleBodyChange }
-      />
-      { !isBodyValid && (
-        <div className={ styles.invalidHint }>
-          Not valid JSON - this rule stays inactive until it parses.
+      { isExpanded && (
+        <div className={ styles.ruleBody }>
+          <div className={ styles.fieldRow }>
+            <div className={ cn(styles.field, styles.isWide) }>
+              <span className={ styles.fieldLabel }>Method</span>
+              <Input
+                wrapperClassName={ styles.inputGrow }
+                name={ fieldId('method') }
+                placeholder="getUser"
+                className={ styles.patternInput }
+                value={ rule.method }
+                isDisabled={ areFieldsDisabled }
+                onChange={ handleMethodChange }
+              />
+              <span className={ styles.fieldHint }>Exact name, or <code>*</code> as a wildcard</span>
+            </div>
+            <div className={ cn(styles.field, styles.isWide) }>
+              <span className={ styles.fieldLabel }>URL contains</span>
+              <Input
+                wrapperClassName={ styles.inputGrow }
+                name={ fieldId('url') }
+                placeholder="any url"
+                className={ styles.patternInput }
+                value={ rule.url }
+                isDisabled={ areFieldsDisabled }
+                onChange={ handleUrlChange }
+              />
+              <span className={ styles.fieldHint }>Optional - narrows the rule to one endpoint</span>
+            </div>
+          </div>
+          <div className={ styles.fieldRow }>
+            <div className={ styles.field }>
+              <span className={ styles.fieldLabel }>Respond with</span>
+              <Select<InterceptorResponseType>
+                className={ styles.responseTypeSelect }
+                name={ fieldId('responseType') }
+                options={ interceptorResponseTypeOptions }
+                value={ rule.responseType }
+                isDisabled={ areFieldsDisabled }
+                onChange={ handleResponseTypeChange }
+              />
+            </div>
+            <div className={ styles.field }>
+              <span className={ styles.fieldLabel }>HTTP status</span>
+              <Input
+                name={ fieldId('status') }
+                title="Clamped to 200-599"
+                className={ styles.numberInput }
+                value={ String(rule.status) }
+                isDisabled={ areFieldsDisabled }
+                onChange={ handleStatusChange }
+              />
+            </div>
+            <div className={ styles.field }>
+              <span className={ styles.fieldLabel }>Delay</span>
+              <span className={ styles.inputWithSuffix }>
+                <Input
+                  name={ fieldId('delay') }
+                  className={ styles.numberInput }
+                  value={ String(rule.delay) }
+                  isDisabled={ areFieldsDisabled }
+                  onChange={ handleDelayChange }
+                />
+                <span className={ styles.fieldSuffix }>ms</span>
+              </span>
+            </div>
+          </div>
+          <div className={ styles.field }>
+            <span className={ styles.fieldLabel }>
+              { rule.responseType === InterceptorResponseType.Error ? 'Error object' : 'Result value' }
+            </span>
+            <textarea
+              name={ fieldId('body') }
+              className={ cn(styles.body, { [styles.isInvalid]: !isBodyValid }) }
+              spellCheck={ false }
+              value={ rule.body }
+              disabled={ areFieldsDisabled }
+              onChange={ handleBodyChange }
+            />
+            <span className={ cn(styles.fieldHint, { [styles.isInvalidHint]: !isBodyValid }) }>
+              { isBodyValid
+                ? `JSON placed under "${ rule.responseType }" in the JSON-RPC response`
+                : 'Not valid JSON - this rule stays inactive until it parses' }
+            </span>
+          </div>
         </div>
       ) }
     </div>

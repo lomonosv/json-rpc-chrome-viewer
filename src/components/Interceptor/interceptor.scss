@@ -33,14 +33,6 @@
   }
 }
 
-.interceptorToolbar {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 8px 15px;
-  padding: 10px 10px 0;
-}
-
 .headerTitle {
   overflow: hidden;
   min-width: 0;
@@ -49,12 +41,97 @@
   padding-right: 20px;
 }
 
+.closeButton {
+  position: absolute;
+  right: 9px;
+  top: 7px;
+
+  > i {
+    width: 13px;
+    height: 13px;
+  }
+}
+
+.interceptorContainer {
+  flex-grow: 1;
+  overflow: auto;
+  padding: 12px 10px 20px;
+}
+
+.interceptorContent {
+  width: 100%;
+}
+
+.statusBar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  padding: 7px 10px;
+  border: 1px solid variables.$borderColor;
+  border-left: 3px solid variables.$borderColor;
+  border-radius: 3px;
+  background: variables.$headerBackground;
+
+  :global(.isDark) & {
+    border-color: variables.$darkBorderColor;
+    background: variables.$darkHeaderBackground;
+  }
+
+  &.isArmed {
+    border-left-color: variables.$success;
+
+    .statusText {
+      color: variables.$success;
+      opacity: 1;
+    }
+
+    :global(.isDark) & {
+      border-left-color: variables.$darkSuccess;
+
+      .statusText {
+        color: variables.$darkSuccess;
+      }
+    }
+  }
+
+  &.isIncomplete {
+    border-left-color: variables.$interceptorAccent;
+
+    .statusText {
+      color: variables.$interceptorAccent;
+      opacity: 1;
+    }
+
+    :global(.isDark) & {
+      border-left-color: variables.$darkInterceptorAccent;
+
+      .statusText {
+        color: variables.$darkInterceptorAccent;
+      }
+    }
+  }
+}
+
+.statusToggle {
+  flex: 0 0 auto;
+  font-weight: bold;
+}
+
+.statusText {
+  flex: 1 1 auto;
+  min-width: 0;
+  opacity: 0.75;
+}
+
 .addButton {
+  flex: 0 0 auto;
   cursor: pointer;
   background: variables.$background;
   padding: 3px 10px;
   border: 1px solid variables.$borderColor;
   border-radius: 3px;
+  white-space: nowrap;
 
   &:hover {
     background: variables.$hoverBackground;
@@ -71,27 +148,43 @@
 }
 
 .hint {
-  padding: 8px 10px 0;
+  margin: 8px 0 14px;
+  padding: 0 3px;
   opacity: 0.85;
   font-size: 11px;
-  max-width: 720px;
-}
-
-.interceptorContainer {
-  flex-grow: 1;
-  overflow: auto;
-  padding: 10px;
+  line-height: 1.5;
 }
 
 .empty {
-  opacity: 0.6;
-  padding: 10px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 34px 20px;
+  border: 1px dashed variables.$borderColor;
+  border-radius: 3px;
+
+  :global(.isDark) & {
+    border-color: variables.$darkBorderColor;
+  }
+}
+
+.emptyTitle {
+  font-size: 13px;
+}
+
+.emptyText {
+  opacity: 0.65;
+  text-align: center;
+}
+
+.emptyButton {
+  margin-top: 6px;
 }
 
 .rule {
   border: 1px solid variables.$borderColor;
   border-radius: 3px;
-  padding: 8px;
   margin-bottom: 10px;
 
   :global(.isDark) & {
@@ -99,92 +192,125 @@
   }
 
   &.isDisabled {
-    opacity: 0.5;
+    .ruleBody input,
+    .ruleBody select,
+    .ruleBody textarea {
+      cursor: not-allowed;
+    }
+  }
+
+  &.isDisabled:not(.isInactive) {
+    .ruleBody,
+    .ruleTitle,
+    .ruleMeta {
+      opacity: 0.5;
+    }
+  }
+
+  &.isInactive {
+    opacity: 0.45;
+
+    input,
+    select,
+    textarea {
+      cursor: not-allowed;
+    }
   }
 }
 
-.ruleRow {
-  display: flex;
-  align-items: baseline;
-  gap: 6px 14px;
-}
-
-.ruleConfiguration {
-  flex-grow: 1;
+.ruleHeader {
   display: flex;
   align-items: center;
-  gap: 6px 14px;
-  flex-wrap: wrap;
+  gap: 8px;
+  padding: 6px 8px;
 }
 
-.ruleField {
+.ruleCheckbox {
+  flex: 0 0 auto;
+}
+
+.ruleToggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1 1 auto;
+  min-width: 0;
+  cursor: pointer;
+  padding: 2px 0;
+}
+
+.ruleTitle {
+  font-weight: bold;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 0 1 auto;
+
+  &.isUntitled {
+    font-weight: normal;
+    opacity: 0.55;
+  }
+}
+
+.ruleUrl {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  opacity: 0.55;
+}
+
+.ruleMeta {
   display: flex;
   align-items: center;
   gap: 5px;
-  flex: 0 0 auto;
-  min-width: 0;
+  flex: 1 0 auto;
+  justify-content: flex-end;
 }
 
-.ruleFieldWide {
-  flex: 1 1 180px;
-  min-width: 150px;
-}
-
-.inputGrow {
-  flex: 1 1 auto;
-  min-width: 0;
-}
-
-.fieldLabel {
-  opacity: 0.65;
+.tag {
+  border: 1px solid variables.$borderColor;
+  border-radius: 8px;
+  padding: 0 7px;
+  font-size: 11px;
+  line-height: 16px;
   white-space: nowrap;
-}
-
-.fieldSuffix {
-  opacity: 0.65;
-}
-
-.responseTypeSelect {
-  padding: 0 3px;
-}
-
-.patternInput {
-  border: 1px solid variables.$borderColor;
-  padding: 1px 4px;
-  width: 100%;
-  min-width: 0;
-  vertical-align: middle;
+  opacity: 0.75;
 
   :global(.isDark) & {
     border-color: variables.$darkBorderColor;
   }
-}
 
-.numberInput {
-  border: 1px solid variables.$borderColor;
-  padding: 1px 4px;
-  width: 52px;
-  vertical-align: middle;
+  &.isError {
+    color: variables.$error;
+    border-color: variables.$error;
+    opacity: 1;
+  }
 
-  :global(.isDark) & {
-    border-color: variables.$darkBorderColor;
+  &.isWarning {
+    color: variables.$interceptorAccent;
+    border-color: variables.$interceptorAccent;
+    opacity: 1;
+
+    :global(.isDark) & {
+      color: variables.$darkInterceptorAccent;
+      border-color: variables.$darkInterceptorAccent;
+    }
   }
 }
 
-.bodyLabel {
-  display: block;
-  margin-top: 10px;
-  opacity: 0.65;
-
-  > code {
-    font-size: 11px;
-  }
+.ruleChevron {
+  flex: 0 0 auto;
+  width: 11px;
+  height: 11px;
 }
 
 .removeButton {
+  flex: 0 0 auto;
   cursor: pointer;
-  margin-left: auto;
-  margin-right: 8px;
+  width: 11px;
+  height: 11px;
 
   > i {
     width: 11px;
@@ -192,18 +318,102 @@
   }
 }
 
+.ruleBody {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 4px 8px 12px 28px;
+}
+
+.fieldRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 16px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 0 0 auto;
+  min-width: 0;
+
+  &.isWide {
+    flex: 1 1 240px;
+  }
+}
+
+.fieldLabel {
+  opacity: 0.65;
+  white-space: nowrap;
+}
+
+.fieldHint {
+  opacity: 0.5;
+  font-size: 11px;
+
+  &.isInvalidHint {
+    color: variables.$error;
+    opacity: 1;
+  }
+}
+
+.inputWithSuffix {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.fieldSuffix {
+  opacity: 0.65;
+}
+
+.inputGrow {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.responseTypeSelect {
+  padding: 2px 3px;
+  width: 100px;
+}
+
+.patternInput {
+  box-sizing: border-box;
+  border: 1px solid variables.$borderColor;
+  border-radius: 2px;
+  padding: 3px 6px;
+  width: 100%;
+  min-width: 0;
+
+  :global(.isDark) & {
+    border-color: variables.$darkBorderColor;
+  }
+}
+
+.numberInput {
+  box-sizing: border-box;
+  border: 1px solid variables.$borderColor;
+  border-radius: 2px;
+  padding: 3px 6px;
+  width: 70px;
+
+  :global(.isDark) & {
+    border-color: variables.$darkBorderColor;
+  }
+}
+
 .body {
   box-sizing: border-box;
   width: 100%;
-  min-height: 80px;
-  margin-top: 8px;
+  min-height: 92px;
   padding: 6px;
   font-family: monospace;
   font-size: 12px;
   background: variables.$background;
   color: variables.$color;
   border: 1px solid variables.$borderColor;
-  border-radius: 3px;
+  border-radius: 2px;
   resize: vertical;
 
   &:focus {
@@ -218,22 +428,5 @@
 
   &.isInvalid {
     border-color: variables.$error;
-  }
-}
-
-.invalidHint {
-  color: variables.$error;
-  font-size: 11px;
-  padding-top: 4px;
-}
-
-.closeButton {
-  position: absolute;
-  right: 9px;
-  top: 7px;
-
-  > i {
-    width: 13px;
-    height: 13px;
   }
 }

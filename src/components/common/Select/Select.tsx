@@ -8,12 +8,21 @@ interface IComponentProps<T> {
   value: T,
   options: { key: T, value: string }[],
   onChange: ChangeEventHandler<HTMLSelectElement>,
+  isDisabled?: boolean,
 }
 
-const Select = <T extends string | number>({ name, className, value, options, onChange }: IComponentProps<T>) => (
+const Select = <T extends string | number>({
+  name,
+  className,
+  value,
+  options,
+  onChange,
+  isDisabled = false
+}: IComponentProps<T>) => (
   <select
     name={ name }
     className={ cn(styles.select, className) }
+    disabled={ isDisabled }
     onChange={ onChange }
   >
     { options.map((option) => (
