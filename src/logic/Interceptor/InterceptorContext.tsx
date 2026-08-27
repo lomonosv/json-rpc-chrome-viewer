@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { v4 as uuid } from 'uuid';
 import { getConfig } from '~/logic/common/helpers';
 import { interceptorPortName } from '~/logic/common/messages';
@@ -29,8 +29,9 @@ const useInterceptor = () => {
     });
   }, []);
 
+  const portRef = useRef<chrome.runtime.Port>(null);
+
   useEffect(() => {
-    let port: chrome.runtime.Port = null;
     let isUnmounted = false;
 
     const connect = () => {
@@ -38,7 +39,9 @@ const useInterceptor = () => {
         return;
       }
 
-      port = chrome.runtime.connect({ name: interceptorPortName });
+      const port = chrome.runtime.connect({ name: interceptorPortName });
+
+      portRef.current = port;
       port.postMessage({ tabId: chrome.devtools.inspectedWindow.tabId });
       port.onDisconnect.addListener(connect);
     };
@@ -47,19 +50,25 @@ const useInterceptor = () => {
 
     return () => {
       isUnmounted = true;
-      port?.onDisconnect.removeListener(connect);
-      port?.disconnect();
+      portRef.current?.disconnect();
+      portRef.current = null;
     };
   }, []);
+
+  const pingPort = () => {
+    portRef.current?.postMessage({ tabId: chrome.devtools.inspectedWindow.tabId });
+  };
 
   const persistRules = (rules: IInterceptorRule[]) => {
     setRules(rules);
     chrome.storage.local.set({ [rulesStorageKey]: rules });
+    pingPort();
   };
 
   const updateIsEnabled = (isEnabled: boolean) => {
     setIsEnabled(isEnabled);
     chrome.storage.local.set({ [enabledStorageKey]: isEnabled });
+    pingPort();
   };
 
   const addRule = () => {

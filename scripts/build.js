@@ -48,9 +48,16 @@ const hashContentScripts = () => {
     renames.set(file, renamed);
   };
 
-  // background.js last: its bundle embeds the other scripts' paths, which must already be hashed
   files.filter(file => file !== 'background.js').forEach(hashFile);
-  hashFile('background.js');
+
+  const backgroundPath = path.join(dir, 'background.js');
+  let backgroundSource = fs.readFileSync(backgroundPath, 'utf8');
+
+  renames.forEach((to, from) => {
+    backgroundSource = backgroundSource.split(`content/${from}`).join(`content/${to}`);
+  });
+
+  fs.writeFileSync(backgroundPath, backgroundSource);
 
   const manifestPath = 'build/manifest.json';
   const manifest = [...renames].reduce(

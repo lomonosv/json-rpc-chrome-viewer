@@ -11,19 +11,8 @@ import { findRule, getRuleResponse, getRuleStatus } from '~/logic/Interceptor/ru
   const nativeFetch = originalFetch.bind(window);
   const jsonRPCRegex = /jsonrpc\\?["']?\s*:\s*\\?["']?2\.0\\?["']?/;
 
-  const rulesTimeoutMs = 1000;
-
   let rules: IInterceptorRule[] = [];
   let isEnabled = false;
-  let isReady = false;
-  let resolveReady: () => void;
-
-  const ready = new Promise<void>((resolve) => {
-    resolveReady = () => {
-      isReady = true;
-      resolve();
-    };
-  });
 
   const isArmed = (): boolean => isEnabled && !!rules.length;
 
@@ -165,8 +154,6 @@ import { findRule, getRuleResponse, getRuleStatus } from '~/logic/Interceptor/ru
   };
 
   const interceptFetch = async (input: RequestInfo | URL, init: RequestInit): Promise<Response> => {
-    await ready;
-
     if (!isArmed()) {
       return nativeFetch(input, init);
     }
@@ -220,7 +207,7 @@ import { findRule, getRuleResponse, getRuleStatus } from '~/logic/Interceptor/ru
   };
 
   const patchedFetch = function fetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
-    if (isReady && !isArmed()) {
+    if (!isArmed()) {
       return nativeFetch(input, init);
     }
 
@@ -228,13 +215,8 @@ import { findRule, getRuleResponse, getRuleStatus } from '~/logic/Interceptor/ru
   };
 
   const applyPatch = () => {
-    window.fetch = !isReady || isArmed() ? patchedFetch : originalFetch;
+    window.fetch = isArmed() ? patchedFetch : originalFetch;
   };
-
-  const readyTimer = setTimeout(() => {
-    resolveReady();
-    applyPatch();
-  }, rulesTimeoutMs);
 
   window.addEventListener('message', (event) => {
     if (event.source !== window || event.data?.type !== MessageType.InterceptorRules) {
@@ -244,10 +226,6 @@ import { findRule, getRuleResponse, getRuleStatus } from '~/logic/Interceptor/ru
     rules = event.data.payload?.rules || [];
     isEnabled = !!event.data.payload?.isEnabled;
 
-    clearTimeout(readyTimer);
-    resolveReady();
     applyPatch();
   });
-
-  applyPatch();
 }());
