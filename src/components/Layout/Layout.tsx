@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { useRequestContext } from '~/logic/HTTPArchive/HttpArchiveContext';
 import { useSettingsContext } from '~/logic/SettingsContext/SettingsContext';
+import { ViewMode } from '~/logic/SettingsContext/ViewMode';
 import RequestList from '~/components/RequestList';
 import RequestInfo from '~/components/RequestInfo';
 import ResponseInfo from '~/components/ResponseInfo';
@@ -12,7 +13,8 @@ import styles from './layout.scss';
 
 const Layout = () => {
   const { selected, requests } = useRequestContext();
-  const { isDarkTheme } = useSettingsContext();
+  const { isDarkTheme, viewMode } = useSettingsContext();
+  const isAccordionView = viewMode === ViewMode.Accordion;
 
   useEffect(() => {
     const body = document.getElementsByTagName('body')[0];
@@ -35,7 +37,7 @@ const Layout = () => {
         { !!requests.length && (
           <>
             <RequestList className={ styles.leftSideContainer } />
-            { !!selected && (
+            { !isAccordionView && !!selected && (
               <div className={ styles.rightSideContainer }>
                 { selected.isWebSocket ? (
                   <MessageInfo />
