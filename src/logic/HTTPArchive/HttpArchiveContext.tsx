@@ -6,6 +6,8 @@ import {
   getPreparedHttpRequest,
   getPreparedInterceptedRequest,
   getPreparedMessage,
+  getPreparedObservedRequest,
+  getPreparedPendingRequest,
   getRequestLabel,
   matchesFilter,
   parseJsonRpcMessage
@@ -13,7 +15,62 @@ import {
 import { IRequest } from '~/logic/HTTPArchive/IRequest';
 import { SortDirection, SortField } from '~/logic/HTTPArchive/SortField';
 import { MessageType } from '~/logic/common/messages';
-import { IInterceptedRequestPayload } from '~/logic/Interceptor/IInterceptorRule';
+import {
+  IInterceptedRequestPayload,
+  IObservedRequestPayload,
+  IPendingRequestPayload
+} from '~/logic/Interceptor/IInterceptorRule';
+
+const findPendingIndex = (requests: IRequest[], item: IRequest): number => {
+  if (item.requestJSON?.id === undefined || item.requestJSON?.id === null) {
+    return -1;
+  }
+
+  if (item.callId) {
+    return requests.findIndex((existing) => (
+      existing.isPending &&
+      existing.callId === item.callId &&
+      existing.requestJSON?.id === item.requestJSON.id
+    ));
+  }
+
+  return requests.findIndex((existing) => (
+    existing.isPending &&
+    existing.request.url === item.request.url &&
+    existing.requestJSON?.id === item.requestJSON.id
+  ));
+};
+
+const duplicateCompletionWindowMs = 5000;
+
+const findCompletedIndex = (requests: IRequest[], url: string, id: unknown, startTime: number): number => (
+  requests.findIndex((existing) => (
+    !existing.isPending &&
+    existing.request.url === url &&
+    existing.requestJSON?.id === id &&
+    Math.abs(existing.startTime - startTime) < duplicateCompletionWindowMs
+  ))
+);
+
+const mergeCompletedRequests = (requests: IRequest[], completed: IRequest[]): IRequest[] => (
+  completed.reduce((acc, item) => {
+    const pendingIndex = findPendingIndex(acc, item);
+
+    if (pendingIndex !== -1) {
+      const merged = { ...item, uuid: acc[pendingIndex].uuid };
+
+      return acc.map((existing, index) => (index === pendingIndex ? merged : existing));
+    }
+
+    const hasId = item.requestJSON?.id !== undefined && item.requestJSON?.id !== null;
+
+    if (hasId && findCompletedIndex(acc, item.request.url, item.requestJSON.id, item.startTime) !== -1) {
+      return acc;
+    }
+
+    return [...acc, item];
+  }, requests)
+);
 
 const getSortValue = (request: IRequest, field: SortField): string | number => {
   switch (field) {
@@ -131,10 +188,7 @@ const useRequest = () => {
     if (isJsonRpcRequest(request)) {
       const preparedRequest = await getPreparedHttpRequest(request);
 
-      requestsRef.current = [
-        ...requestsRef.current,
-        ...preparedRequest
-      ];
+      requestsRef.current = mergeCompletedRequests(requestsRef.current, preparedRequest);
 
       setRequests(requestsRef.current);
     }
@@ -143,14 +197,44 @@ const useRequest = () => {
   const handleRuntimeMessage = useCallback((
     message: {
       type: MessageType,
-      payload: IInterceptedRequestPayload & { type: 'income' | 'outcome', message: string },
+      payload: (IInterceptedRequestPayload | IPendingRequestPayload) & {
+        type?: 'income' | 'outcome',
+        message?: string,
+      },
     }
   ) => {
     if (message.type === MessageType.InterceptedRequest) {
       requestsRef.current = [
         ...requestsRef.current,
-        ...getPreparedInterceptedRequest(message.payload)
+        ...getPreparedInterceptedRequest(message.payload as IInterceptedRequestPayload)
       ];
+
+      setRequests(requestsRef.current);
+
+      return;
+    }
+
+    if (message.type === MessageType.PendingRequest) {
+      const payload = message.payload as IPendingRequestPayload;
+      const isAlreadyCompleted =
+        findCompletedIndex(requestsRef.current, payload.url, payload.id, payload.startTime) !== -1;
+
+      if (!isAlreadyCompleted) {
+        requestsRef.current = [
+          ...requestsRef.current,
+          getPreparedPendingRequest(payload)
+        ];
+
+        setRequests(requestsRef.current);
+      }
+
+      return;
+    }
+
+    if (message.type === MessageType.ObservedRequest) {
+      const completed = getPreparedObservedRequest(message.payload as IObservedRequestPayload);
+
+      requestsRef.current = mergeCompletedRequests(requestsRef.current, completed);
 
       setRequests(requestsRef.current);
 

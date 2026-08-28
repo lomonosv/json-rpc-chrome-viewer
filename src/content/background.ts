@@ -17,12 +17,16 @@ chrome.runtime.onInstalled.addListener(async () => {
 
 const panelPorts = new Map<number, chrome.runtime.Port>();
 
+const resilientCaptureStorageKey = 'settings_resilientCapture';
+
 const getInterceptorState = async (tabId: number) => {
-  const stored = await chrome.storage.local.get([rulesStorageKey, enabledStorageKey]);
+  const stored = await chrome.storage.local.get([rulesStorageKey, enabledStorageKey, resilientCaptureStorageKey]);
+  const isPanelOpen = panelPorts.has(tabId);
 
   return {
     rules: normaliseRules(stored[rulesStorageKey]),
-    isEnabled: !!stored[enabledStorageKey] && panelPorts.has(tabId)
+    isEnabled: !!stored[enabledStorageKey] && isPanelOpen,
+    isResilientCapture: !!stored[resilientCaptureStorageKey] && isPanelOpen
   };
 };
 
@@ -63,7 +67,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 });
 
 chrome.storage.onChanged.addListener((changes, area) => {
-  if (area !== 'local' || !(rulesStorageKey in changes || enabledStorageKey in changes)) {
+  const isRelevantChange = rulesStorageKey in changes ||
+    enabledStorageKey in changes ||
+    resilientCaptureStorageKey in changes;
+
+  if (area !== 'local' || !isRelevantChange) {
     return;
   }
 

@@ -42,6 +42,16 @@
   }
 }
 
+.hint {
+  max-width: 320px;
+  margin: 8px 0 0;
+  padding: 0 3px;
+  opacity: 0.85;
+  font-size: 11px;
+  line-height: 1.5;
+  white-space: normal;
+}
+
 .select {
   margin-left: 10px;
   width: 100px;

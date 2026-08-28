@@ -2,7 +2,9 @@ import { MessageType } from '~/logic/common/messages';
 
 const relayedTypes: string[] = [
   MessageType.WebsocketMessage,
-  MessageType.InterceptedRequest
+  MessageType.InterceptedRequest,
+  MessageType.PendingRequest,
+  MessageType.ObservedRequest
 ];
 
 const disarmedState = { rules: [], isEnabled: false };
