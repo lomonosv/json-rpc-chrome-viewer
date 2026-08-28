@@ -15,50 +15,220 @@
   }
 }
 
-.settingsContainer {
+.settingsBody {
   display: flex;
   flex-grow: 1;
+  min-height: 0;
+
+  @include variables.narrowLayout {
+    flex-direction: column;
+  }
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  gap: 1px;
+  width: 164px;
+  padding: 12px 8px;
   overflow: auto;
-  padding: 10px;
+  border-right: 1px solid variables.$borderColor;
+
+  :global(.isDark) & {
+    border-right: 1px solid variables.$darkBorderColor;
+  }
+
+  @include variables.narrowLayout {
+    flex-direction: row;
+    gap: 4px;
+    width: auto;
+    padding: 8px 10px;
+    border-right: none;
+    border-bottom: 1px solid variables.$borderColor;
+    overflow-x: auto;
+
+    :global(.isDark) & {
+      border-right: none;
+      border-bottom: 1px solid variables.$darkBorderColor;
+    }
+  }
 }
 
-.settingsSection {
-  padding: 0 30px 0 0;
+.tabButton {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 7px 10px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: variables.$color;
+  font-family: system-ui, sans-serif;
+  font-size: 12px;
+  line-height: 1;
+  text-align: left;
   white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
 
-  h4 {
-    margin: 0;
-    padding: 0 0 15px;
+  :global(.isDark) & {
+    color: variables.$darkColor;
+  }
+
+  @include variables.narrowLayout {
+    width: auto;
+    flex-shrink: 0;
+  }
+
+  &:hover {
+    background: variables.$hoverBackground;
+    color: variables.$highLightedColor;
+
+    :global(.isDark) & {
+      background: variables.$darkHoverBackground;
+      color: variables.$darkHighLightedColor;
+    }
+  }
+
+  &:focus-visible {
+    outline: 1px solid variables.$focusOutlineColor;
+    outline-offset: -1px;
   }
 }
 
-.settingsItem {
-  > * {
-    display: inline-block;
+.isActive {
+  background: variables.$selectedBackground;
+  color: variables.$highLightedColor;
+  font-weight: 500;
+
+  :global(.isDark) & {
+    background: variables.$darkSelectedBackground;
+    color: variables.$darkHighLightedColor;
   }
 
-  &:not(:last-of-type) {
-    padding-bottom: 10px;
+  &:hover {
+    background: variables.$selectedBackground;
+
+    :global(.isDark) & {
+      background: variables.$darkSelectedBackground;
+    }
   }
+}
+
+.settingsContainer {
+  flex-grow: 1;
+  min-width: 0;
+  overflow: auto;
+  padding: 16px 20px 24px;
+
+  @include variables.narrowLayout {
+    padding: 14px 12px 20px;
+  }
+}
+
+.settingsColumns {
+  max-width: 860px;
+
+  // A width, not a count: a narrow DevTools dock collapses to one column
+  // instead of squeezing two unreadable ones.
+  columns: 280px 2;
+  column-gap: 24px;
+}
+
+.card {
+  break-inside: avoid;
+
+  // Padding, not a bottom margin: a margin adjacent to a column break is
+  // trimmed, which would close the gap on whichever card lands at a column top.
+  padding: 0 0 20px;
+}
+
+.cardTitle {
+  margin: 0 0 8px;
+  padding: 0;
+  color: variables.$highLightedColor;
+  font-size: 12px;
+  font-weight: 600;
+
+  :global(.isDark) & {
+    color: variables.$darkHighLightedColor;
+  }
+}
+
+.cardBody {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid variables.$borderColor;
+  border-radius: 8px;
+  background: variables.$cardBackground;
+  box-shadow: variables.$cardShadow;
+
+  :global(.isDark) & {
+    border-color: variables.$darkBorderColor;
+    background: variables.$darkCardBackground;
+    box-shadow: variables.$darkCardShadow;
+  }
+
+  @include variables.narrowLayout {
+    padding: 10px 12px;
+  }
+}
+
+.cardDescription {
+  margin: 0 0 2px;
+  opacity: 0.7;
+  font-size: 11px;
+  line-height: 1.4;
+  white-space: normal;
+}
+
+.checkboxRow {
+  align-self: flex-start;
+  max-width: 100%;
+  line-height: 16px;
+}
+
+.dependentRows {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  // Aligns with the label text of the checkbox these depend on.
+  padding-left: 20px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.fieldLabel {
+  opacity: 0.8;
+  font-size: 11px;
+  line-height: 1;
+}
+
+.fieldControl {
+  width: 100%;
+}
+
+.fieldHint {
+  opacity: 0.65;
+  font-size: 11px;
+  line-height: 1.4;
+  white-space: normal;
 }
 
 .hint {
-  max-width: 320px;
-  margin: 8px 0 0;
-  padding: 0 3px;
+  margin: 0;
   opacity: 0.85;
   font-size: 11px;
   line-height: 1.5;
   white-space: normal;
-}
-
-.select {
-  margin-left: 10px;
-  width: 100px;
-}
-
-.themeSelect {
-  width: 200px;
 }
 
 .closeButton {

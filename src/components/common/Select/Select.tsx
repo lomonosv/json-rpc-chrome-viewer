@@ -4,6 +4,8 @@ import styles from './select.scss';
 
 interface IComponentProps<T> {
   name: string,
+  id?: string,
+  title?: string,
   className?: string,
   value: T,
   options: { key: T, value: string }[],
@@ -13,6 +15,8 @@ interface IComponentProps<T> {
 
 const Select = <T extends string | number>({
   name,
+  id,
+  title,
   className,
   value,
   options,
@@ -21,6 +25,9 @@ const Select = <T extends string | number>({
 }: IComponentProps<T>) => (
   <select
     name={ name }
+    id={ id }
+    title={ title }
+    aria-label={ title }
     className={ cn(styles.select, className) }
     disabled={ isDisabled }
     onChange={ onChange }
