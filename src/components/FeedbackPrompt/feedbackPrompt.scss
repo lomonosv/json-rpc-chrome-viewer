@@ -1,0 +1,149 @@
+@use "../common/variables";
+
+@keyframes appear {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.prompt {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  z-index: 1;
+  box-sizing: border-box;
+  width: 264px;
+  max-width: calc(100% - 24px);
+  padding: 12px 14px;
+  border: 1px solid variables.$borderColor;
+  border-radius: 8px;
+  background: variables.$cardBackground;
+  box-shadow: variables.$cardShadow;
+  color: variables.$color;
+  animation: appear 0.22s ease-out;
+
+  :global(.isDark) & {
+    border-color: variables.$darkBorderColor;
+    background: variables.$darkCardBackground;
+    box-shadow: variables.$darkCardShadow;
+    color: variables.$darkColor;
+  }
+
+  // Nothing here is worth interrupting a debugging session for.
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .check {
+    transition: none;
+  }
+}
+
+.title {
+  margin: 0 0 4px;
+  padding-right: 16px;
+  font-size: 12px;
+  font-weight: 600;
+  color: variables.$highLightedColor;
+
+  :global(.isDark) & {
+    color: variables.$darkHighLightedColor;
+  }
+}
+
+.text {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.45;
+  opacity: 0.8;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.action {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 18px;
+  border: 1px solid variables.$borderColor;
+  border-radius: 4px;
+  font-size: 11px;
+  line-height: 14px;
+  cursor: pointer;
+
+  :global(.isDark) & {
+    border-color: variables.$darkBorderColor;
+  }
+
+  &:hover {
+    background: variables.$hoverBackground;
+
+    :global(.isDark) & {
+      background: variables.$darkHoverBackground;
+    }
+  }
+}
+
+.check {
+  position: absolute;
+  left: 6px;
+  opacity: 0;
+  font-size: 10px;
+  line-height: 1;
+  transition: opacity 0.15s ease-out;
+}
+
+.isDone {
+  cursor: default;
+  opacity: 0.7;
+  color: variables.$success;
+  border-color: variables.$success;
+
+  :global(.isDark) & {
+    color: variables.$darkSuccess;
+    border-color: variables.$darkSuccess;
+  }
+
+  .check {
+    opacity: 1;
+  }
+
+  &:hover {
+    background: none;
+
+    :global(.isDark) & {
+      background: none;
+    }
+  }
+}
+
+.footnote {
+  margin: 8px 0 0;
+  font-size: 10px;
+  opacity: 0.55;
+}
+
+.closeButton {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  cursor: pointer;
+
+  > i {
+    width: 9px;
+    height: 9px;
+  }
+}

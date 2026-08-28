@@ -21,6 +21,7 @@ Every JSON-RPC call to a given endpoint hits the same URL with the same method (
 **Inspect**
 
 - Side-by-side request and response panes with a collapsible JSON tree
+- **Collapsed nodes show a preview** of what they hold - `key: value, …` instead of an anonymous `...`
 - **Convert a response to TypeScript types** with one click
 - **Resend a request** after editing its body
 - Copy request or response to the clipboard, or **copy a method name** straight from its row
@@ -43,6 +44,7 @@ Every JSON-RPC call to a given endpoint hits the same URL with the same method (
 
 - **Mock a JSON-RPC response** without touching the network - a rule matches a method (exact, or a `*` glob) optionally narrowed by a URL substring, and answers with a `result` or `error` body, a custom HTTP status and an optional delay
 - Matched calls never reach the server; unmatched items in a partially-mocked batch are still sent for real
+- **Syntax-highlighted rule body** - the response editor colours keys, strings, numbers and literals as you type, and marks a rule inert until its JSON parses
 - **Seed a rule from any request** with one click on its row - it copies the method name and the current response straight into a new rule and opens the rule dialog on it
 - Rules apply only to the inspected tab, and only while the panel is open and interception is armed - closing DevTools or the page never leaves a tab silently mocked
 
@@ -57,6 +59,7 @@ Every JSON-RPC call to a given endpoint hits the same URL with the same method (
 - ~35 selectable JSON tree viewer colour themes
 - Configurable default JSON tree open state, separately for HTTP and WebSocket messages - and when set to Expanded, how many levels deep to open
 - **Request view** - Panes (default), with the request list beside a fixed request/response pane, or **Accordion**, where selecting a row expands its request and response inline, directly underneath it in the list
+- **Adapts to a narrow panel** - docked to the side, the toolbar folds its least-used toggles away, the list drops to the Method column alone, and Panes falls back to Accordion. Nothing is written to your settings, so widening the panel restores everything
 
 ## Install
 
@@ -89,12 +92,14 @@ A request is treated as JSON-RPC when it is a POST with an `application/json` bo
 
 ## Settings
 
-| Section | Setting |
+The dialog is organised into tabs, each holding a couple of grouped panels.
+
+| Tab | Setting |
 | --- | --- |
-| General | Preserve log · Autoscroll to the latest request |
-| Appearance | Request view (Panes / Accordion) · Theme · Show url for each request · Show CORS badge · Show Websocket badge · Columns (Waterfall, Status, Size, Time) · JSON Tree Viewer Theme · JSON Tree Open State · Expand Level (shown only when Open State is Expanded) · JSON Tree Open State (Websocket Messages) |
+| Preferences | **General**: Preserve log · Autoscroll to the latest request<br>**Filters**: Include JSON-RPC logs · Include Websocket logs |
+| Appearance | **Layout**: Request view (Panes / Accordion) · Theme<br>**Request row**: Show url for each request · CORS badge · Websocket badge<br>**Columns**: Waterfall, Status, Size, Time |
+| JSON Viewer | **JSON tree**: Theme · Open state · Expand level (shown only when Open state is Expanded) · Preview collapsed nodes<br>**Websocket messages**: Open state |
 | Troubleshooting | Resilient capture (patch fetch in page) |
-| Filters | Include JSON-RPC Logs · Include Websocket Logs |
 
 Search scope and case sensitivity live in the toolbar rather than this dialog, but persist the same way.
 
