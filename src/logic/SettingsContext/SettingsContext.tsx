@@ -25,7 +25,7 @@ const defaultShowStatusColumnValue = true;
 const defaultShowSizeColumnValue = true;
 const defaultShowTimeColumnValue = true;
 const defaultViewModeValue = ViewMode.Panes;
-const defaultResilientCaptureValue = false;
+const defaultResilientCaptureValue = true;
 
 const useSettings = () => {
   const [isDevtoolsDarkTheme, setIsDevtoolsDarkTheme] = useState<boolean>(
