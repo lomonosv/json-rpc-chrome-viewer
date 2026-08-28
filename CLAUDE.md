@@ -64,7 +64,7 @@ Nested providers in `src/components/Application.tsx`, and **the order is load-be
 ErrorBoundary → SettingsContext → HttpArchiveContext → CacheContext → InterceptorContext → Layout
 ```
 
-`HttpArchiveContext` reads `preserveLog`, the include-log filters and the column-visibility flags from `SettingsContext`, so it must nest inside it. `InterceptorContext` reads nothing from the others and nothing reads from it, which is why it sits innermost — moving it out would suggest a dependency that does not exist.
+`HttpArchiveContext` reads `preserveLog`, the include-log filters and the column-visibility flags from `SettingsContext`, so it must nest inside it. `InterceptorContext` reads exactly one thing from another context — `resilientCapture` from `SettingsContext`, only to ping its port when that flag changes (see below) — and nothing reads from it, which is why it still sits innermost.
 
 Every context follows the same shape — match it when adding one:
 
@@ -202,6 +202,11 @@ Do not "simplify" this back into a `chrome.storage.onChanged` listener in `conte
 The port's disconnect is the signal because it is the only one that survives the panel being torn down without warning; `pagehide` does not. The map lives in worker memory on purpose: if the worker is recycled the map dies with it *and so does every port that filled it*, so the two can never disagree — a restarted worker starts disarmed and the panel's `onDisconnect` reconnect re-arms it. Every failure mode lands on "off".
 
 A consequence worth having: rules now apply **only to the inspected tab**, since arming is keyed on `tabId`. A devtools page is not a tab, so `port.sender.tab` is undefined and the panel must send `chrome.devtools.inspectedWindow.tabId` itself.
+
+**State changes reach the page by pinging the port, and the ping must wait for the storage write.** The worker's `onMessage` handler re-pushes state on *any* message over the port, not just the first, so the panel re-sends `{ tabId }` after every change — `persistRules`, `updateIsEnabled`, and an effect on `resilientCapture`. Two things here are easy to get wrong and both produced the same symptom (a change that only took effect after a page reload):
+
+- **`chrome.storage.local.set` is async, and the worker rebuilds its payload by *reading storage*.** Pinging synchronously after the write races it, so the worker reads the previous value and pushes the *old* rules back to the page, undoing the change. Ping from `.then()`, never beside the write.
+- **Do not rely on `chrome.storage.onChanged` alone.** It is the worker's other trigger, but this port holds the worker alive for the whole panel session, so it never goes through the idle-suspend-and-restart cycle that would otherwise mask a missed event — and missed events are exactly what was observed. The ping is the dependable path; `onChanged` is the backstop, not the mechanism.
 
 Three things in the patch are load-bearing:
 

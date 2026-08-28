@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { v4 as uuid } from 'uuid';
 import { getConfig } from '~/logic/common/helpers';
+import { useSettingsContext } from '~/logic/SettingsContext/SettingsContext';
 import { interceptorPortName } from '~/logic/common/messages';
 import { IInterceptorRule } from '~/logic/Interceptor/IInterceptorRule';
 import { IRequest } from '~/logic/HTTPArchive/IRequest';
@@ -19,6 +20,7 @@ const useInterceptor = () => {
   const [rules, setRules] = useState<IInterceptorRule[]>(defaultRules);
   const [isEnabled, setIsEnabled] = useState<boolean>(defaultIsEnabled);
   const [isInterceptorVisible, setIsInterceptorVisible] = useState<boolean>(false);
+  const { resilientCapture } = useSettingsContext();
 
   useEffect(() => {
     getConfig(rulesStorageKey, defaultRules).then((stored) => {
@@ -61,15 +63,25 @@ const useInterceptor = () => {
 
   const persistRules = (rules: IInterceptorRule[]) => {
     setRules(rules);
-    chrome.storage.local.set({ [rulesStorageKey]: rules });
-    pingPort();
+    chrome.storage.local.set({ [rulesStorageKey]: rules }).then(pingPort);
   };
 
   const updateIsEnabled = (isEnabled: boolean) => {
     setIsEnabled(isEnabled);
-    chrome.storage.local.set({ [enabledStorageKey]: isEnabled });
-    pingPort();
+    chrome.storage.local.set({ [enabledStorageKey]: isEnabled }).then(pingPort);
   };
+
+  const isFirstResilientCaptureRun = useRef<boolean>(true);
+
+  useEffect(() => {
+    if (isFirstResilientCaptureRun.current) {
+      isFirstResilientCaptureRun.current = false;
+
+      return;
+    }
+
+    pingPort();
+  }, [resilientCapture]);
 
   const addRule = () => {
     persistRules([...rules, createRule(uuid())]);
