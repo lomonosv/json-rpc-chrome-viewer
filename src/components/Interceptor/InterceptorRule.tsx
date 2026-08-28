@@ -4,6 +4,7 @@ import Button from '~/components/common/Button';
 import Icon, { IconType } from '~/components/common/Icon';
 import Input, { Type } from '~/components/common/Input';
 import Select from '~/components/common/Select';
+import JsonTextarea from '~/components/common/JsonTextarea';
 import {
   IInterceptorRule,
   InterceptorResponseType,
@@ -211,12 +212,11 @@ const InterceptorRule = ({ rule, isDisabled, onChange, onRemove }: IComponentPro
             <span className={ styles.fieldLabel }>
               { rule.responseType === InterceptorResponseType.Error ? 'Error object' : 'Result value' }
             </span>
-            <textarea
+            <JsonTextarea
               name={ fieldId('body') }
-              className={ cn(styles.body, { [styles.isInvalid]: !isBodyValid }) }
-              spellCheck={ false }
               value={ rule.body }
-              disabled={ areFieldsDisabled }
+              isDisabled={ areFieldsDisabled }
+              isInvalid={ !isBodyValid }
               onChange={ handleBodyChange }
             />
             <span className={ cn(styles.fieldHint, { [styles.isInvalidHint]: !isBodyValid }) }>
