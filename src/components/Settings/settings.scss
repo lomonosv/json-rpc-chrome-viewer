@@ -19,6 +19,10 @@
   display: flex;
   flex-grow: 1;
   min-height: 0;
+
+  @include variables.narrowLayout {
+    flex-direction: column;
+  }
 }
 
 .sidebar {
@@ -33,6 +37,21 @@
 
   :global(.isDark) & {
     border-right: 1px solid variables.$darkBorderColor;
+  }
+
+  @include variables.narrowLayout {
+    flex-direction: row;
+    gap: 4px;
+    width: auto;
+    padding: 8px 10px;
+    border-right: none;
+    border-bottom: 1px solid variables.$borderColor;
+    overflow-x: auto;
+
+    :global(.isDark) & {
+      border-right: none;
+      border-bottom: 1px solid variables.$darkBorderColor;
+    }
   }
 }
 
@@ -54,6 +73,11 @@
 
   :global(.isDark) & {
     color: variables.$darkColor;
+  }
+
+  @include variables.narrowLayout {
+    width: auto;
+    flex-shrink: 0;
   }
 
   &:hover {
@@ -96,6 +120,10 @@
   min-width: 0;
   overflow: auto;
   padding: 16px 20px 24px;
+
+  @include variables.narrowLayout {
+    padding: 14px 12px 20px;
+  }
 }
 
 .settingsColumns {
@@ -112,12 +140,11 @@
 
   // Padding, not a bottom margin: a margin adjacent to a column break is
   // trimmed, which would close the gap on whichever card lands at a column top.
-  // With no frame around a section, this gap is the only thing separating them.
-  padding: 0 0 24px;
+  padding: 0 0 20px;
 }
 
 .cardTitle {
-  margin: 0 0 9px;
+  margin: 0 0 8px;
   padding: 0;
   color: variables.$highLightedColor;
   font-size: 12px;
@@ -129,13 +156,29 @@
 }
 
 .cardBody {
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid variables.$borderColor;
+  border-radius: 8px;
+  background: variables.$cardBackground;
+  box-shadow: variables.$cardShadow;
+
+  :global(.isDark) & {
+    border-color: variables.$darkBorderColor;
+    background: variables.$darkCardBackground;
+    box-shadow: variables.$darkCardShadow;
+  }
+
+  @include variables.narrowLayout {
+    padding: 10px 12px;
+  }
 }
 
 .cardDescription {
-  margin: -2px 0 2px;
+  margin: 0 0 2px;
   opacity: 0.7;
   font-size: 11px;
   line-height: 1.4;
@@ -171,7 +214,13 @@
 
 .fieldControl {
   width: 100%;
-  max-width: 260px;
+}
+
+.fieldHint {
+  opacity: 0.65;
+  font-size: 11px;
+  line-height: 1.4;
+  white-space: normal;
 }
 
 .hint {

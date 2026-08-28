@@ -2,8 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import cn from 'classnames';
 import { useRequestContext } from '~/logic/HTTPArchive/HttpArchiveContext';
 import { useSettingsContext } from '~/logic/SettingsContext/SettingsContext';
-import { ViewMode } from '~/logic/SettingsContext/ViewMode';
-import { useCacheContext } from '~/logic/CacheContext/CacheContext';
+import useIsAccordionView from '~/logic/common/useIsAccordionView';
 import { useInterceptorContext } from '~/logic/Interceptor/InterceptorContext';
 import useEditRequestModal from './EditRequestModal/useEditRequestModal';
 import Button from '~/components/common/Button';
@@ -13,6 +12,7 @@ import Waterfall from './Waterfall';
 import { getRequestLabel } from '~/logic/HTTPArchive/filters';
 import { SortField } from '~/logic/HTTPArchive/SortField';
 import { ResizableColumn, getColumnWidthStyle } from '../columns';
+import useVisibleColumns from '../useVisibleColumns';
 import { IRequest } from '~/logic/HTTPArchive/IRequest';
 import styles from './request.scss';
 
@@ -27,18 +27,13 @@ const Request = ({ item, timelineStart, timelineEnd, now }: IComponentProps) => 
   const rowRef = useRef<HTMLDivElement>(null);
   const { selected, setSelected, clearSelection } = useRequestContext();
   const isSelected = item.uuid === selected?.uuid;
-  const { columnOrder } = useCacheContext();
   const {
     showCorsBadge,
     showWebsocketBadge,
-    showRequestUrl,
-    showWaterfallColumn,
-    showStatusColumn,
-    showSizeColumn,
-    showTimeColumn,
-    viewMode
+    showRequestUrl
   } = useSettingsContext();
-  const isAccordionView = viewMode === ViewMode.Accordion;
+  const isAccordionView = useIsAccordionView();
+  const visibleColumns = useVisibleColumns();
   const isDimmed = isAccordionView && !!selected && !isSelected;
   const isAccordionSelected = isAccordionView && isSelected;
   const {
@@ -55,15 +50,6 @@ const Request = ({ item, timelineStart, timelineEnd, now }: IComponentProps) => 
       rowRef.current?.scrollIntoView({ block: 'nearest' });
     }
   }, [isSelected]);
-
-  const isColumnVisible: Record<ResizableColumn, boolean> = {
-    [SortField.Waterfall]: showWaterfallColumn,
-    [SortField.Status]: showStatusColumn,
-    [SortField.Size]: showSizeColumn,
-    [SortField.Time]: showTimeColumn
-  };
-
-  const visibleColumns = columnOrder.filter((field) => isColumnVisible[field]);
 
   const renderCellContent = (field: ResizableColumn) => {
     if (field === SortField.Waterfall) {

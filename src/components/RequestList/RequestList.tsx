@@ -5,7 +5,7 @@ import { useRequestContext } from '~/logic/HTTPArchive/HttpArchiveContext';
 import { SortDirection, SortField } from '~/logic/HTTPArchive/SortField';
 import { useCacheContext } from '~/logic/CacheContext/CacheContext';
 import { useSettingsContext } from '~/logic/SettingsContext/SettingsContext';
-import { ViewMode } from '~/logic/SettingsContext/ViewMode';
+import useIsAccordionView from '~/logic/common/useIsAccordionView';
 import useSearchHighlight, { HighlightName } from '~/logic/common/useSearchHighlight';
 import Header from '~/components/common/Header';
 import Request from './Request';
@@ -14,6 +14,7 @@ import ResponseInfo from '~/components/ResponseInfo';
 import MessageInfo from '~/components/MessageInfo';
 import useColumnResize from './useColumnResize';
 import useColumnReorder from './useColumnReorder';
+import useVisibleColumns from './useVisibleColumns';
 import {
   ResizableColumn,
   columnLabels,
@@ -93,16 +94,8 @@ const RequestList = ({ className }: IComponentProps) => {
     columnOrder,
     updateColumnOrder
   } = useCacheContext();
-  const {
-    autoScroll,
-    caseSensitiveSearch,
-    showWaterfallColumn,
-    showStatusColumn,
-    showSizeColumn,
-    showTimeColumn,
-    viewMode
-  } = useSettingsContext();
-  const isAccordionView = viewMode === ViewMode.Accordion;
+  const { autoScroll, caseSensitiveSearch } = useSettingsContext();
+  const isAccordionView = useIsAccordionView();
   const isSideBySide = !!selected && !isAccordionView;
 
   const {
@@ -115,14 +108,7 @@ const RequestList = ({ className }: IComponentProps) => {
     persistColumnWidths
   );
 
-  const isColumnVisible: Record<ResizableColumn, boolean> = {
-    [SortField.Waterfall]: showWaterfallColumn,
-    [SortField.Status]: showStatusColumn,
-    [SortField.Size]: showSizeColumn,
-    [SortField.Time]: showTimeColumn
-  };
-
-  const visibleColumns = columnOrder.filter((field) => isColumnVisible[field]);
+  const visibleColumns = useVisibleColumns();
 
   const {
     draggingField,
@@ -226,7 +212,7 @@ const RequestList = ({ className }: IComponentProps) => {
         topLeft: false
       } }
       className={ className }
-      minWidth={ minLeftSideWidth }
+      minWidth={ isSideBySide ? minLeftSideWidth : undefined }
       maxWidth={ isSideBySide ? '80%' : '100%' }
       defaultSize={ {
         width: isSideBySide ? requestListSectionWidth : '100%',
