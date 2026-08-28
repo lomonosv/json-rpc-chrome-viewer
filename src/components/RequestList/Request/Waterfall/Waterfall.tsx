@@ -13,9 +13,10 @@ interface IComponentProps {
   item: IRequest,
   timelineStart: number,
   timelineEnd: number,
+  now: number,
 }
 
-const Waterfall = ({ item, timelineStart, timelineEnd }: IComponentProps) => {
+const Waterfall = ({ item, timelineStart, timelineEnd, now }: IComponentProps) => {
   const [anchor, setAnchor] = useState<DOMRect>(null);
   const [highlightedPhase, setHighlightedPhase] = useState<string>(null);
   const closeTimer = useRef<number>(0);
@@ -23,7 +24,10 @@ const Waterfall = ({ item, timelineStart, timelineEnd }: IComponentProps) => {
   const timelineDuration = Math.max(timelineEnd - timelineStart, 1);
   const offsetMs = item.startTime - timelineStart;
   const offset = Math.min(Math.max((offsetMs / timelineDuration) * 100, 0), 100);
-  const width = Math.max((item.time / timelineDuration) * 100, minBarWidthPercent);
+  const elapsedMs = item.isPending ? now - item.startTime : item.time;
+  const width = item.isPending
+    ? Math.max(((now - item.startTime) / timelineDuration) * 100, minBarWidthPercent)
+    : Math.max((item.time / timelineDuration) * 100, minBarWidthPercent);
 
   const { groups, total } = useMemo(() => getTimingGroups(item.timings), [item.timings]);
 
@@ -64,15 +68,22 @@ const Waterfall = ({ item, timelineStart, timelineEnd }: IComponentProps) => {
       onMouseEnter={ handleMouseEnter }
       onMouseLeave={ scheduleClose }
       { ...(hasTimings ? {} : {
-        title: item.isWebSocket
-          ? `+${ Math.round(offsetMs) } ms`
-          : `+${ Math.round(offsetMs) } ms · ${ Math.ceil(item.time) } ms`
+        title: (() => {
+          if (item.isPending) {
+            return `+${ Math.round(offsetMs) } ms · pending for ${ Math.round(elapsedMs) } ms`;
+          }
+
+          return item.isWebSocket
+            ? `+${ Math.round(offsetMs) } ms`
+            : `+${ Math.round(offsetMs) } ms · ${ Math.ceil(item.time) } ms`;
+        })()
       }) }
     >
       <div
         className={ cn(styles.bar, {
           [styles.tick]: item.isWebSocket,
-          [styles.isSegmented]: isSegmented
+          [styles.isSegmented]: isSegmented,
+          [styles.isPending]: item.isPending
         }) }
         style={ {
           left: `${ offset }%`,

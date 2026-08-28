@@ -53,6 +53,8 @@ const Settings = ({ onClose }: IComponentProps) => {
     setShowTimeColumn,
     viewMode,
     setViewMode,
+    resilientCapture,
+    setResilientCapture,
   } = useSettingsContext();
 
   const handlePreserveLogChange: ChangeEventHandler<HTMLInputElement> = (e) => {
@@ -121,6 +123,10 @@ const Settings = ({ onClose }: IComponentProps) => {
 
   const handleViewModeChange: ChangeEventHandler<HTMLSelectElement> = (e) => {
     setViewMode(e.target.value as ViewMode);
+  };
+
+  const handleResilientCaptureChange: ChangeEventHandler<HTMLInputElement> = (e) => {
+    setResilientCapture(e.target.checked);
   };
 
   const expandedTreeStateOptions = Object.keys(ExpandTreeStateTitlesMap).map((id) => ({
@@ -313,6 +319,33 @@ const Settings = ({ onClose }: IComponentProps) => {
                 onChange={ handleExpandedWebsocketMessagesStateChange }
               />
             </div>
+          </div>
+          <div className={ styles.settingsSection }>
+            <h4>Troubleshooting</h4>
+            <div className={ styles.settingsItem }>
+              <Input
+                name="resilientCapture"
+                label="Resilient capture (patch fetch in page)"
+                wrapperClassName={ styles.settingsItemWrapper }
+                type={ Type.Checkbox }
+                checked={ resilientCapture }
+                onChange={ handleResilientCaptureChange }
+              />
+            </div>
+            <p className={ styles.hint }>
+              <strong>Turn this on if requests appear in the Network tab but not here.</strong> Another
+              DevTools extension patching <code>window.fetch</code> makes Chrome credit it as the
+              request&apos;s initiator, which stops this panel from being told about the request at all.{ ' ' }
+              <strong>React DevTools 7.0.1 does this</strong> - if it is installed, this is almost certainly why.
+            </p>
+            <p className={ styles.hint }>
+              This works around it by reading requests inside the page instead of relying on Chrome to
+              report them, and also shows each call while it is still in flight. Costs: this patches{ ' ' }
+              <code>window.fetch</code> on every page, so <code>fetch.toString()</code> no longer reads as
+              native and other DevTools extensions may stop seeing these requests. Only{ ' ' }
+              <code>fetch</code> is covered - not XHR - and a page that captured <code>fetch</code>{ ' ' }
+              before this loads is missed.
+            </p>
           </div>
           <div className={ styles.settingsSection }>
             <h4>Filters</h4>

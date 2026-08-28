@@ -35,9 +35,10 @@ const ResponseInfo = () => {
 
   useSearchHighlight(containerRef, HighlightName.Response, filter, caseSensitiveSearch);
 
-  const isJsonResponse = !selectedRequest.isWarning;
+  const isJsonResponse = !selectedRequest.isWarning && !selectedRequest.isPending;
   const json = selectedRequest.responseJSON?.result || selectedRequest.responseJSON?.error || {};
   const jsonTSRepresentation = isJsonResponse && convertJsonToTS(json);
+  const rawResponseText = selectedRequest.isPending ? 'Waiting for response…' : selectedRequest.rawResponse;
 
   return (
     <div className={ styles.responseInfoWrapper }>
@@ -67,7 +68,7 @@ const ResponseInfo = () => {
       <div
         ref={ containerRef }
         className={ cn(styles.responseInfoContainer, {
-          [styles.responseNotParsed]: selectedRequest.isWarning
+          [styles.responseNotParsed]: selectedRequest.isWarning || selectedRequest.isPending
         }) }
       >
         { isJsonResponse ? (
@@ -80,7 +81,7 @@ const ResponseInfo = () => {
         ) : (
           <div className={ styles.rawResponseWrapper }>
             <pre>
-              {selectedRequest.rawResponse}
+              {rawResponseText}
             </pre>
           </div>
         )}
