@@ -25,6 +25,7 @@ const defaultShowStatusColumnValue = true;
 const defaultShowSizeColumnValue = true;
 const defaultShowTimeColumnValue = true;
 const defaultViewModeValue = ViewMode.Panes;
+const defaultResilientCaptureValue = false;
 
 const useSettings = () => {
   const [isDevtoolsDarkTheme, setIsDevtoolsDarkTheme] = useState<boolean>(
@@ -51,6 +52,7 @@ const useSettings = () => {
   const [showSizeColumn, setShowSizeColumn] = useState<boolean>(defaultShowSizeColumnValue);
   const [showTimeColumn, setShowTimeColumn] = useState<boolean>(defaultShowTimeColumnValue);
   const [viewMode, setViewMode] = useState<ViewMode>(defaultViewModeValue);
+  const [resilientCapture, setResilientCapture] = useState<boolean>(defaultResilientCaptureValue);
 
   useEffect(() => {
     // It is available actually in API.
@@ -81,6 +83,7 @@ const useSettings = () => {
     getConfig('settings_showSizeColumn', defaultShowSizeColumnValue).then(setShowSizeColumn);
     getConfig('settings_showTimeColumn', defaultShowTimeColumnValue).then(setShowTimeColumn);
     getConfig('settings_viewMode', defaultViewModeValue).then(setViewMode);
+    getConfig('settings_resilientCapture', defaultResilientCaptureValue).then(setResilientCapture);
   }, []);
 
   const handlePreserveLogChange = (settings_preserveLog: boolean) => {
@@ -182,6 +185,11 @@ const useSettings = () => {
     chrome.storage.local.set({ settings_viewMode });
   };
 
+  const handleResilientCaptureChange = (settings_resilientCapture: boolean) => {
+    setResilientCapture(settings_resilientCapture);
+    chrome.storage.local.set({ settings_resilientCapture });
+  };
+
   return {
     preserveLog,
     includeJsonRpcLogs,
@@ -202,6 +210,7 @@ const useSettings = () => {
     showSizeColumn,
     showTimeColumn,
     viewMode,
+    resilientCapture,
     systemJsonViewerTheme: jsonViewerTheme === JsonViewerTheme.System ? getSystemJsonViewerTheme() : jsonViewerTheme,
     isDarkTheme: (isDevtoolsDarkTheme && extensionTheme === ExtensionTheme.System)
       || extensionTheme === ExtensionTheme.Dark,
@@ -223,7 +232,8 @@ const useSettings = () => {
     setShowStatusColumn: handleShowStatusColumnChange,
     setShowSizeColumn: handleShowSizeColumnChange,
     setShowTimeColumn: handleShowTimeColumnChange,
-    setViewMode: handleViewModeChange
+    setViewMode: handleViewModeChange,
+    setResilientCapture: handleResilientCaptureChange
   };
 };
 

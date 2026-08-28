@@ -20,9 +20,10 @@ interface IComponentProps {
   item: IRequest,
   timelineStart: number,
   timelineEnd: number,
+  now: number,
 }
 
-const Request = ({ item, timelineStart, timelineEnd }: IComponentProps) => {
+const Request = ({ item, timelineStart, timelineEnd, now }: IComponentProps) => {
   const rowRef = useRef<HTMLDivElement>(null);
   const { selected, setSelected, clearSelection } = useRequestContext();
   const isSelected = item.uuid === selected?.uuid;
@@ -71,8 +72,13 @@ const Request = ({ item, timelineStart, timelineEnd }: IComponentProps) => {
           item={ item }
           timelineStart={ timelineStart }
           timelineEnd={ timelineEnd }
+          now={ now }
         />
       );
+    }
+
+    if (item.isPending) {
+      return field === SortField.Status ? 'Pending' : '';
     }
 
     if (item.isWebSocket) {
@@ -122,6 +128,7 @@ const Request = ({ item, timelineStart, timelineEnd }: IComponentProps) => {
         [styles.isSelected]: isSelected,
         [styles.isAccordionSelected]: isAccordionSelected,
         [styles.isDimmed]: isDimmed,
+        [styles.isPendingRow]: item.isPending && !isDimmed,
         [styles.error]: item.isError,
         [styles.responseNotParsed]: item.isWarning
       }) }
@@ -153,7 +160,7 @@ const Request = ({ item, timelineStart, timelineEnd }: IComponentProps) => {
               hint="Copy method name"
               className={ styles.rowActionButton }
             />
-            { !item.isWebSocket && (
+            { !item.isWebSocket && !item.isPending && (
               <Button
                 title="Resend Request"
                 onClick={ handleResendButtonClick }
@@ -162,7 +169,7 @@ const Request = ({ item, timelineStart, timelineEnd }: IComponentProps) => {
                 <Icon type={ IconType.Update }></Icon>
               </Button>
             ) }
-            { !item.isWebSocket && (
+            { !item.isWebSocket && !item.isPending && (
               <Button
                 title="Add interceptor rule from this response"
                 onClick={ handleAddInterceptorRuleClick }

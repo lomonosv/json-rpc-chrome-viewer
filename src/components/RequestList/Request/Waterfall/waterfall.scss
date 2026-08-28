@@ -59,3 +59,11 @@
     background: variables.$darkWaterfallTick;
   }
 }
+
+.isPending {
+  background: variables.$resizeHandleColor;
+
+  :global(.isDark) & {
+    background: variables.$darkResizeHandleColor;
+  }
+}
