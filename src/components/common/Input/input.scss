@@ -16,6 +16,16 @@
 
 .checkboxWrapper {
   user-select: none;
+  cursor: pointer;
+
+  input:disabled ~ .label {
+    opacity: 0.5;
+    cursor: default;
+  }
+
+  &:has(input:disabled) {
+    cursor: default;
+  }
 }
 
 .input {

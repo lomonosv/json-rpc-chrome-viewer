@@ -15,50 +15,171 @@
   }
 }
 
-.settingsContainer {
+.settingsBody {
   display: flex;
   flex-grow: 1;
+  min-height: 0;
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  gap: 1px;
+  width: 164px;
+  padding: 12px 8px;
   overflow: auto;
-  padding: 10px;
+  border-right: 1px solid variables.$borderColor;
+
+  :global(.isDark) & {
+    border-right: 1px solid variables.$darkBorderColor;
+  }
 }
 
-.settingsSection {
-  padding: 0 30px 0 0;
+.tabButton {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 7px 10px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: variables.$color;
+  font-family: system-ui, sans-serif;
+  font-size: 12px;
+  line-height: 1;
+  text-align: left;
   white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
 
-  h4 {
-    margin: 0;
-    padding: 0 0 15px;
+  :global(.isDark) & {
+    color: variables.$darkColor;
+  }
+
+  &:hover {
+    background: variables.$hoverBackground;
+    color: variables.$highLightedColor;
+
+    :global(.isDark) & {
+      background: variables.$darkHoverBackground;
+      color: variables.$darkHighLightedColor;
+    }
+  }
+
+  &:focus-visible {
+    outline: 1px solid variables.$focusOutlineColor;
+    outline-offset: -1px;
   }
 }
 
-.settingsItem {
-  > * {
-    display: inline-block;
+.isActive {
+  background: variables.$selectedBackground;
+  color: variables.$highLightedColor;
+  font-weight: 500;
+
+  :global(.isDark) & {
+    background: variables.$darkSelectedBackground;
+    color: variables.$darkHighLightedColor;
   }
 
-  &:not(:last-of-type) {
-    padding-bottom: 10px;
+  &:hover {
+    background: variables.$selectedBackground;
+
+    :global(.isDark) & {
+      background: variables.$darkSelectedBackground;
+    }
   }
+}
+
+.settingsContainer {
+  flex-grow: 1;
+  min-width: 0;
+  overflow: auto;
+  padding: 16px 20px 24px;
+}
+
+.settingsColumns {
+  max-width: 860px;
+
+  // A width, not a count: a narrow DevTools dock collapses to one column
+  // instead of squeezing two unreadable ones.
+  columns: 280px 2;
+  column-gap: 24px;
+}
+
+.card {
+  break-inside: avoid;
+
+  // Padding, not a bottom margin: a margin adjacent to a column break is
+  // trimmed, which would close the gap on whichever card lands at a column top.
+  // With no frame around a section, this gap is the only thing separating them.
+  padding: 0 0 24px;
+}
+
+.cardTitle {
+  margin: 0 0 9px;
+  padding: 0;
+  color: variables.$highLightedColor;
+  font-size: 12px;
+  font-weight: 600;
+
+  :global(.isDark) & {
+    color: variables.$darkHighLightedColor;
+  }
+}
+
+.cardBody {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cardDescription {
+  margin: -2px 0 2px;
+  opacity: 0.7;
+  font-size: 11px;
+  line-height: 1.4;
+  white-space: normal;
+}
+
+.checkboxRow {
+  align-self: flex-start;
+  max-width: 100%;
+  line-height: 16px;
+}
+
+.dependentRows {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  // Aligns with the label text of the checkbox these depend on.
+  padding-left: 20px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.fieldLabel {
+  opacity: 0.8;
+  font-size: 11px;
+  line-height: 1;
+}
+
+.fieldControl {
+  width: 100%;
+  max-width: 260px;
 }
 
 .hint {
-  max-width: 320px;
-  margin: 8px 0 0;
-  padding: 0 3px;
+  margin: 0;
   opacity: 0.85;
   font-size: 11px;
   line-height: 1.5;
   white-space: normal;
-}
-
-.select {
-  margin-left: 10px;
-  width: 100px;
-}
-
-.themeSelect {
-  width: 200px;
 }
 
 .closeButton {
