@@ -5,6 +5,7 @@
   align-items: center;
   justify-content: space-between;
   width: 100%;
+  min-width: 0;
   white-space: nowrap;
 }
 
@@ -14,10 +15,13 @@
 
   &:first-child {
     margin-right: 10px;
+    min-width: 0;
+    flex: 1 1 auto;
   }
 
   &:last-child {
     margin-left: 10px;
+    flex-shrink: 0;
   }
 }
 
@@ -40,6 +44,24 @@
   padding: 1px 4px;
   width: 160px;
   vertical-align: middle;
+}
+
+@include variables.compactLayout {
+  .filter {
+    width: auto;
+    min-width: 60px;
+    flex: 1 1 60px;
+  }
+
+  .compactHidden {
+    display: none;
+  }
+}
+
+@include variables.narrowLayout {
+  .narrowHidden {
+    display: none;
+  }
 }
 
 .filterClearIconWrapper {
@@ -72,4 +94,10 @@
 
 .settingsItemWrapper:not(:last-child) {
   margin-right: 10px;
+}
+
+.searchScope,
+.clearButton,
+.settingsItemWrapper {
+  flex-shrink: 0;
 }

@@ -11,6 +11,7 @@ import { ExpandTreeState, ExpandTreeStateTitlesMap } from '~/components/common/J
 import { expandLevelOptions } from '~/components/common/JsonViewer/ExpandLevel';
 import { ExtensionTheme, JsonViewerTheme } from '~/logic/SettingsContext/Theme';
 import { ViewMode, viewModeOptions } from '~/logic/SettingsContext/ViewMode';
+import useIsNarrowLayout from '~/logic/common/useIsNarrowLayout';
 import SettingsCard from './SettingsCard';
 import { SettingsTab, settingsTabs } from './SettingsTab';
 import styles from './settings.scss';
@@ -29,6 +30,7 @@ const tabStepMap: Record<string, number> = {
 const Settings = ({ onClose }: IComponentProps) => {
   const [activeTab, setActiveTab] = useState(SettingsTab.Preferences);
   const tabRefs = useRef<Partial<Record<SettingsTab, HTMLButtonElement>>>({});
+  const isNarrowLayout = useIsNarrowLayout();
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -185,6 +187,11 @@ const Settings = ({ onClose }: IComponentProps) => {
     value: key
   }));
 
+  const columnsDescription = isNarrowLayout
+    ? 'Method is always shown. The panel is too narrow to fit the others right now - '
+      + 'they come back when you widen it.'
+    : 'Method is always shown.';
+
   return (
     <Portal>
       <div className={ styles.settingsWrapper }>
@@ -286,9 +293,16 @@ const Settings = ({ onClose }: IComponentProps) => {
                         name="viewMode"
                         className={ styles.fieldControl }
                         options={ viewModeOptions }
-                        value={ viewMode }
+                        value={ isNarrowLayout ? ViewMode.Accordion : viewMode }
+                        isDisabled={ isNarrowLayout }
                         onChange={ handleViewModeChange }
                       />
+                      { isNarrowLayout && (
+                        <span className={ styles.fieldHint }>
+                          The panel is too narrow to show a request beside the list, so Accordion is in
+                          use. Widen it - or undock DevTools - to choose again. Your saved choice is kept.
+                        </span>
+                      ) }
                     </label>
                     <label
                       className={ styles.field }
@@ -339,7 +353,7 @@ const Settings = ({ onClose }: IComponentProps) => {
                   </SettingsCard>
                   <SettingsCard
                     title="Columns"
-                    description="Method is always shown."
+                    description={ columnsDescription }
                   >
                     <Input
                       name="showWaterfallColumn"
