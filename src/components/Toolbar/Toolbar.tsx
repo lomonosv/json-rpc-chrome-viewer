@@ -1,4 +1,5 @@
 import React, { ChangeEventHandler, useEffect, useRef } from 'react';
+import cn from 'classnames';
 import { useRequestContext } from '~/logic/HTTPArchive/HttpArchiveContext';
 import { useSettingsContext } from '~/logic/SettingsContext/SettingsContext';
 import { SearchScope, searchScopeOptions } from '~/logic/HTTPArchive/SearchScope';
@@ -88,6 +89,7 @@ const Toolbar = () => {
           />
           <Select
             name="searchScope"
+            title="Search scope"
             className={ styles.searchScope }
             value={ searchScope }
             options={ searchScopeOptions }
@@ -105,7 +107,7 @@ const Toolbar = () => {
           <Input
             name="preserveLog"
             label="Preserve log"
-            wrapperClassName={ styles.settingsItemWrapper }
+            wrapperClassName={ cn(styles.settingsItemWrapper, styles.narrowHidden) }
             type={ Type.Checkbox }
             checked={ preserveLog }
             onChange={ handlePreserveLogChange }
@@ -113,7 +115,7 @@ const Toolbar = () => {
           <Input
             name="includeJsonRpcLogs"
             label="Include JSON-RPC Logs"
-            wrapperClassName={ styles.settingsItemWrapper }
+            wrapperClassName={ cn(styles.settingsItemWrapper, styles.compactHidden) }
             type={ Type.Checkbox }
             checked={ includeJsonRpcLogs }
             onChange={ handleIncludeJsonRpcLogsChange }
@@ -121,7 +123,7 @@ const Toolbar = () => {
           <Input
             name="includeWebsocketLogs"
             label="Include Websocket Logs"
-            wrapperClassName={ styles.settingsItemWrapper }
+            wrapperClassName={ cn(styles.settingsItemWrapper, styles.compactHidden) }
             type={ Type.Checkbox }
             checked={ includeWebsocketLogs }
             onChange={ handleIncludeWebsocketLogsChange }

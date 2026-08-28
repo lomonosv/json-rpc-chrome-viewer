@@ -13,6 +13,21 @@ $hoverBackground: #f2f6fc;
 $waterfallBar: #4c8bf5;
 $waterfallTick: #1e8e3e;
 
+$compactWidth: 900px;
+$narrowWidth: 620px;
+
+@mixin compactLayout {
+  @media (max-width: $compactWidth) {
+    @content;
+  }
+}
+
+@mixin narrowLayout {
+  @media (max-width: $narrowWidth) {
+    @content;
+  }
+}
+
 $waterfallColumnPadding: 8px;
 $resizeHandleColor: #4c8bf5;
 $focusOutlineColor: #4d90fe;
@@ -34,6 +49,13 @@ $darkWaterfallTick: #81c995;
 $darkResizeHandleColor: #8ab4f8;
 $darkSearchHighlightBackground: #a1741b;
 $darkSearchHighlightColor: #fff;
+
+// Settings/section panels: a fill one step off the page plus a hairline and a
+// soft shadow, following DevTools' own settings cards.
+$cardBackground: #f8f9fa;
+$cardShadow: 0 1px 2px rgb(0 0 0 / 8%);
+$darkCardBackground: #282a2d;
+$darkCardShadow: 0 1px 3px rgb(0 0 0 / 40%);
 
 $success: #2e7d4f;
 $error: #ee442e;

@@ -57,6 +57,10 @@
 
 .methodHeader {
   min-width: 300px;
+
+  @include variables.narrowLayout {
+    min-width: 0;
+  }
 }
 
 .metaHeaders {

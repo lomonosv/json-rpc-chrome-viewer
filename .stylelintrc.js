@@ -12,6 +12,7 @@ module.exports = {
     }],
     'selector-class-pattern': null,
     'no-descending-specificity': null,
+    'media-query-no-invalid': null,
     'import-notation': 'string'
   }
 };

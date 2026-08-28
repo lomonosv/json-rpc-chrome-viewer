@@ -3,6 +3,17 @@
   height: 100%;
   width: 100%;
 
+  :global(.node-ellipsis[data-json-preview]) {
+    font-size: 0 !important;
+
+    &::after {
+      content: attr(data-json-preview);
+      font-size: 13px;
+      font-style: normal;
+      opacity: 0.75;
+    }
+  }
+
   :global(.react-json-view) {
     font-size: 13px;
     padding: 7px;

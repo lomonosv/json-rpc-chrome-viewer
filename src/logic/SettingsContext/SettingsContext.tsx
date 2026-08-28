@@ -18,6 +18,7 @@ const defaultExtensionThemeValue = ExtensionTheme.System;
 const defaultExpandTreeStateValue = ExpandTreeState.Default;
 const defaultExpandLevelValue = expandAllLevels;
 const defaultExpandedWebsocketMessagesStateValue = ExpandTreeState.Default;
+const defaultShowCollapsedPreviewValue = true;
 const defaultJsonViewerThemeValue = JsonViewerTheme.System;
 const defaultAutoScrollValue = true;
 const defaultShowWaterfallColumnValue = true;
@@ -44,6 +45,7 @@ const useSettings = () => {
   const [expandedWebsocketMessagesState, setExpandedWebsocketMessagesState] = useState<ExpandTreeState>(
     defaultExpandedWebsocketMessagesStateValue
   );
+  const [showCollapsedPreview, setShowCollapsedPreview] = useState<boolean>(defaultShowCollapsedPreviewValue);
   const [extensionTheme, setExtensionTheme] = useState<ExtensionTheme>(defaultExtensionThemeValue);
   const [jsonViewerTheme, setJsonViewerTheme] = useState<JsonViewerTheme>(defaultJsonViewerThemeValue);
   const [autoScroll, setAutoScroll] = useState<boolean>(defaultAutoScrollValue);
@@ -73,6 +75,7 @@ const useSettings = () => {
     getConfig('settings_showWebsocketBadge', defaultShowWebsocketBadgeValue).then(setShowWebsocketBadge);
     getConfig('settings_expandTreeState', defaultExpandTreeStateValue).then(setExpandTreeState);
     getConfig('settings_expandLevel', defaultExpandLevelValue).then(setExpandLevel);
+    getConfig('settings_showCollapsedPreview', defaultShowCollapsedPreviewValue).then(setShowCollapsedPreview);
     getConfig('settings_expandedWebsocketMessagesState', defaultExpandedWebsocketMessagesStateValue)
       .then(setExpandedWebsocketMessagesState);
     getConfig('settings_extensionTheme', defaultExtensionThemeValue).then(setExtensionTheme);
@@ -134,6 +137,11 @@ const useSettings = () => {
   const handleExpandLevelChange = (settings_expandLevel: number) => {
     setExpandLevel(settings_expandLevel);
     chrome.storage.local.set({ settings_expandLevel });
+  };
+
+  const handleShowCollapsedPreviewChange = (settings_showCollapsedPreview: boolean) => {
+    setShowCollapsedPreview(settings_showCollapsedPreview);
+    chrome.storage.local.set({ settings_showCollapsedPreview });
   };
 
   const handleExpandedWebsocketMessagesStateChange = (settings_expandedWebsocketMessagesState: ExpandTreeState) => {
@@ -202,6 +210,7 @@ const useSettings = () => {
     showWebsocketBadge,
     expandTreeState,
     expandLevel,
+    showCollapsedPreview,
     extensionTheme,
     jsonViewerTheme,
     autoScroll,
@@ -225,6 +234,7 @@ const useSettings = () => {
     setShowWebsocketBadge: handleShowWebsocketBadgeChange,
     setExpandTreeState: handleExpandTreeStateChange,
     setExpandLevel: handleExpandLevelChange,
+    setShowCollapsedPreview: handleShowCollapsedPreviewChange,
     setExtensionTheme: handleExtensionThemeChange,
     setJsonViewerTheme: handleJsonViewerThemeChange,
     setAutoScroll: handleAutoScrollChange,

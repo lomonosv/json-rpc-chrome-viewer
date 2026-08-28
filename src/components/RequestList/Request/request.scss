@@ -109,6 +109,9 @@
   width: 0;
   overflow: hidden;
 
+  @include variables.narrowLayout {
+    min-width: 0;
+  }
 }
 
 .method {
