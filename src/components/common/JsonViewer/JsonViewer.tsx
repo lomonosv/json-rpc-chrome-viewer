@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import ReactJsonView, { ThemeKeys } from '@microlink/react-json-view';
 import { JSONValue } from '~/logic/HTTPArchive/IRequest';
 import { useSettingsContext } from '~/logic/SettingsContext/SettingsContext';
 import { ExpandTreeState } from './ExpandTreeState';
 import { expandAllLevels } from './ExpandLevel';
+import useCollapsedPreview from './useCollapsedPreview';
 import styles from './jsonViewer.scss';
 
 interface IComponentProps {
@@ -37,8 +38,11 @@ const JsonViewer = ({
   expandLevel = expandAllLevels,
   onEdit
 }: IComponentProps) => {
+  const containerRef = useRef<HTMLDivElement>(null);
   const [isInitialized, setIsInitialized] = useState(false);
-  const { systemJsonViewerTheme } = useSettingsContext();
+  const { systemJsonViewerTheme, showCollapsedPreview } = useSettingsContext();
+
+  useCollapsedPreview(containerRef, src, showCollapsedPreview && isInitialized);
 
   const collapsed = getCollapsed(expandTreeState, expandLevel, defaultOpenNodesDepth);
 
@@ -51,7 +55,10 @@ const JsonViewer = ({
   }, [src]);
 
   return (
-    <div className={ styles.jsonViewer }>
+    <div
+      ref={ containerRef }
+      className={ styles.jsonViewer }
+    >
       { isInitialized && (
         typeof src === 'object' ? (
           <ReactJsonView

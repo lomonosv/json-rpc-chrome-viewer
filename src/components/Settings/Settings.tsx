@@ -74,6 +74,8 @@ const Settings = ({ onClose }: IComponentProps) => {
     setExpandTreeState,
     expandLevel,
     setExpandLevel,
+    showCollapsedPreview,
+    setShowCollapsedPreview,
     expandedWebsocketMessagesState,
     setExpandedWebsocketMessagesState,
     extensionTheme,
@@ -126,6 +128,10 @@ const Settings = ({ onClose }: IComponentProps) => {
 
   const handleExpandLevelChange: ChangeEventHandler<HTMLSelectElement> = (e) => {
     setExpandLevel(+e.target.value);
+  };
+
+  const handleShowCollapsedPreviewChange: ChangeEventHandler<HTMLInputElement> = (e) => {
+    setShowCollapsedPreview(e.target.checked);
   };
 
   const handleExpandedWebsocketMessagesStateChange: ChangeEventHandler<HTMLSelectElement> = (e) => {
@@ -437,6 +443,15 @@ const Settings = ({ onClose }: IComponentProps) => {
                         />
                       </label>
                     ) }
+                    <Input
+                      name="showCollapsedPreview"
+                      label="Preview collapsed nodes"
+                      title="Show the first entry of a collapsed object or array instead of an ellipsis"
+                      wrapperClassName={ styles.checkboxRow }
+                      type={ Type.Checkbox }
+                      checked={ showCollapsedPreview }
+                      onChange={ handleShowCollapsedPreviewChange }
+                    />
                   </SettingsCard>
                   <SettingsCard title="Websocket messages">
                     <label
