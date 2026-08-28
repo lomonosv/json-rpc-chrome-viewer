@@ -1,0 +1,111 @@
+@use "../variables";
+
+@mixin textMetrics {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 6px;
+  border: 1px solid transparent;
+  font-family: monospace;
+  font-size: 12px;
+  line-height: 1.4;
+  letter-spacing: normal;
+  tab-size: 2;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  word-break: normal;
+  scrollbar-gutter: stable;
+}
+
+.wrapper {
+  position: relative;
+  width: 100%;
+  min-height: 92px;
+  display: flex;
+}
+
+.highlight {
+  @include textMetrics;
+
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  border-radius: 2px;
+  background: variables.$background;
+  color: variables.$color;
+
+  :global(.isDark) & {
+    background: variables.$darkBackground;
+    color: variables.$darkColor;
+  }
+}
+
+.input {
+  @include textMetrics;
+
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  min-height: 92px;
+  resize: vertical;
+  border-color: variables.$borderColor;
+  border-radius: 2px;
+  background: transparent;
+  color: transparent;
+  caret-color: variables.$color;
+
+  :global(.isDark) & {
+    border-color: variables.$darkBorderColor;
+    caret-color: variables.$darkColor;
+  }
+
+  &:focus {
+    outline: 1px solid variables.$focusOutlineColor;
+  }
+
+  &.isInvalid {
+    border-color: variables.$error;
+  }
+}
+
+.isDisabled .highlight {
+  opacity: 0.5;
+}
+
+.key {
+  color: variables.$jsonKey;
+
+  :global(.isDark) & {
+    color: variables.$darkJsonKey;
+  }
+}
+
+.string {
+  color: variables.$jsonString;
+
+  :global(.isDark) & {
+    color: variables.$darkJsonString;
+  }
+}
+
+.number {
+  color: variables.$jsonNumber;
+
+  :global(.isDark) & {
+    color: variables.$darkJsonNumber;
+  }
+}
+
+.literal {
+  color: variables.$jsonLiteral;
+
+  :global(.isDark) & {
+    color: variables.$darkJsonLiteral;
+  }
+}
+
+.punctuation,
+.plain {
+  color: inherit;
+}

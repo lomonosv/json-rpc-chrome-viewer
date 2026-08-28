@@ -402,30 +402,3 @@
   }
 }
 
-.body {
-  box-sizing: border-box;
-  width: 100%;
-  min-height: 92px;
-  padding: 6px;
-  font-family: monospace;
-  font-size: 12px;
-  background: variables.$background;
-  color: variables.$color;
-  border: 1px solid variables.$borderColor;
-  border-radius: 2px;
-  resize: vertical;
-
-  &:focus {
-    outline: 1px solid variables.$focusOutlineColor;
-  }
-
-  :global(.isDark) & {
-    background: variables.$darkBackground;
-    color: variables.$darkColor;
-    border-color: variables.$darkBorderColor;
-  }
-
-  &.isInvalid {
-    border-color: variables.$error;
-  }
-}

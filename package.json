@@ -22,8 +22,8 @@
   },
   "homepage": "https://github.com/lomonosv/json-rpc-chrome-viewer#readme",
   "dependencies": {
-    "@microlink/react-json-view": "^1.31.28",
-    "@sentry/browser": "^10.70.0",
+    "@microlink/react-json-view": "^1.31.30",
+    "@sentry/browser": "^10.72.0",
     "classnames": "^2.5.1",
     "copy-to-clipboard": "^4.0.2",
     "inversify": "^8.2.3",
@@ -32,16 +32,16 @@
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "reflect-metadata": "^0.2.2",
-    "uuid": "^14.0.1"
+    "uuid": "^14.0.2"
   },
   "devDependencies": {
     "@release-it/bumper": "^8.0.0",
     "@sentry/esbuild-plugin": "^5.4.0",
     "@stylistic/eslint-plugin": "^5.10.0",
-    "@types/chrome": "^0.2.5",
-    "@types/node": "^26.2.0",
+    "@types/chrome": "^0.2.7",
+    "@types/node": "^26.4.0",
     "@types/react": "^19.2.18",
-    "@types/react-dom": "^19.2.4",
+    "@types/react-dom": "^19.2.5",
     "esbuild": "^0.28.2",
     "esbuild-plugin-copy": "^2.1.1",
     "esbuild-sass-plugin": "^3.7.0",
@@ -53,11 +53,11 @@
     "postcss-modules": "^9.0.1",
     "postcss-scss": "^4.0.9",
     "release-it": "^21.0.2",
-    "sass": "^1.102.0",
+    "sass": "^1.103.1",
     "stylelint": "^17.14.1",
     "stylelint-config-standard": "^40.0.0",
     "stylelint-scss": "^7.2.0",
     "typescript": "^6.0.3",
-    "typescript-eslint": "^8.66.0"
+    "typescript-eslint": "^8.68.0"
   }
 }
