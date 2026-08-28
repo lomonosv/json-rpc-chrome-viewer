@@ -137,11 +137,33 @@
 .accordionDetail {
   display: flex;
   flex-direction: column;
-  border-bottom: 1px solid transparent;
-  box-shadow: 0 5px 5px -5px #000;
+  box-sizing: border-box;
+  position: relative;
+  padding-left: 13px;
+  border-top: 1px solid variables.$borderColor;
+  border-bottom: 1px solid variables.$borderColor;
+  background: variables.$blurBackground;
 
   :global(.isDark) & {
+    border-top-color: variables.$darkBorderColor;
     border-bottom-color: variables.$darkBorderColor;
+    background: variables.$darkBlurBackground;
+  }
+}
+
+.accordionDetail::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  bottom: -1px;
+  left: 0;
+  width: 3px;
+  z-index: 1;
+  pointer-events: none;
+  background: variables.$resizeHandleColor;
+
+  :global(.isDark) & {
+    background: variables.$darkResizeHandleColor;
   }
 }
 
@@ -155,7 +177,7 @@
 .accordionResizeHandle::after {
   content: "";
   position: absolute;
-  top: 3px;
+  top: 0;
   left: 0;
   right: 0;
   height: 2px;

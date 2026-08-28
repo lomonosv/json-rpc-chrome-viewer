@@ -82,17 +82,23 @@
 }
 
 .isAccordionSelected {
-  box-shadow: 0 -5px 5px -5px #000;
+  box-shadow: inset 3px 0 0 0 variables.$resizeHandleColor;
+
+  :global(.isDark) & {
+    box-shadow: inset 3px 0 0 0 variables.$darkResizeHandleColor;
+  }
 }
 
 .isDimmed {
-  opacity: 0.45;
-  filter: blur(1px);
-  transition: opacity 0.1s ease-in-out, filter 0.1s ease-in-out;
+  opacity: 0.3;
+  transition: opacity 0.12s ease-in-out;
+
+  :global(.isDark) & {
+    opacity: 0.2;
+  }
 
   &:hover {
     opacity: 1;
-    filter: none;
   }
 }
 
