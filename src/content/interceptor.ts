@@ -1,8 +1,11 @@
 import { MessageType } from '~/logic/common/messages';
+import { IRequestTimings } from '~/logic/HTTPArchive/IRequest';
 import {
   IInterceptedRequestPayload,
   IInterceptorRule,
-  IJsonRpcItem
+  IJsonRpcItem,
+  IObservedRequestPayload,
+  IPendingRequestPayload
 } from '~/logic/Interceptor/IInterceptorRule';
 import { findRule, getRuleResponse, getRuleStatus } from '~/logic/Interceptor/rules';
 
@@ -13,8 +16,10 @@ import { findRule, getRuleResponse, getRuleStatus } from '~/logic/Interceptor/ru
 
   let rules: IInterceptorRule[] = [];
   let isEnabled = false;
+  let isResilientCapture = false;
 
   const isArmed = (): boolean => isEnabled && !!rules.length;
+  const shouldPatch = (): boolean => isArmed() || isResilientCapture;
 
   const parse = (text: string) => {
     try {
@@ -43,9 +48,15 @@ import { findRule, getRuleResponse, getRuleStatus } from '~/logic/Interceptor/ru
     }, { once: true });
   });
 
-  const getUrl = (input: RequestInfo | URL): string => (
-    input instanceof Request ? input.url : String(input)
-  );
+  const getUrl = (input: RequestInfo | URL): string => {
+    const rawUrl = input instanceof Request ? input.url : String(input);
+
+    try {
+      return new URL(rawUrl, window.location.href).href;
+    } catch (e) {
+      return rawUrl;
+    }
+  };
 
   const getMethod = (input: RequestInfo | URL, init: RequestInit): string => (
     init?.method || (input instanceof Request ? input.method : 'POST')
@@ -153,9 +164,169 @@ import { findRule, getRuleResponse, getRuleStatus } from '~/logic/Interceptor/ru
     }
   };
 
+  interface IPendingObservationPlan {
+    url: string,
+    isBatch: boolean,
+    items: IJsonRpcItem[],
+  }
+
+  const planObservation = async (
+    input: RequestInfo | URL,
+    init: RequestInit
+  ): Promise<IPendingObservationPlan> => {
+    try {
+      const rawRequest = await getBody(input, init);
+
+      if (!rawRequest || !jsonRPCRegex.test(rawRequest)) {
+        return null;
+      }
+
+      const requestJSON = parse(rawRequest);
+
+      if (!requestJSON) {
+        return null;
+      }
+
+      const isBatch = Array.isArray(requestJSON);
+
+      return {
+        url: getUrl(input),
+        isBatch,
+        items: isBatch ? requestJSON : [requestJSON]
+      };
+    } catch (e) {
+      return null;
+    }
+  };
+
+  const reportPending = (payload: IPendingRequestPayload) => {
+    window.postMessage({ type: MessageType.PendingRequest, payload }, '*');
+  };
+
+  const reportObserved = (payload: IObservedRequestPayload) => {
+    window.postMessage({ type: MessageType.ObservedRequest, payload }, '*');
+  };
+
+  let callCounter = 0;
+
+  const getResourceTimings = (url: string, startTime: number): IRequestTimings => {
+    try {
+      const entries = performance.getEntriesByName(url, 'resource') as PerformanceResourceTiming[];
+
+      if (!entries.length) {
+        return null;
+      }
+
+      const toEpoch = (entry: PerformanceResourceTiming) => performance.timeOrigin + entry.startTime;
+      const entry = entries.reduce((closest, candidate) => (
+        Math.abs(toEpoch(candidate) - startTime) < Math.abs(toEpoch(closest) - startTime) ? candidate : closest
+      ));
+
+      if (!entry.responseEnd || !entry.requestStart) {
+        return null;
+      }
+
+      const applicable = (value: number) => (value > 0 ? value : -1);
+
+      return {
+        blocked: Math.max(entry.domainLookupStart - entry.startTime, 0),
+        queueing: -1,
+        dns: applicable(entry.domainLookupEnd - entry.domainLookupStart),
+        connect: applicable(entry.connectEnd - entry.connectStart),
+        ssl: entry.secureConnectionStart
+          ? applicable(entry.connectEnd - entry.secureConnectionStart)
+          : -1,
+        // Resource Timing does not separate time spent sending; it is folded into the wait below.
+        send: -1,
+        wait: Math.max(entry.responseStart - entry.requestStart, 0),
+        receive: Math.max(entry.responseEnd - entry.responseStart, 0)
+      };
+    } catch (e) {
+      return null;
+    }
+  };
+
+  const observeFetch = async (input: RequestInfo | URL, init: RequestInit): Promise<Response> => {
+    const plan = await planObservation(input, init);
+    const trackedItems = plan
+      ? plan.items.filter((item) => item?.id !== undefined && item?.id !== null)
+      : [];
+
+    if (!trackedItems.length) {
+      return nativeFetch(input, init);
+    }
+
+    const startTime = Date.now();
+
+    callCounter += 1;
+
+    const callId = `${ startTime }-${ callCounter }`;
+
+    trackedItems.forEach((item) => {
+      reportPending({
+        url: plan.url,
+        method: item.method,
+        id: item.id,
+        params: item.params,
+        startTime,
+        callId
+      });
+    });
+
+    const rawRequest = JSON.stringify(plan.isBatch ? trackedItems : trackedItems[0]);
+
+    try {
+      const response = await nativeFetch(input, init);
+
+      response.clone().text().then((rawResponse) => {
+        reportObserved({
+          url: plan.url,
+          method: getMethod(input, init),
+          headers: getHeaders(input, init),
+          status: response.status,
+          startTime,
+          time: Date.now() - startTime,
+          rawRequest,
+          rawResponse,
+          callId,
+          timings: getResourceTimings(plan.url, startTime)
+        });
+      }).catch(() => {
+        reportObserved({
+          url: plan.url,
+          method: getMethod(input, init),
+          headers: getHeaders(input, init),
+          status: response.status,
+          startTime,
+          time: Date.now() - startTime,
+          rawRequest,
+          rawResponse: '',
+          callId,
+          timings: getResourceTimings(plan.url, startTime)
+        });
+      });
+
+      return response;
+    } catch (e) {
+      reportObserved({
+        url: plan.url,
+        method: getMethod(input, init),
+        headers: getHeaders(input, init),
+        status: 0,
+        startTime,
+        time: Date.now() - startTime,
+        rawRequest,
+        rawResponse: JSON.stringify({ error: { message: String(e) } }),
+        callId
+      });
+
+      throw e;
+    }
+  };
+
   const interceptFetch = async (input: RequestInfo | URL, init: RequestInit): Promise<Response> => {
     if (!isArmed()) {
-      return nativeFetch(input, init);
+      return isResilientCapture ? observeFetch(input, init) : nativeFetch(input, init);
     }
 
     const plan = await planInterception(input, init);
@@ -207,7 +378,7 @@ import { findRule, getRuleResponse, getRuleStatus } from '~/logic/Interceptor/ru
   };
 
   const patchedFetch = function fetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
-    if (!isArmed()) {
+    if (!shouldPatch()) {
       return nativeFetch(input, init);
     }
 
@@ -215,7 +386,7 @@ import { findRule, getRuleResponse, getRuleStatus } from '~/logic/Interceptor/ru
   };
 
   const applyPatch = () => {
-    window.fetch = isArmed() ? patchedFetch : originalFetch;
+    window.fetch = shouldPatch() ? patchedFetch : originalFetch;
   };
 
   window.addEventListener('message', (event) => {
@@ -225,6 +396,7 @@ import { findRule, getRuleResponse, getRuleStatus } from '~/logic/Interceptor/ru
 
     rules = event.data.payload?.rules || [];
     isEnabled = !!event.data.payload?.isEnabled;
+    isResilientCapture = !!event.data.payload?.isResilientCapture;
 
     applyPatch();
   });

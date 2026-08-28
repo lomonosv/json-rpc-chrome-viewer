@@ -46,6 +46,11 @@ Every JSON-RPC call to a given endpoint hits the same URL with the same method (
 - **Seed a rule from any request** with one click on its row - it copies the method name and the current response straight into a new rule and opens the rule dialog on it
 - Rules apply only to the inspected tab, and only while the panel is open and interception is armed - closing DevTools or the page never leaves a tab silently mocked
 
+**Troubleshoot**
+
+- **Resilient capture** - for when requests show up in Chrome's Network tab but not here. Another DevTools extension patching `window.fetch` makes Chrome credit *it* as the request's initiator, and this panel is then never told the request happened. **React DevTools 7.0.1 does this.** Turning this on reads requests inside the page instead of relying on Chrome to report them
+- Also shows each call **while it is still in flight**, with a live-growing waterfall bar, so a slow or hanging request is visible immediately
+
 **Appearance**
 
 - Dark and light themes, following the DevTools theme by default
@@ -88,9 +93,16 @@ A request is treated as JSON-RPC when it is a POST with an `application/json` bo
 | --- | --- |
 | General | Preserve log · Autoscroll to the latest request |
 | Appearance | Request view (Panes / Accordion) · Theme · Show url for each request · Show CORS badge · Show Websocket badge · Columns (Waterfall, Status, Size, Time) · JSON Tree Viewer Theme · JSON Tree Open State · Expand Level (shown only when Open State is Expanded) · JSON Tree Open State (Websocket Messages) |
+| Troubleshooting | Resilient capture (patch fetch in page) |
 | Filters | Include JSON-RPC Logs · Include Websocket Logs |
 
 Search scope and case sensitivity live in the toolbar rather than this dialog, but persist the same way.
+
+### Requests are missing from the panel
+
+If a request appears in Chrome's Network tab but never in this panel, another DevTools extension is almost certainly patching `window.fetch`. Chrome then credits that extension as the request's initiator and stops reporting the request to `chrome.devtools.network`, which is what this panel listens on - so the request becomes invisible here while remaining visible in the Network tab. **React DevTools 7.0.1 instruments `fetch` this way.**
+
+Enable **Resilient capture** in Settings to work around it: the panel then reads requests from inside the page rather than relying on Chrome to report them. The trade-offs are that this extension patches `window.fetch` on every page (so `fetch.toString()` no longer reads as native, and other DevTools extensions may in turn stop seeing these requests), only `fetch` is covered - not `XMLHttpRequest` - and a page that captured `fetch` before the extension loaded is still missed.
 
 Settings persist in `chrome.storage.local`, along with pane sizes and column widths/order. The Method column is always shown, since it identifies the row, and is the only one that cannot be resized or reordered - it absorbs whatever width the other columns give up.
 

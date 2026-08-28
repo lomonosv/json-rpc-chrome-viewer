@@ -1,7 +1,11 @@
 import { v4 as uuid } from 'uuid';
 import { IRequest, IRequestTimings, JSONValue } from '~/logic/HTTPArchive/IRequest';
 import { SearchScope } from '~/logic/HTTPArchive/SearchScope';
-import { IInterceptedRequestPayload } from '~/logic/Interceptor/IInterceptorRule';
+import {
+  IInterceptedRequestPayload,
+  IObservedRequestPayload,
+  IPendingRequestPayload
+} from '~/logic/Interceptor/IInterceptorRule';
 
 const jsonRPCRegex = /jsonrpc\\?["']?\s*:\s*\\?["']?2\.0\\?["']?/;
 
@@ -157,12 +161,46 @@ export const getPreparedMessage = (
   rawResponse: ''
 });
 
+export const getPreparedPendingRequest = (payload: IPendingRequestPayload): IRequest => {
+  const requestJSON = {
+    id: payload.id as unknown as string,
+    jsonrpc: '2.0',
+    method: payload.method,
+    params: payload.params as JSONValue
+  };
+
+  return {
+    uuid: uuid(),
+    startTime: payload.startTime,
+    isCors: false,
+    isError: false,
+    isWarning: false,
+    isWebSocket: false,
+    isPending: true,
+    callId: payload.callId,
+    request: {
+      url: payload.url
+    },
+    response: {
+      status: 0,
+      content: {
+        size: 0
+      }
+    },
+    time: 0,
+    requestJSON,
+    rawRequest: JSON.stringify(requestJSON),
+    rawResponse: ''
+  };
+};
+
 interface IPreparedRequestBase {
   startTime: number,
   time: number,
   timings: IRequestTimings,
   isCors: boolean,
   isIntercepted?: boolean,
+  callId?: string,
   request: IRequest['request'],
   response: IRequest['response'],
 }
@@ -212,6 +250,30 @@ export const getPreparedInterceptedRequest = (payload: IInterceptedRequestPayloa
     timings: null,
     isCors: false,
     isIntercepted: true,
+    request: {
+      url: payload.url,
+      method: payload.method,
+      headers: payload.headers,
+      postData: {
+        text: payload.rawRequest
+      }
+    },
+    response: {
+      status: payload.status,
+      content: {
+        size: payload.rawResponse?.length || 0
+      }
+    }
+  }, payload.rawRequest, payload.rawResponse)
+);
+
+export const getPreparedObservedRequest = (payload: IObservedRequestPayload): IRequest[] => (
+  getPreparedJsonRpcRequests({
+    callId: payload.callId,
+    startTime: payload.startTime,
+    time: payload.time,
+    timings: payload.timings || null,
+    isCors: false,
     request: {
       url: payload.url,
       method: payload.method,

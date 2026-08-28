@@ -1,3 +1,5 @@
+import { IRequestTimings } from '~/logic/HTTPArchive/IRequest';
+
 export interface IJsonRpcItem {
   id?: string | number,
   jsonrpc?: string,
@@ -37,4 +39,18 @@ export interface IInterceptedRequestPayload {
   time: number,
   rawRequest: string,
   rawResponse: string,
+}
+
+export interface IPendingRequestPayload {
+  url: string,
+  method: string,
+  id: string | number,
+  params?: unknown,
+  startTime: number,
+  callId: string,
+}
+
+export interface IObservedRequestPayload extends IInterceptedRequestPayload {
+  callId: string,
+  timings?: IRequestTimings,
 }

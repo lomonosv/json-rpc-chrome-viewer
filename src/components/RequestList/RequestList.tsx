@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import cn from 'classnames';
 import { Resizable, ResizeCallback } from 're-resizable';
 import { useRequestContext } from '~/logic/HTTPArchive/HttpArchiveContext';
@@ -23,6 +23,7 @@ import {
 import styles from './requestList.scss';
 
 const minLeftSideWidth = 200;
+const pendingTickIntervalMs = 250;
 
 interface ISortableHeaderProps {
   field: SortField,
@@ -173,16 +174,35 @@ const RequestList = ({ className }: IComponentProps) => {
     }
   }, [autoScroll, requests]);
 
+  const [now, setNow] = useState<number>(() => Date.now());
+  const hasPending = useMemo(() => requests.some((request) => request.isPending), [requests]);
+
+  useEffect(() => {
+    if (!hasPending) {
+      return undefined;
+    }
+
+    const interval = setInterval(() => setNow(Date.now()), pendingTickIntervalMs);
+
+    return () => clearInterval(interval);
+  }, [hasPending]);
+
   const { timelineStart, timelineEnd } = useMemo(() => {
     if (!requests.length) {
       return { timelineStart: 0, timelineEnd: 1 };
     }
 
-    return requests.reduce((acc, request) => ({
-      timelineStart: Math.min(acc.timelineStart, request.startTime),
-      timelineEnd: Math.max(acc.timelineEnd, request.startTime + (request.isWebSocket ? 0 : request.time))
-    }), { timelineStart: Infinity, timelineEnd: -Infinity });
-  }, [requests]);
+    return requests.reduce((acc, request) => {
+      const endTime = request.isPending
+        ? now
+        : request.startTime + (request.isWebSocket ? 0 : request.time);
+
+      return {
+        timelineStart: Math.min(acc.timelineStart, request.startTime),
+        timelineEnd: Math.max(acc.timelineEnd, endTime)
+      };
+    }, { timelineStart: Infinity, timelineEnd: -Infinity });
+  }, [requests, now]);
 
   const handleResize = () => {
     updateRequestListSectionWidth(resizableRef.current.size.width);
@@ -259,6 +279,7 @@ const RequestList = ({ className }: IComponentProps) => {
                   item={ item }
                   timelineStart={ timelineStart }
                   timelineEnd={ timelineEnd }
+                  now={ now }
                 />
                 { isAccordionView && selected?.uuid === item.uuid && (
                   <Resizable
