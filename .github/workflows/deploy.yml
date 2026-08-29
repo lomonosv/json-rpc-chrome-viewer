@@ -1,0 +1,93 @@
+name: Deploy to Chrome Web Store
+
+on:
+  release:
+    types: [ published ]
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: 'Publish to users (unchecked = upload as draft only)'
+        type: boolean
+        default: false
+
+jobs:
+  deploy:
+    # a pre-release must not auto-publish to users; dispatch it manually instead
+    if: github.event_name != 'release' || !github.event.release.prerelease
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.x
+          cache: 'npm'
+
+      - run: npm ci --force
+
+      # scripts/envSubstitute.js reads .env through dotenv and exits 1 if it
+      # parses nothing, so the secrets have to land on disk before the build.
+      - name: Write .env from secrets
+        run: |
+          cat > .env <<EOF
+          ENVIRONMENT=${{ secrets.ENVIRONMENT }}
+          SENTRY_DSN=${{ secrets.SENTRY_DSN }}
+          SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}
+          EOF
+
+      # clean -> lint -> tsc -> esbuild (+ Sentry sourcemap upload) -> env substitution
+      - run: npm run build
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+
+      - name: Verify manifest version matches the tag
+        if: github.event_name == 'release'
+        run: |
+          MANIFEST=$(node -p "require('./build/manifest.json').version")
+          TAG=${GITHUB_REF_NAME#v}
+          if [ "$MANIFEST" != "$TAG" ]; then
+            echo "manifest.json is $MANIFEST but the tag is $TAG"
+            exit 1
+          fi
+          echo "version=$MANIFEST" >> "$GITHUB_ENV"
+
+      - name: Zip the build folder contents
+        run: (cd build && zip -r ../extension.zip .)
+
+      - name: Check for store credentials
+        id: creds
+        run: |
+          if [ -n "${{ secrets.CWS_REFRESH_TOKEN }}" ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::No CWS_* secrets set - skipping the store upload. Download extension.zip from this run and upload it manually."
+          fi
+
+      - name: Upload to Chrome Web Store
+        if: steps.creds.outputs.present == 'true'
+        run: |
+          npx --yes chrome-webstore-upload-cli@3 upload \
+            --source extension.zip \
+            ${{ (github.event_name == 'release' || inputs.publish) && '--auto-publish' || '' }}
+        env:
+          EXTENSION_ID: ${{ secrets.CWS_EXTENSION_ID }}
+          CLIENT_ID: ${{ secrets.CWS_CLIENT_ID }}
+          CLIENT_SECRET: ${{ secrets.CWS_CLIENT_SECRET }}
+          REFRESH_TOKEN: ${{ secrets.CWS_REFRESH_TOKEN }}
+
+      - name: Upload the zip as a run artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: extension-zip
+          path: extension.zip
+          retention-days: 30
+
+      - name: Attach the zip to the GitHub release
+        if: github.event_name == 'release'
+        run: gh release upload "$GITHUB_REF_NAME" extension.zip --clobber
+        env:
+          GH_TOKEN: ${{ github.token }}
