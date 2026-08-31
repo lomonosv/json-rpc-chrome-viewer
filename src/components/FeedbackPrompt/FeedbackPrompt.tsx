@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import cn from 'classnames';
 import { useRequestContext } from '~/logic/HTTPArchive/HttpArchiveContext';
-import { getConfig } from '~/logic/common/helpers';
+import { getConfig, setConfig } from '~/logic/common/helpers';
 import Button from '~/components/common/Button';
 import Icon, { IconType } from '~/components/common/Icon';
 import styles from './feedbackPrompt.scss';
@@ -70,7 +70,7 @@ const FeedbackPrompt = () => {
       isCheckedRef.current = true;
 
       timeoutRef.current = setTimeout(() => {
-        chrome.storage.local.set({ feedback_promptShown: true });
+        setConfig({ feedback_promptShown: true });
         setIsVisible(true);
       }, appearanceDelayMs);
     });

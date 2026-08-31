@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
-import { getConfig } from '~/logic/common/helpers';
+import { getConfig, setConfig } from '~/logic/common/helpers';
 import {
   ResizableColumn,
   defaultColumnWidths,
@@ -46,17 +46,17 @@ const useCache = () => {
 
   const updateRequestSectionHeight = (requestSectionHeight) => {
     setRequestSectionHeight(requestSectionHeight);
-    chrome.storage.local.set({ requestSectionHeight });
+    setConfig({ requestSectionHeight });
   };
 
   const updateRequestListSectionWidth = (requestListSectionWidth) => {
     setRequestListSectionWidth(requestListSectionWidth);
-    chrome.storage.local.set({ requestListSectionWidth });
+    setConfig({ requestListSectionWidth });
   };
 
   const updateAccordionSectionHeight = (accordionSectionHeight) => {
     setAccordionSectionHeight(accordionSectionHeight);
-    chrome.storage.local.set({ accordionSectionHeight });
+    setConfig({ accordionSectionHeight });
   };
 
   const getColumnWidth = (field: ResizableColumn) => columnWidthsRef.current[field];
@@ -67,7 +67,7 @@ const useCache = () => {
   };
 
   const persistColumnWidths = () => {
-    chrome.storage.local.set({ columnWidths: columnWidthsRef.current });
+    setConfig({ columnWidths: columnWidthsRef.current });
   };
 
   const updateColumnOrder = (field: ResizableColumn, targetIndex: number) => {
@@ -75,7 +75,7 @@ const useCache = () => {
 
     columnOrderRef.current = columnOrder;
     setColumnOrder(columnOrder);
-    chrome.storage.local.set({ columnOrder });
+    setConfig({ columnOrder });
   };
 
   return {
