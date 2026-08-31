@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { v4 as uuid } from 'uuid';
-import { getConfig } from '~/logic/common/helpers';
+import { getConfig, setConfig, isExtensionAlive } from '~/logic/common/helpers';
 import { useSettingsContext } from '~/logic/SettingsContext/SettingsContext';
 import { interceptorPortName } from '~/logic/common/messages';
 import { IInterceptorRule } from '~/logic/Interceptor/IInterceptorRule';
@@ -58,17 +58,21 @@ const useInterceptor = () => {
   }, []);
 
   const pingPort = () => {
+    if (!isExtensionAlive()) {
+      return;
+    }
+
     portRef.current?.postMessage({ tabId: chrome.devtools.inspectedWindow.tabId });
   };
 
   const persistRules = (rules: IInterceptorRule[]) => {
     setRules(rules);
-    chrome.storage.local.set({ [rulesStorageKey]: rules }).then(pingPort);
+    setConfig({ [rulesStorageKey]: rules }).then(pingPort);
   };
 
   const updateIsEnabled = (isEnabled: boolean) => {
     setIsEnabled(isEnabled);
-    chrome.storage.local.set({ [enabledStorageKey]: isEnabled }).then(pingPort);
+    setConfig({ [enabledStorageKey]: isEnabled }).then(pingPort);
   };
 
   const isFirstResilientCaptureRun = useRef<boolean>(true);

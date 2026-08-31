@@ -4,7 +4,7 @@ import { ViewMode } from '~/logic/SettingsContext/ViewMode';
 import { ExpandTreeState } from '~/components/common/JsonViewer/ExpandTreeState';
 import { expandAllLevels } from '~/components/common/JsonViewer/ExpandLevel';
 import { SearchScope } from '~/logic/HTTPArchive/SearchScope';
-import { getConfig } from '~/logic/common/helpers';
+import { getConfig, setConfig } from '~/logic/common/helpers';
 
 const defaultPreserveLogValue = false;
 const defaultIncludeJsonRpcLogsValue = true;
@@ -91,72 +91,72 @@ const useSettings = () => {
 
   const handlePreserveLogChange = (settings_preserveLog: boolean) => {
     setPreserveLog(settings_preserveLog);
-    chrome.storage.local.set({ settings_preserveLog });
+    setConfig({ settings_preserveLog });
   };
 
   const handleIncludeJsonRpcLogsChange = (settings_includeJsonRpcLogs: boolean) => {
     setIncludeJsonRpcLogs(settings_includeJsonRpcLogs);
-    chrome.storage.local.set({ settings_includeJsonRpcLogs });
+    setConfig({ settings_includeJsonRpcLogs });
   };
 
   const handleIncludeWebsocketLogsChange = (settings_includeWebsocketLogs: boolean) => {
     setIncludeWebsocketLogs(settings_includeWebsocketLogs);
-    chrome.storage.local.set({ settings_includeWebsocketLogs });
+    setConfig({ settings_includeWebsocketLogs });
   };
 
   const handleSearchScopeChange = (settings_searchScope: SearchScope) => {
     setSearchScope(settings_searchScope);
-    chrome.storage.local.set({ settings_searchScope });
+    setConfig({ settings_searchScope });
   };
 
   const handleCaseSensitiveSearchChange = (settings_caseSensitiveSearch: boolean) => {
     setCaseSensitiveSearch(settings_caseSensitiveSearch);
-    chrome.storage.local.set({ settings_caseSensitiveSearch });
+    setConfig({ settings_caseSensitiveSearch });
   };
 
   const handleShowRequestUrlChange = (settings_showRequestUrl: boolean) => {
     setShowRequestUrl(settings_showRequestUrl);
-    chrome.storage.local.set({ settings_showRequestUrl });
+    setConfig({ settings_showRequestUrl });
   };
 
   const handleShowCorsBadgeChange = (settings_showCorsBadge: boolean) => {
     setShowCorsBadge(settings_showCorsBadge);
-    chrome.storage.local.set({ settings_showCorsBadge });
+    setConfig({ settings_showCorsBadge });
   };
 
   const handleShowWebsocketBadgeChange = (settings_showWebsocketBadge: boolean) => {
     setShowWebsocketBadge(settings_showWebsocketBadge);
-    chrome.storage.local.set({ settings_showWebsocketBadge });
+    setConfig({ settings_showWebsocketBadge });
   };
 
   const handleExpandTreeStateChange = (settings_expandTreeState: ExpandTreeState) => {
     setExpandTreeState(settings_expandTreeState);
-    chrome.storage.local.set({ settings_expandTreeState });
+    setConfig({ settings_expandTreeState });
   };
 
   const handleExpandLevelChange = (settings_expandLevel: number) => {
     setExpandLevel(settings_expandLevel);
-    chrome.storage.local.set({ settings_expandLevel });
+    setConfig({ settings_expandLevel });
   };
 
   const handleShowCollapsedPreviewChange = (settings_showCollapsedPreview: boolean) => {
     setShowCollapsedPreview(settings_showCollapsedPreview);
-    chrome.storage.local.set({ settings_showCollapsedPreview });
+    setConfig({ settings_showCollapsedPreview });
   };
 
   const handleExpandedWebsocketMessagesStateChange = (settings_expandedWebsocketMessagesState: ExpandTreeState) => {
     setExpandedWebsocketMessagesState(settings_expandedWebsocketMessagesState);
-    chrome.storage.local.set({ settings_expandedWebsocketMessagesState });
+    setConfig({ settings_expandedWebsocketMessagesState });
   };
 
   const handleJsonViewerThemeChange = (settings_jsonViewerTheme: JsonViewerTheme) => {
     setJsonViewerTheme(settings_jsonViewerTheme);
-    chrome.storage.local.set({ settings_jsonViewerTheme });
+    setConfig({ settings_jsonViewerTheme });
   };
 
   const handleExtensionThemeChange = (settings_extensionTheme: ExtensionTheme) => {
     setExtensionTheme(settings_extensionTheme);
-    chrome.storage.local.set({ settings_extensionTheme });
+    setConfig({ settings_extensionTheme });
   };
 
   const getSystemJsonViewerTheme = (): JsonViewerTheme => (
@@ -165,37 +165,37 @@ const useSettings = () => {
 
   const handleAutoScrollChange = (settings_autoScroll: boolean) => {
     setAutoScroll(settings_autoScroll);
-    chrome.storage.local.set({ settings_autoScroll });
+    setConfig({ settings_autoScroll });
   };
 
   const handleShowWaterfallColumnChange = (settings_showWaterfallColumn: boolean) => {
     setShowWaterfallColumn(settings_showWaterfallColumn);
-    chrome.storage.local.set({ settings_showWaterfallColumn });
+    setConfig({ settings_showWaterfallColumn });
   };
 
   const handleShowStatusColumnChange = (settings_showStatusColumn: boolean) => {
     setShowStatusColumn(settings_showStatusColumn);
-    chrome.storage.local.set({ settings_showStatusColumn });
+    setConfig({ settings_showStatusColumn });
   };
 
   const handleShowSizeColumnChange = (settings_showSizeColumn: boolean) => {
     setShowSizeColumn(settings_showSizeColumn);
-    chrome.storage.local.set({ settings_showSizeColumn });
+    setConfig({ settings_showSizeColumn });
   };
 
   const handleShowTimeColumnChange = (settings_showTimeColumn: boolean) => {
     setShowTimeColumn(settings_showTimeColumn);
-    chrome.storage.local.set({ settings_showTimeColumn });
+    setConfig({ settings_showTimeColumn });
   };
 
   const handleViewModeChange = (settings_viewMode: ViewMode) => {
     setViewMode(settings_viewMode);
-    chrome.storage.local.set({ settings_viewMode });
+    setConfig({ settings_viewMode });
   };
 
   const handleResilientCaptureChange = (settings_resilientCapture: boolean) => {
     setResilientCapture(settings_resilientCapture);
-    chrome.storage.local.set({ settings_resilientCapture });
+    setConfig({ settings_resilientCapture });
   };
 
   return {
