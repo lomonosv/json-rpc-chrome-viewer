@@ -201,8 +201,13 @@ const useRequest = () => {
         type?: 'income' | 'outcome',
         message?: string,
       },
-    }
+    },
+    sender: chrome.runtime.MessageSender
   ) => {
+    if (sender?.tab?.id !== chrome.devtools.inspectedWindow.tabId) {
+      return;
+    }
+
     if (message.type === MessageType.InterceptedRequest) {
       requestsRef.current = [
         ...requestsRef.current,
