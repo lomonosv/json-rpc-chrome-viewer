@@ -385,25 +385,57 @@ caused the calls:
 
 These are load-bearing in the package:
 
-- **One handler in `adapters/nextMiddleware.ts` serves both Next conventions**,
-  exported as `proxy` and as `middleware`. `./next/proxy` is a thin re-export for
-  `proxy.ts` (Next 16+, always the Node.js runtime); `./next/middleware` serves
-  `middleware.ts` (Next 14-15, still run by 16 with a deprecation warning, edge
-  by default). Next resolves the handler by file name — `(isProxy ? mod.proxy :
+- **Two Next entries with different reach, over one edge-safe tagger.**
+  `adapters/tagRequest.ts` mints the id and skips static assets. It imports
+  only plain constants from `core`, because the `middleware.ts` path can land on
+  the edge, where `node:async_hooks`, `node:zlib` and `node:crypto` do not
+  exist; pulling one in breaks the host's entire middleware.
+  - `./next/middleware` (`nextMiddleware.ts`; Next 14-15, edge by default) only
+    tags, so the host still needs `instrumentation.ts` and the drain route. It
+    gates production on `NODE_ENV`, not `isEnabled()`: options live in the Node
+    process, which an edge function cannot see.
+  - `./next/proxy` (`nextProxy.ts`; Next 16+) is the **whole integration in one
+    file**. Next 16 runs `proxy.ts` on Node.js in the same process as the
+    render, so it patches `fetch` (replacing `instrumentation.ts`), tags, and
+    answers `/__jsonrpc-log/<id>` itself by calling the route's own `GET`
+    (replacing the route file) — verified in a real Next 16 app with neither
+    file present. It patches lazily on the first request, so importing it has
+    no side effects. `proxy` is literally `withJsonRpcLogger(() => undefined)`,
+    so there is one code path. Sharing a process with the render holds for
+    `next dev` and `next start`; serverless hosts may split them, which is
+    acceptable only because the logger is development-only by default.
+
+  Next resolves the handler by file name — `(isProxy ? mod.proxy :
   mod.middleware) || mod.default` in its `build/templates/middleware.js` — so
-  re-exporting the wrong name for the file makes Next refuse to start. It
-  **imports only plain constants from `core`**, because the `middleware.ts` path
-  can land on the edge, where `node:async_hooks`, `node:zlib` and `node:crypto`
-  do not exist; pulling one in breaks the host's entire middleware. Static
-  assets are skipped **at runtime** in `isUntaggedPath`, not only via
+  each entry exports only the name its file needs, and the wrong name makes Next
+  refuse to start.
+- **`withJsonRpcLogger` answers the drain before the host's handler runs.** The
+  panel drains with `credentials: 'omit'`, so any auth gate in the host's proxy
+  would redirect every drain. It then tags whatever *renders*: a returned
+  `next()` or `rewrite()` (detected by `x-middleware-next` /
+  `x-middleware-rewrite`) gets the id added in Next's own request-header
+  protocol — `x-middleware-override-headers` plus `x-middleware-request-*`, as
+  `handleMiddlewareField` writes it. If the host already overrode request
+  headers, our key is appended to its list, as Next's `adapter.js` itself does;
+  if not, the full request header set is supplied, exactly as
+  `NextResponse.next({ request: { headers } })` would, never a list naming only
+  our header: Next's `resolve-routes.js` **deletes every request header the list
+  does not name**, so a one-key list would strip `cookie` and `authorization`
+  from the render and break the host's auth, not just the logger. Redirects and host-built responses pass through untouched, and a
+  response whose headers cannot be written is returned untagged rather than
+  thrown — the logger must never break the host's proxy. Returning nothing
+  means "continue", as it does to Next. Because this speaks an internal Next
+  protocol, the real-app test must exercise the wrapper, not just the plain
+  proxy; a typical host proxy ends in `return NextResponse.next()`, and passing
+  that through untagged would silently drop every server call.
+- **Static assets are skipped at runtime** in `isUntaggedPath`, not via
   `config.matcher`: Next reads `config` with `extractExportedConstValue` against
-  the host's own file AST, so a config re-exported from the package is not
-  guaranteed to apply — verified: Next 16 logs "can't recognize the exported
-  `config` field ... it may be re-exported from another file" on **every
-  request** and falls back to matching everything. `./next/proxy` therefore
-  does not offer `config` at all; `./next/middleware` keeps it only so 0.1.x
-  `middleware.ts` files keep resolving. It stays matcher-only — a `runtime` key
-  would make Next reject it inside `proxy.ts`.
+  the host's own file AST, so a re-exported config never applies — Next 16 logs
+  "can't recognize the exported `config` field ... it may be re-exported from
+  another file" on **every request**. `./next/proxy` offers no `config`;
+  `./next/middleware` keeps one only so 0.1.x `middleware.ts` files keep
+  resolving. It stays matcher-only — a `runtime` key would make Next reject it
+  inside `proxy.ts`.
 - **Two README details were live defects in 0.1.x, and must not regress.** Both
   were found only by running a real Next 16 app, not by typechecking:
   - **The drain route folder is `app/%5F_jsonrpc-log`, not `app/__jsonrpc-log`.**
@@ -448,7 +480,17 @@ These are load-bearing in the package:
 **only** because `next` ships no `exports` map, so nodenext's ESM mode refuses
 `next/headers` — a subpath Next resolves through its own bundler. Relative
 imports therefore carry explicit `.js` extensions by hand, which is what keeps
-the ESM output runnable on bare Node. The CJS build pins `moduleResolution:
+the ESM output runnable on bare Node.
+
+**The Next adapters import `next/server.js` and `next/headers.js`, with the
+extension, and must keep doing so.** `next` ships no `exports` map, so bare
+Node ESM refuses the extensionless subpath (`ERR_MODULE_NOT_FOUND`), while a
+bundler resolves both spellings to the same `node_modules/next/server.js` —
+Next aliases only `next/dist/*` for the edge build (`create-compiler-aliases.js`),
+never the top-level specifier. The extensionless form had been in the ESM output
+since 0.1.0 and went unnoticed because Next always bundles these files: it
+worked in every Next app and broke any bare-Node ESM consumer, such as an ESM
+test of a host's proxy. The CJS build pins `moduleResolution:
 "node10"` with `ignoreDeprecations: "6.0"`, and `scripts/postbuild.cjs` writes
 `dist/cjs/package.json` with `{"type":"commonjs"}` — without it Node reads that
 output as ESM, since the package itself is `"type": "module"`.

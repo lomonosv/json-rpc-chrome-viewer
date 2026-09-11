@@ -14,11 +14,12 @@ let headersFn: HeadersFn | null = null;
 /**
  * `next/headers` is imported lazily and cached: importing it at module scope
  * would make this entry unusable outside a Next app, and re-importing per call
- * would put a module resolution on the path of every JSON-RPC request.
+ * would put a module resolution on the path of every JSON-RPC request. The
+ * `.js` extension is required for the same reason as in `tagRequest.ts`.
  */
 const getHeadersFn = async (): Promise<HeadersFn> => {
   if (!headersFn) {
-    const mod = await import('next/headers');
+    const mod = await import('next/headers.js');
 
     headersFn = mod.headers as unknown as HeadersFn;
   }

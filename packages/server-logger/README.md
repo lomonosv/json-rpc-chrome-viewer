@@ -20,10 +20,46 @@ npm install --save-dev @json-rpc-chrome-viewer/server-logger
 
 ## Next.js (App Router)
 
-Three short files. The request hook is **`proxy.ts` on Next 16+** and
-**`middleware.ts` on Next 14 and 15**. Next 16 still runs `middleware.ts`, but
-warns that the convention is deprecated. The package supports both; use
-whichever your version expects.
+### Next 16 — one file
+
+```ts
+// proxy.ts
+export { proxy } from '@json-rpc-chrome-viewer/server-logger/next/proxy';
+```
+
+That is the whole integration. Next 16 runs `proxy.ts` on Node.js, in the same
+process as your pages, so this one export does all three jobs: it patches the
+server's `fetch`, tags every page render with a log id, and answers the
+extension at `/__jsonrpc-log/<id>`.
+
+**Already have a `proxy.ts`?** Wrap your handler instead:
+
+```ts
+// proxy.ts
+import { NextResponse } from 'next/server';
+import { withJsonRpcLogger } from '@json-rpc-chrome-viewer/server-logger/next/proxy';
+
+export const proxy = withJsonRpcLogger((request) => {
+  // your redirects, rewrites and auth checks, unchanged
+
+  return NextResponse.next();
+});
+```
+
+The wrapper answers the extension's log requests *before* your code runs — they
+are sent without cookies, so an auth check would otherwise redirect them.
+Everything else reaches your handler as before. A `next()` or `rewrite()` you
+return gets the log id added, keeping your headers and cookies; redirects and
+responses you build yourself pass through untouched. Returning nothing works
+too, and means "continue", as it does to Next.
+
+This relies on the proxy sharing a process with your pages, which holds for
+`next dev` and `next start`.
+
+### Next 14 and 15 — three files
+
+Middleware runs on the edge runtime by default, which can neither patch Node's
+`fetch` nor reach the logger's buffer, so two more files do those jobs:
 
 ```ts
 // instrumentation.ts
@@ -37,12 +73,7 @@ export async function register() {
 ```
 
 ```ts
-// proxy.ts — Next 16+
-export { proxy } from '@json-rpc-chrome-viewer/server-logger/next/proxy';
-```
-
-```ts
-// middleware.ts — Next 14 and 15
+// middleware.ts
 export { middleware } from '@json-rpc-chrome-viewer/server-logger/next/middleware';
 ```
 
@@ -50,12 +81,6 @@ export { middleware } from '@json-rpc-chrome-viewer/server-logger/next/middlewar
 // app/%5F_jsonrpc-log/[logId]/route.ts
 export { GET } from '@json-rpc-chrome-viewer/server-logger/next';
 ```
-
-The proxy mints an id before the render and puts it on the request and the
-response; the instrumented `fetch` records calls against it; the route hands the
-log to the extension. That split exists because an App Router page **cannot** set
-a response header from inside a Server Component — the id has to be attached by
-something that runs earlier.
 
 Three details in those files are load-bearing:
 
@@ -65,40 +90,28 @@ Three details in those files are load-bearing:
 - **The `%5F` in the route folder.** A folder starting with `_` is private in the
   App Router and never routed. `%5F` is an escaped underscore, so the folder
   still serves `/__jsonrpc-log/<id>`, the path the extension drains.
-- **The export name matches the file.** Next looks for `proxy` in `proxy.ts` and
-  `middleware` in `middleware.ts`, so `export { middleware } from '…'` inside a
-  `proxy.ts` stops Next from starting.
+- **No `config` to re-export.** Next only reads a `matcher` declared in your own
+  file, and warns on every request when one is re-exported; the logger skips
+  static assets at runtime instead.
 
-There is no `config` to re-export. Next only reads a `matcher` declared in your
-own file, and warns on every request when one is re-exported; the logger skips
-static assets at runtime instead.
-
-Already have a `proxy.ts` (or `middleware.ts`)? Run your own logic first, and
-fall through to the logger for requests you do not redirect or rewrite:
-
-```ts
-import type { NextRequest } from 'next/server';
-import { proxy as tagRequest } from '@json-rpc-chrome-viewer/server-logger/next/proxy';
-
-export function proxy(request: NextRequest) {
-  // your redirects and rewrites here, returning early from each
-
-  return tagRequest(request);
-}
-```
+Next 16 still runs `middleware.ts`, with a deprecation warning, but there the
+one-file `proxy.ts` is simpler. **Export the name that matches your file:** Next
+looks for `proxy` in `proxy.ts` and `middleware` in `middleware.ts`, and the
+wrong one stops Next from starting.
 
 ### Upgrading from 0.1.x
 
 0.1.x did not work with the App Router, for three reasons. Two were in the
-instructions and are fixed above: the route folder was `app/__jsonrpc-log`, which
-Next never routes; and `instrumentation.ts` had no `NEXT_RUNTIME` guard, which
-breaks the build wherever the edge runtime is in use. Rename the folder to
-`app/%5F_jsonrpc-log` and add the guard.
+instructions: the route folder was `app/__jsonrpc-log`, which Next never routes;
+and `instrumentation.ts` had no `NEXT_RUNTIME` guard, which breaks the build
+wherever the edge runtime is in use. The third was in the package: Next loads a
+separate copy of it into each server bundle, and 0.1.x kept its log buffer per
+copy, so the drain route read an empty buffer while calls were recorded into
+another. **Upgrade the package**, then:
 
-The third was in the package: Next loads a separate copy of it into each server
-bundle, and 0.1.x kept its log buffer per copy, so the drain route read an empty
-buffer while calls were recorded into another. **Changing the files is not
-enough — upgrade the package too.**
+- **On Next 16**, replace all three files with the one-file `proxy.ts` above.
+- **On Next 14 and 15**, rename the folder to `app/%5F_jsonrpc-log` and add the
+  guard to `instrumentation.ts`.
 
 ## Any other server
 
