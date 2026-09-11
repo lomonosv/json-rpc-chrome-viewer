@@ -3,13 +3,19 @@
   "version": "1.14.4",
   "description": "JSON RPC request dev tools",
   "main": "src/index.jsx",
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
     "eslint": "eslint --cache=true --cache-location=./.cache/eslint ./",
     "stylelint": "stylelint \"src/**/*.scss\"",
     "lint": "npm run eslint && npm run stylelint",
     "clean": "rm -rf build",
     "build": "npm run clean && npm run lint && tsc -noEmit && node scripts/build.js && node scripts/envSubstitute.js",
-    "release": "release-it"
+    "release": "release-it",
+    "build:logger": "npm run build --workspace @json-rpc-chrome-viewer/server-logger",
+    "typecheck:logger": "npm run typecheck --workspace @json-rpc-chrome-viewer/server-logger",
+    "release:logger": "cd packages/server-logger && release-it"
   },
   "repository": {
     "type": "git",

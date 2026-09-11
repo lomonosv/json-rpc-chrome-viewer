@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "commonjs",
+    "moduleResolution": "node10",
+    // TS 6 deprecates node10; it is still the resolution that matches the
+    // CommonJS output, and `next` needs it (no exports map).
+    "ignoreDeprecations": "6.0",
+    "verbatimModuleSyntax": false,
+    "rootDir": "./src",
+    "outDir": "./dist/cjs"
+  }
+}

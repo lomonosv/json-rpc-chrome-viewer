@@ -1,0 +1,22 @@
+{
+  "hooks": {
+    "after:init": [
+      "npm --prefix ../.. run lint",
+      "npm run typecheck",
+      "npm run build"
+    ]
+  },
+  "git": {
+    "requireCleanWorkingDir": true,
+    "commitMessage": "Release server-logger v${version}",
+    "tagName": "server-logger-v${version}",
+    "tagAnnotation": "server-logger v${version}",
+    "push": true
+  },
+  "github": {
+    "release": false
+  },
+  "npm": {
+    "publish": false
+  }
+}

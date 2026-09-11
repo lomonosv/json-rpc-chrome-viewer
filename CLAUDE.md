@@ -354,6 +354,67 @@ Note the cross-realm coupling: `static/index.js` reads `settings_preserveLog` st
 
 Consequence: **only React render/lifecycle errors reaching `ErrorBoundary.componentDidCatch` are reported.** Uncaught window errors, errors thrown inside event handlers, and unhandled promise rejections are silently dropped — twice over, since the client is never registered globally, so `getClient()` inside `GlobalHandlers` wouldn't match it anyway. This is intentional, not a bug. Enabling global capture requires both un-filtering the integrations *and* calling `setCurrentClient(client)`.
 
+### Server-side capture (`packages/server-logger`)
+
+The repo is an **npm workspace** (`packages/*`). `@json-rpc-chrome-viewer/server-logger`
+is a separately versioned, separately published package that reports JSON-RPC
+calls a *server* makes — SSR renders, BFF handlers — which no browser-side
+mechanism can see, because they never cross the network boundary the panel
+watches. `docs/server-capture.md` is the contract; the package is one
+implementation of it, and the contract is what another language implements.
+
+**The wire format is a public compatibility surface, hence `v`.** Once a server
+emits it, an older panel may be reading a newer emitter's output and vice versa.
+Both sides ignore a version they do not know rather than half-parsing it —
+the same reflex as `normaliseRules()` for stored interceptor rules.
+
+Two delivery modes, both attaching to the response of the browser request that
+caused the calls:
+
+- **Inline** (`X-Json-Rpc-Log`, base64 of gzip) where the server controls the
+  response at the end — Express, Fastify, Next Route Handlers. Bounded by header
+  size; an emitter over its cap emits **nothing** rather than a header a proxy
+  will reject.
+- **Deferred** (`X-Json-Rpc-Log-Id` plus `GET /__jsonrpc-log/<id>`), which is the
+  only mode that works for **Next.js App Router pages**: RSC calls happen during
+  the response and a Server Component cannot set a response header, so the id is
+  minted by `middleware.ts`, which runs earlier, and placed on both the request
+  and the response. Draining consumes, so one render's calls can never be served
+  onto another.
+
+Four things in the package are load-bearing:
+
+- **`adapters/nextMiddleware.ts` imports only plain constants from `core`.** It
+  runs on the edge runtime, where `node:async_hooks`, `node:zlib` and
+  `node:crypto` do not exist — pulling one in breaks the host's entire
+  middleware, not just this feature.
+- **The log-id resolver is async.** `next/headers` returns a promise from Next 15
+  on, so `resolveLogId()` (sync, AsyncLocalStorage only) and
+  `resolveLogIdAsync()` (through the host resolver) are deliberately separate;
+  only the slow path awaits.
+- **`patchedFetch` fires the request before resolving the log id**, so
+  instrumentation never sits in front of the call, and attaches a no-op `.catch`
+  to cover the window before the real handler — without it a rejection landing in
+  that window is reported as unhandled. Same discipline as the panel's
+  `patchedFetch`: a plain function that hands straight back to native for
+  anything that is not a JSON-RPC body.
+- **Truncation replaces members, never cuts strings.** `params`/`result`/`error`
+  are swapped for a marker and the body re-serialised, so it stays parseable
+  JSON-RPC. A cut string reaches the panel as a warning row with no method —
+  worse than a row saying its params were dropped.
+
+`tsconfig.json` there uses `moduleResolution: "bundler"` rather than `nodenext`
+**only** because `next` ships no `exports` map, so nodenext's ESM mode refuses
+`next/headers` — a subpath Next resolves through its own bundler. Relative
+imports therefore carry explicit `.js` extensions by hand, which is what keeps
+the ESM output runnable on bare Node. The CJS build pins `moduleResolution:
+"node10"` with `ignoreDeprecations: "6.0"`, and `scripts/postbuild.cjs` writes
+`dist/cjs/package.json` with `{"type":"commonjs"}` — without it Node reads that
+output as ESM, since the package itself is `"type": "module"`.
+
+Verification is `npm run typecheck:logger` and `npm run build:logger` from the
+repo root; `npm run lint` covers the package source through the root flat config.
+
 ## Build pipeline
 
 `scripts/build.js` (esbuild) emits `application` from `src/index.tsx` plus one bundle per `.ts` in `src/content/`, named `content/<name>`. Then:

@@ -31,3 +31,5 @@ jobs:
     - run: npm run stylelint
     - run: tsc -noEmit
     - run: node scripts/build.js
+    - run: npm run typecheck:logger
+    - run: npm run build:logger

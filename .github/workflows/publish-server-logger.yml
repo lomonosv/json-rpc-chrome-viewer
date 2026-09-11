@@ -1,0 +1,58 @@
+name: Publish server-logger
+
+# Tagged separately from the extension: the extension's own releases tag
+# `v<version>` and trigger the Chrome Web Store deploy, and the two version
+# lines move independently.
+on:
+  push:
+    tags:
+      - 'server-logger-v*'
+  workflow_dispatch:
+    inputs:
+      dryRun:
+        description: 'Pack and inspect only, do not publish'
+        type: boolean
+        default: true
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      # Required for npm provenance, which links the published tarball to the
+      # commit and workflow that produced it.
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.x
+          cache: 'npm'
+          registry-url: 'https://registry.npmjs.org'
+
+      - run: npm ci --force
+
+      - run: npm run lint
+
+      - run: npm run typecheck:logger
+
+      - name: Verify the tag matches the package version
+        if: github.event_name == 'push'
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#server-logger-v}"
+          PKG_VERSION="$(node -p "require('./packages/server-logger/package.json').version")"
+          if [ "$TAG_VERSION" != "$PKG_VERSION" ]; then
+            echo "Tag $GITHUB_REF_NAME does not match package version $PKG_VERSION" >&2
+            exit 1
+          fi
+
+      - name: Pack
+        run: npm pack --workspace @json-rpc-chrome-viewer/server-logger
+
+      - name: Publish
+        if: github.event_name == 'push' || inputs.dryRun == false
+        run: npm publish --provenance --workspace @json-rpc-chrome-viewer/server-logger
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

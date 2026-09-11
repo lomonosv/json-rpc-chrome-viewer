@@ -13,7 +13,9 @@ export default [
       'build/**',
       'static/**',
       'scripts/**',
-      'node_modules/**'
+      'node_modules/**',
+      'packages/*/dist/**',
+      'packages/*/scripts/**'
     ]
   },
   ...configs.base.recommended,

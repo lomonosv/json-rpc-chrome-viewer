@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM"],
+    "types": ["node"],
+    // Relative imports carry explicit .js extensions so the ESM output runs on
+    // bare Node. Resolution is "bundler" rather than "nodenext" only because
+    // `next` ships no exports map, and nodenext's ESM mode therefore refuses
+    // `next/headers` — a subpath Next resolves through its own bundler.
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "verbatimModuleSyntax": true
+  },
+  "include": ["./src/**/*"]
+}

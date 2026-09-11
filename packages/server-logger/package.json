@@ -1,0 +1,74 @@
+{
+  "name": "@json-rpc-chrome-viewer/server-logger",
+  "version": "0.1.0",
+  "description": "Reports server-side JSON-RPC calls to the JSON RPC Chrome Viewer DevTools panel",
+  "license": "MIT",
+  "author": "lomonosv.developer@gmail.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lomonosv/json-rpc-chrome-viewer.git",
+    "directory": "packages/server-logger"
+  },
+  "homepage": "https://github.com/lomonosv/json-rpc-chrome-viewer/blob/main/docs/server-capture.md",
+  "bugs": {
+    "url": "https://github.com/lomonosv/json-rpc-chrome-viewer/issues"
+  },
+  "keywords": [
+    "json-rpc",
+    "devtools",
+    "ssr",
+    "nextjs",
+    "debugging"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "engines": {
+    "node": ">=18"
+  },
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/esm/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/esm/index.d.ts",
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js"
+    },
+    "./next": {
+      "types": "./dist/esm/adapters/next.d.ts",
+      "import": "./dist/esm/adapters/next.js",
+      "require": "./dist/cjs/adapters/next.js"
+    },
+    "./next/middleware": {
+      "types": "./dist/esm/adapters/nextMiddleware.d.ts",
+      "import": "./dist/esm/adapters/nextMiddleware.js",
+      "require": "./dist/cjs/adapters/nextMiddleware.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "src",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "clean": "rm -rf dist",
+    "build": "npm run clean && tsc -p tsconfig.esm.json && tsc -p tsconfig.cjs.json && node scripts/postbuild.cjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "peerDependencies": {
+    "next": ">=14"
+  },
+  "peerDependenciesMeta": {
+    "next": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "next": "^16.3.4"
+  }
+}
