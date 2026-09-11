@@ -84,10 +84,24 @@ DevTools reads raw response headers rather than the CORS-filtered set JS sees,
 so neither header needs `Access-Control-Expose-Headers`, and both work against a
 BFF on a different origin.
 
-**The drain fetch belongs in `background.ts`, not the panel.** The service worker
-has the unambiguous host-permission CORS bypass in MV3; it then relays to the
-panel over the existing broadcast path, scoped by `sender.tab.id` like every
-other relayed path.
+**The panel drains the deferred log itself** (`src/logic/HTTPArchive/serverLog.ts`).
+A devtools panel is an extension page, and extension pages with host permissions
+are exempt from CORS — so the drain endpoint needs no `Access-Control-*` headers,
+and no hop through the service worker or the broadcast relay is needed. The
+panel's own fetch is not a request in the inspected tab, so it never reappears
+in the list. It is sent with `credentials: 'omit'` and a 5s timeout, only to an
+`http(s)` origin — the one that emitted the id — and the id is checked against
+`/^[A-Za-z0-9-]{1,128}$/` before it reaches a URL, since the header is
+controlled by the page's server.
+
+**A response without either header costs one header scan and nothing more** —
+no fetch, no parse, no row. That is the compatibility guarantee: with no emitter
+installed, the panel behaves exactly as it did before this contract existed.
+
+**A deferred log opened late is gone.** An undrained log lives for the emitter's
+TTL (60s by default). The panel buffers the page load before it is first shown,
+but if it is opened after the TTL the drain returns an empty log. Inline mode
+has no such limit, because the payload travels with the response.
 
 ## Safety rules for any implementation
 

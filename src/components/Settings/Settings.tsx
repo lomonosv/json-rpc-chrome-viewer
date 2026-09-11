@@ -88,6 +88,8 @@ const Settings = ({ onClose }: IComponentProps) => {
     setIncludeJsonRpcLogs,
     includeWebsocketLogs,
     setIncludeWebsocketLogs,
+    includeServerLogs,
+    setIncludeServerLogs,
     showWaterfallColumn,
     setShowWaterfallColumn,
     showStatusColumn,
@@ -148,6 +150,10 @@ const Settings = ({ onClose }: IComponentProps) => {
 
   const handleIncludeJsonRpcLogsChange: ChangeEventHandler<HTMLInputElement> = (e) => {
     setIncludeJsonRpcLogs(e.target.checked);
+  };
+
+  const handleIncludeServerLogsChange: ChangeEventHandler<HTMLInputElement> = (e) => {
+    setIncludeServerLogs(e.target.checked);
   };
 
   const handleIncludeWebsocketLogsChange: ChangeEventHandler<HTMLInputElement> = (e) => {
@@ -282,6 +288,15 @@ const Settings = ({ onClose }: IComponentProps) => {
                       type={ Type.Checkbox }
                       checked={ includeWebsocketLogs }
                       onChange={ handleIncludeWebsocketLogsChange }
+                    />
+                    <Input
+                      name="includeServerLogs"
+                      label="Include server-side logs"
+                      title="JSON-RPC calls your server made, reported by the server-logger package"
+                      wrapperClassName={ styles.checkboxRow }
+                      type={ Type.Checkbox }
+                      checked={ includeServerLogs }
+                      onChange={ handleIncludeServerLogsChange }
                     />
                   </SettingsCard>
                 </>

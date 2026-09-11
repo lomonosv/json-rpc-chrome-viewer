@@ -6,6 +6,7 @@ import {
   IObservedRequestPayload,
   IPendingRequestPayload
 } from '~/logic/Interceptor/IInterceptorRule';
+import type { IServerRpcCall } from '~/logic/HTTPArchive/serverLog';
 
 const jsonRPCRegex = /jsonrpc\\?["']?\s*:\s*\\?["']?2\.0\\?["']?/;
 
@@ -200,6 +201,7 @@ interface IPreparedRequestBase {
   timings: IRequestTimings,
   isCors: boolean,
   isIntercepted?: boolean,
+  isServerSide?: boolean,
   callId?: string,
   request: IRequest['request'],
   response: IRequest['response'],
@@ -289,6 +291,36 @@ export const getPreparedObservedRequest = (payload: IObservedRequestPayload): IR
       }
     }
   }, payload.rawRequest, payload.rawResponse)
+);
+
+/**
+ * A server-side call has no HAR entry, so `timings` is null and the row draws a
+ * flat bar from the duration the server measured — the same fallback an
+ * intercepted row takes. `headers` is an empty list rather than absent because
+ * `EditRequestModal` filters it unguarded.
+ */
+export const getPreparedServerRequests = (call: IServerRpcCall): IRequest[] => (
+  getPreparedJsonRpcRequests({
+    startTime: call.startTime,
+    time: call.time,
+    timings: null,
+    isCors: false,
+    isServerSide: true,
+    request: {
+      url: call.url,
+      method: 'POST',
+      headers: [],
+      postData: {
+        text: call.rawRequest
+      }
+    },
+    response: {
+      status: call.status,
+      content: {
+        size: call.rawResponse.length
+      }
+    }
+  }, call.rawRequest, call.rawResponse)
 );
 
 const getPreparedTimings = (request: chrome.devtools.network.Request): IRequestTimings => {

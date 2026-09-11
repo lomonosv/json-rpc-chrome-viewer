@@ -9,6 +9,9 @@ import { getConfig, setConfig } from '~/logic/common/helpers';
 const defaultPreserveLogValue = false;
 const defaultIncludeJsonRpcLogsValue = true;
 const defaultIncludeWebsocketLogsValue = false;
+// On by default because it is inert without the server logger: no response
+// carries the header, so there is nothing for it to show.
+const defaultIncludeServerLogsValue = true;
 const defaultSearchScopeValue = SearchScope.Method;
 const defaultCaseSensitiveSearchValue = false;
 const defaultShowRequestUrlValue = true;
@@ -35,6 +38,7 @@ const useSettings = () => {
   const [preserveLog, setPreserveLog] = useState<boolean>(defaultPreserveLogValue);
   const [includeJsonRpcLogs, setIncludeJsonRpcLogs] = useState<boolean>(defaultIncludeJsonRpcLogsValue);
   const [includeWebsocketLogs, setIncludeWebsocketLogs] = useState<boolean>(defaultIncludeWebsocketLogsValue);
+  const [includeServerLogs, setIncludeServerLogs] = useState<boolean>(defaultIncludeServerLogsValue);
   const [searchScope, setSearchScope] = useState<SearchScope>(defaultSearchScopeValue);
   const [caseSensitiveSearch, setCaseSensitiveSearch] = useState<boolean>(defaultCaseSensitiveSearchValue);
   const [showRequestUrl, setShowRequestUrl] = useState<boolean>(defaultShowRequestUrlValue);
@@ -68,6 +72,7 @@ const useSettings = () => {
     getConfig('settings_preserveLog', defaultPreserveLogValue).then(setPreserveLog);
     getConfig('settings_includeJsonRpcLogs', defaultIncludeJsonRpcLogsValue).then(setIncludeJsonRpcLogs);
     getConfig('settings_includeWebsocketLogs', defaultIncludeWebsocketLogsValue).then(setIncludeWebsocketLogs);
+    getConfig('settings_includeServerLogs', defaultIncludeServerLogsValue).then(setIncludeServerLogs);
     getConfig('settings_searchScope', defaultSearchScopeValue).then(setSearchScope);
     getConfig('settings_caseSensitiveSearch', defaultCaseSensitiveSearchValue).then(setCaseSensitiveSearch);
     getConfig('settings_showRequestUrl', defaultShowRequestUrlValue).then(setShowRequestUrl);
@@ -102,6 +107,11 @@ const useSettings = () => {
   const handleIncludeWebsocketLogsChange = (settings_includeWebsocketLogs: boolean) => {
     setIncludeWebsocketLogs(settings_includeWebsocketLogs);
     setConfig({ settings_includeWebsocketLogs });
+  };
+
+  const handleIncludeServerLogsChange = (settings_includeServerLogs: boolean) => {
+    setIncludeServerLogs(settings_includeServerLogs);
+    setConfig({ settings_includeServerLogs });
   };
 
   const handleSearchScopeChange = (settings_searchScope: SearchScope) => {
@@ -202,6 +212,7 @@ const useSettings = () => {
     preserveLog,
     includeJsonRpcLogs,
     includeWebsocketLogs,
+    includeServerLogs,
     searchScope,
     caseSensitiveSearch,
     expandedWebsocketMessagesState,
@@ -226,6 +237,7 @@ const useSettings = () => {
     setPreserveLog: handlePreserveLogChange,
     setIncludeJsonRpcLogs: handleIncludeJsonRpcLogsChange,
     setIncludeWebsocketLogs: handleIncludeWebsocketLogsChange,
+    setIncludeServerLogs: handleIncludeServerLogsChange,
     setSearchScope: handleSearchScopeChange,
     setCaseSensitiveSearch: handleCaseSensitiveSearchChange,
     setExpandedWebsocketMessagesState: handleExpandedWebsocketMessagesStateChange,

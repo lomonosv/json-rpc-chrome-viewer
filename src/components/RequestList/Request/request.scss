@@ -206,6 +206,27 @@
     }
   }
 
+  // Repeats its own dark override for the same reason MOCK does: this rule and
+  // `.isDark .badge::before` tie at (0,2,1), so without it the theme colour
+  // would be decided by source order rather than by intent.
+  &.isServerSide {
+    flex-shrink: 0;
+
+    &::before {
+      content: "SERVER";
+      opacity: 1;
+      background: variables.$serverAccent;
+      border-color: variables.$serverAccent;
+      color: #fff;
+
+      :global(.isDark) & {
+        background: variables.$darkServerAccent;
+        border-color: variables.$darkServerAccent;
+        color: #fff;
+      }
+    }
+  }
+
 }
 
 .isPendingRow {

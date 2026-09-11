@@ -30,6 +30,9 @@ export interface IRequest {
   isWebSocket: boolean,
   isIntercepted?: boolean,
   isPending?: boolean,
+  // Made by the server while handling a browser request, reported through the
+  // server logger's response header rather than seen on the wire.
+  isServerSide?: boolean,
   callId?: string,
   websocketMessageType?: 'income' | 'outcome',
   websocketJSON?: JSONValue & {

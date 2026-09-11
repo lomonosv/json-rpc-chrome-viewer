@@ -8,6 +8,7 @@ import {
   getPreparedMessage,
   getPreparedObservedRequest,
   getPreparedPendingRequest,
+  getPreparedServerRequests,
   getRequestLabel,
   matchesFilter,
   parseJsonRpcMessage
@@ -15,6 +16,7 @@ import {
 import { IRequest } from '~/logic/HTTPArchive/IRequest';
 import { SortDirection, SortField } from '~/logic/HTTPArchive/SortField';
 import { MessageType } from '~/logic/common/messages';
+import { getServerLogCalls, hasServerLog } from '~/logic/HTTPArchive/serverLog';
 import {
   IInterceptedRequestPayload,
   IObservedRequestPayload,
@@ -43,9 +45,14 @@ const findPendingIndex = (requests: IRequest[], item: IRequest): number => {
 
 const duplicateCompletionWindowMs = 5000;
 
+// Server-side rows are excluded: an SSR render calling the app's own endpoint
+// with small incrementing ids would otherwise match a browser call to the same
+// url and id moments later, and the browser's real row would be dropped as a
+// duplicate of the server's.
 const findCompletedIndex = (requests: IRequest[], url: string, id: unknown, startTime: number): number => (
   requests.findIndex((existing) => (
     !existing.isPending &&
+    !existing.isServerSide &&
     existing.request.url === url &&
     existing.requestJSON?.id === id &&
     Math.abs(existing.startTime - startTime) < duplicateCompletionWindowMs
@@ -70,6 +77,15 @@ const mergeCompletedRequests = (requests: IRequest[], completed: IRequest[]): IR
 
     return [...acc, item];
   }, requests)
+);
+
+/**
+ * Server rows are appended directly rather than through `mergeCompletedRequests`:
+ * they are never pending, and the (url, id) de-duplication there is a heuristic
+ * for the browser's own reports, which a server's calls must not take part in.
+ */
+const getServerRequests = async (request: chrome.devtools.network.Request): Promise<IRequest[]> => (
+  (await getServerLogCalls(request)).flatMap(getPreparedServerRequests)
 );
 
 const getSortValue = (request: IRequest, field: SortField): string | number => {
@@ -100,6 +116,7 @@ const useRequest = () => {
     preserveLog,
     includeJsonRpcLogs,
     includeWebsocketLogs,
+    includeServerLogs,
     searchScope,
     caseSensitiveSearch,
     showWaterfallColumn,
@@ -177,6 +194,21 @@ const useRequest = () => {
     ];
 
     setRequests(requestsRef.current);
+
+    // After the browser rows, not alongside them: a slow drain endpoint must
+    // not hold back the backlog that was already in hand.
+    const serverRequests = (await Promise.all(
+      e.detail.filter(({ request }) => hasServerLog(request)).map(({ request }) => getServerRequests(request))
+    )).flat();
+
+    if (serverRequests.length) {
+      requestsRef.current = [
+        ...requestsRef.current,
+        ...serverRequests
+      ];
+
+      setRequests(requestsRef.current);
+    }
   }, [requestsRef.current, setRequests]);
 
   const handleNavigation = useCallback(() => {
@@ -191,6 +223,22 @@ const useRequest = () => {
       requestsRef.current = mergeCompletedRequests(requestsRef.current, preparedRequest);
 
       setRequests(requestsRef.current);
+    }
+
+    // Not an `else`: a response can be both a browser JSON-RPC call and the
+    // carrier of the server calls made while answering it — a route handler
+    // that forwards upstream, for one.
+    if (hasServerLog(request)) {
+      const serverRequests = await getServerRequests(request);
+
+      if (serverRequests.length) {
+        requestsRef.current = [
+          ...requestsRef.current,
+          ...serverRequests
+        ];
+
+        setRequests(requestsRef.current);
+      }
     }
   }, [requestsRef.current, setRequests]);
 
@@ -291,6 +339,12 @@ const useRequest = () => {
         return includeWebsocketLogs && matchesFilter(request, filter, searchScope, caseSensitiveSearch);
       }
 
+      // Before the `requestJSON` branch, since server rows carry one too and
+      // would otherwise be governed by the browser JSON-RPC toggle.
+      if (request.isServerSide) {
+        return includeServerLogs && matchesFilter(request, filter, searchScope, caseSensitiveSearch);
+      }
+
       if (request.requestJSON) {
         return includeJsonRpcLogs && matchesFilter(request, filter, searchScope, caseSensitiveSearch);
       }
@@ -321,6 +375,7 @@ const useRequest = () => {
     caseSensitiveSearch,
     includeJsonRpcLogs,
     includeWebsocketLogs,
+    includeServerLogs,
     effectiveSortField,
     sortDirection
   ]);

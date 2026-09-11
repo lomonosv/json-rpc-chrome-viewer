@@ -45,18 +45,19 @@ Message names for every hop live in `src/logic/common/messages.ts` (`MessageType
 
 This is why requests made before you open the panel still appear, and why listener registration is split across two files. Changing one side without the other silently drops the backlog.
 
-### Four capture paths, one model
+### Five capture paths, one model
 
 - **HTTP**: `chrome.devtools.network.onRequestFinished` → `isJsonRpcRequest()` → `getPreparedHttpRequest()`.
 - **WebSocket**: page `WebSocket` → `InterceptedWebSocket` (MAIN) → `window.postMessage` → `content.ts` (ISOLATED) → `chrome.runtime.sendMessage` → `handleRuntimeMessage` in the panel.
 - **Intercepted HTTP**: page `fetch` → `interceptor.ts` (MAIN) → the same postMessage/relay hops → `getPreparedInterceptedRequest()`. A mocked call never reaches the network, so `chrome.devtools.network` never reports it and the page has to hand it over itself.
 - **Observed HTTP** (resilient capture, opt-in): page `fetch` → `interceptor.ts` reports the call twice over the same relay — `PendingRequest` when it is sent, `ObservedRequest` when it settles — so the panel never needs `chrome.devtools.network` to see it at all. See Resilient capture below for why that is sometimes the only way.
+- **Server-side** (enabled by installing the server logger, not by any setting): `chrome.devtools.network.onRequestFinished` → `hasServerLog()` on the *response* headers → `getServerLogCalls()` (`serverLog.ts`) → `getPreparedServerRequests()`. These are calls the *server* made while answering a browser request — an SSR render, a BFF handler — so they never cross the wire the panel watches, and the server reports them on its own response instead. See Server-side capture below.
 
 **Every relayed path is broadcast, so the panel scopes it by sender tab.** `chrome.runtime.sendMessage` from a content script reaches *every* extension page, which means each open devtools panel hears the websocket / intercepted / observed frames of every other inspected tab — one panel listing another site's requests. `handleRuntimeMessage` therefore drops anything whose `sender.tab.id` is not `chrome.devtools.inspectedWindow.tabId`. The HTTP path needs no such guard: `chrome.devtools.network.onRequestFinished` only ever reports the inspected tab.
 
-All four normalise into `IRequest` (`src/logic/HTTPArchive/IRequest.ts`), discriminated by `isWebSocket`. Detection is a regex for `"jsonrpc": "2.0"` against the raw body, not a JSON parse, so it tolerates SockJS's double-encoded string frames — `parseJsonRpcMessage()` unwraps those. **JSON-RPC batches are exploded into one `IRequest` per batch item**, with responses correlated back by `id`.
+All five normalise into `IRequest` (`src/logic/HTTPArchive/IRequest.ts`), discriminated by `isWebSocket`. Detection is a regex for `"jsonrpc": "2.0"` against the raw body, not a JSON parse, so it tolerates SockJS's double-encoded string frames — `parseJsonRpcMessage()` unwraps those. **JSON-RPC batches are exploded into one `IRequest` per batch item**, with responses correlated back by `id`.
 
-All three HTTP paths share **one** builder, `getPreparedJsonRpcRequests(base, rawRequest, rawResponse)` in `filters.ts`: the caller supplies an `IPreparedRequestBase` with everything the JSON payload cannot say (timings, status, size, url, `isCors`, `isIntercepted`, `callId`) and the builder does the parse, the batch explode and the id correlation. Keep it that way — the batch-correlation code existed twice before the interceptor landed, and the two copies had already drifted (the batch branch read `isError` off the *request* item instead of the response, so an erroring item in a batch never coloured its row red).
+All four HTTP-shaped paths share **one** builder, `getPreparedJsonRpcRequests(base, rawRequest, rawResponse)` in `filters.ts`: the caller supplies an `IPreparedRequestBase` with everything the JSON payload cannot say (timings, status, size, url, `isCors`, `isIntercepted`, `isServerSide`, `callId`) and the builder does the parse, the batch explode and the id correlation. Keep it that way — the batch-correlation code existed twice before the interceptor landed, and the two copies had already drifted (the batch branch read `isError` off the *request* item instead of the response, so an erroring item in a batch never coloured its row red).
 
 ### State
 
@@ -148,7 +149,7 @@ Batch requests share one HAR entry, so every row exploded from a batch carries a
 
 ### Row actions
 
-Each row carries a `.rowActions` slot after the method label — a copy button (all rows, copying `getRequestLabel(item)`) and a resend button (HTTP only). It is `display: none` until the row is hovered.
+Each row carries a `.rowActions` slot after the method label — a copy button (all rows, copying `getRequestLabel(item)`) and a resend button (browser HTTP only — `isReplayable` in `Request.tsx` excludes websocket, pending and server-side rows, and gates the add-interceptor-rule button the same way, since neither can act on a call the server made). It is `display: none` until the row is hovered.
 
 The wrapper **stops click propagation**, and must keep doing so: the row's own `onClick` selects the request, so without it copying a method name would also change the selection and swap out both info panes.
 
@@ -315,7 +316,7 @@ The check runs once per panel (`isCheckedRef`) - but only once an answer is fina
 
 ### Persistence
 
-All settings flow through `getConfig()` in `src/logic/common/helpers.ts` into `chrome.storage.local`, keyed with a `settings_` prefix. **Panel code never calls `chrome.storage.local.set` directly — every write goes through `setConfig()`**, which no-ops when `isExtensionAlive()` is false. Reloading, updating or disabling the extension orphans the still-open devtools panel: Chrome strips the API bindings, `chrome.storage` becomes `undefined`, and the panel keeps rendering, so the next write throws — most visibly from a pane-divider drag's `onResizeStop`, which fires with no user intent behind it. `getConfig()` resolves the default in that state and `InterceptorContext.pingPort()` carries the same guard. Adding one means touching five places in `SettingsContext.tsx`: a `default*Value` const, a `useState`, a `getConfig` call in the load effect, a `handle*Change` writer, and two entries in the returned object. Column visibility follows this as `settings_showWaterfallColumn`, `settings_showStatusColumn`, `settings_showSizeColumn`, `settings_showTimeColumn`. Search scope and case sensitivity follow it too, as `settings_searchScope` and `settings_caseSensitiveSearch` — the search *term* itself stays in `HttpArchiveContext` and is not persisted. `settings_expandLevel` follows it as well; the Settings row for it renders only while `expandTreeState` is `Expanded`, since it has no meaning for the other two states. `settings_viewMode` (`ViewMode.ts`) follows the same recipe and defaults to `Panes`, so existing users see no layout change until they opt into Accordion. `settings_resilientCapture` follows it too and defaults to off; note it is a **second cross-realm key** alongside `settings_preserveLog` — `background.ts` reads it directly from storage to build the payload it pushes to the page, so the key name is shared with the unbundled content scripts.
+All settings flow through `getConfig()` in `src/logic/common/helpers.ts` into `chrome.storage.local`, keyed with a `settings_` prefix. **Panel code never calls `chrome.storage.local.set` directly — every write goes through `setConfig()`**, which no-ops when `isExtensionAlive()` is false. Reloading, updating or disabling the extension orphans the still-open devtools panel: Chrome strips the API bindings, `chrome.storage` becomes `undefined`, and the panel keeps rendering, so the next write throws — most visibly from a pane-divider drag's `onResizeStop`, which fires with no user intent behind it. `getConfig()` resolves the default in that state and `InterceptorContext.pingPort()` carries the same guard. Adding one means touching five places in `SettingsContext.tsx`: a `default*Value` const, a `useState`, a `getConfig` call in the load effect, a `handle*Change` writer, and two entries in the returned object. Column visibility follows this as `settings_showWaterfallColumn`, `settings_showStatusColumn`, `settings_showSizeColumn`, `settings_showTimeColumn`. Search scope and case sensitivity follow it too, as `settings_searchScope` and `settings_caseSensitiveSearch` — the search *term* itself stays in `HttpArchiveContext` and is not persisted. `settings_expandLevel` follows it as well; the Settings row for it renders only while `expandTreeState` is `Expanded`, since it has no meaning for the other two states. `settings_viewMode` (`ViewMode.ts`) follows the same recipe and defaults to `Panes`, so existing users see no layout change until they opt into Accordion. `settings_includeServerLogs` follows it too and defaults to **on** — safe precisely because it is inert until a server emits the log header; it is a display filter like its two Filters-card siblings, not a capture gate. `settings_resilientCapture` follows it too and defaults to off; note it is a **second cross-realm key** alongside `settings_preserveLog` — `background.ts` reads it directly from storage to build the payload it pushes to the page, so the key name is shared with the unbundled content scripts.
 
 ### Collapsed-node previews
 
@@ -412,6 +413,52 @@ the ESM output runnable on bare Node. The CJS build pins `moduleResolution:
 `dist/cjs/package.json` with `{"type":"commonjs"}` — without it Node reads that
 output as ESM, since the package itself is `"type": "module"`.
 
+**The panel side lives in `src/logic/HTTPArchive/serverLog.ts`**, and it is built
+around one guarantee: **with no server logger installed, the panel behaves
+exactly as before.** A response without either header costs one header scan —
+no fetch, no parse, no row. Six things protect that, and each is load-bearing:
+
+- **It is a parallel branch, not a change to `isJsonRpcRequest()`.** The page's
+  document response is a GET, so the existing filter drops it before anything
+  else runs; widening that filter would change what every user's list shows.
+  The branch in `handleRequest` is deliberately **not an `else`**: one response
+  can be both a browser JSON-RPC call and the carrier of the server calls made
+  while answering it (a route handler forwarding upstream).
+- **`static/index.js` needed no change.** Its cold-start buffer already keeps
+  *every* finished request with its headers, not just JSON-RPC ones, so the
+  page-load document — the request that matters most here — is captured before
+  the panel exists. `handleInitialRequestsData` appends server rows **after** the
+  browser backlog, so a slow drain cannot hold back rows already in hand.
+- **Server rows are appended directly, never through `mergeCompletedRequests`,
+  and `findCompletedIndex` skips them.** Its `(url, id)` de-duplication is a
+  heuristic for the browser's own reports. Without the skip, an SSR render
+  calling the app's own endpoint with a small incrementing id would match a
+  browser call to the same url and id moments later, and the browser's *real*
+  row would be silently dropped as a duplicate.
+- **The filter effect tests `isServerSide` before `requestJSON`.** Server rows
+  carry a `requestJSON`, so in the other order they would be governed by the
+  browser JSON-RPC toggle instead of their own.
+- **The drain fetch runs in the panel, not the service worker.** An extension
+  page with host permissions is CORS-exempt, and its own fetch is not in the
+  inspected tab, so it never re-enters the list. `credentials: 'omit'`, a 5s
+  timeout, `http(s)` origins only, and the id is validated against
+  `logIdPattern` before it reaches a URL — the header is server-controlled.
+- **`getServerLogCalls()` never throws.** Malformed base64, non-gzip, bad JSON,
+  an unknown `v`, a drain endpoint that is down: all of it is "no server rows".
+  Every call is rebuilt field by field before it reaches the builder, the same
+  reflex as `normaliseRules()`.
+
+The wire constants and call shape are **duplicated** in `serverLog.ts` rather
+than imported from the package, whose entry pulls in `node:zlib` and
+`node:async_hooks` and cannot enter the panel bundle. Keep the two in step with
+`packages/server-logger/src/core/types.ts`.
+
+Server rows carry `headers: []` rather than no headers, because
+`EditRequestModal` calls `headers.filter` unguarded. They draw a flat,
+unsegmented bar from the server-measured duration, like intercepted rows, and
+their `startTime` is on the *server's* clock, so a remote server with skew
+shifts them along the waterfall.
+
 Verification is `npm run typecheck:logger` and `npm run build:logger` from the
 repo root; `npm run lint` covers the package source through the root flat config.
 
@@ -441,7 +488,7 @@ The request-list table is hand-built from flexbox, and these bit repeatedly. Whe
 
 Waterfall colours are `$waterfallBar` / `$waterfallTick` and `$darkWaterfallBar` / `$darkWaterfallTick` in `variables.scss`, drawn from the Chrome DevTools palette so the panel reads as native. These now cover only the *unsegmented* bar (a row with no timings) and the websocket tick — a segmented bar and the popover both use the separate `$phase*` palette described under Waterfall timing breakdown, which is deliberately paler. `$resizeHandleColor` is shared by the column dividers and both pane dividers. Note `$greenHeaderBackground` is still neon `#32ff00`, used by the WEBSOCKET badge and the income/outcome triangles. `$interceptorAccent` / `$darkInterceptorAccent` is DevTools' alert amber, shared by the MOCK badge and the toolbar button — deliberately louder than `$warning`, which stays muted because it tints whole rows down the list.
 
-The MOCK badge repeats its own `:global(.isDark)` override inside `&.isIntercepted::before` rather than inheriting the base badge's. `.badge.isIntercepted::before` and `.isDark .badge::before` both land at (0,2,1), so without the repeat the theme colour would be decided by source order rather than by intent — the same hazard `.isCopied.isCopied` doubles itself to avoid.
+The MOCK badge repeats its own `:global(.isDark)` override inside `&.isIntercepted::before` rather than inheriting the base badge's. `.badge.isIntercepted::before` and `.isDark .badge::before` both land at (0,2,1), so without the repeat the theme colour would be decided by source order rather than by intent — the same hazard `.isCopied.isCopied` doubles itself to avoid. The SERVER badge (`$serverAccent` / `$darkServerAccent`, a violet chosen to be unmistakable beside MOCK's amber) repeats its dark override for exactly the same reason.
 
 ## Toolchain constraints
 
