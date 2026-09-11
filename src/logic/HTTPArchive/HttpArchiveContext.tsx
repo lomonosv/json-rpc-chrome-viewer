@@ -17,11 +17,11 @@ import { IRequest } from '~/logic/HTTPArchive/IRequest';
 import { SortDirection, SortField } from '~/logic/HTTPArchive/SortField';
 import { MessageType } from '~/logic/common/messages';
 import {
-  getNavigationKey,
   getServerLogCalls,
   hasServerLog,
   isDocumentRequest
 } from '~/logic/HTTPArchive/serverLog';
+import { getDocumentTimeOrigin } from '~/logic/HTTPArchive/documentTimeOrigin';
 import {
   IInterceptedRequestPayload,
   IObservedRequestPayload,
@@ -93,19 +93,16 @@ const getServerRequests = async (request: chrome.devtools.network.Request): Prom
   (await getServerLogCalls(request)).flatMap(getPreparedServerRequests)
 );
 
-/**
- * A document whose server rows landed before the `onNavigated` for the very
- * navigation it belongs to. See `useRequest`'s navigation bookkeeping.
- */
-interface ILateDocument {
-  key: string,
-  seenAt: number,
-  uuids: string[],
-}
+// Slack between the renderer's `timeOrigin` and the wall clock HAR stamps
+// `startedDateTime` with. Erring wide can keep a few rows from the page being
+// left; it can never drop one from the page that loaded.
+const documentClockSkewMs = 500;
 
-// How long a finished document waits for its own navigation event before its
-// rows are treated as belonging to the previous page after all.
-const lateDocumentWindowMs = 3000;
+const getStartedAt = (request: chrome.devtools.network.Request): number => {
+  const startedAt = Date.parse(request.startedDateTime);
+
+  return Number.isNaN(startedAt) ? Date.now() : startedAt;
+};
 
 const getSortValue = (request: IRequest, field: SortField): string | number => {
   switch (field) {
@@ -130,10 +127,9 @@ const useRequest = () => {
   const [sortField, setSortField] = useState<SortField>(SortField.Waterfall);
   const [sortDirection, setSortDirection] = useState<SortDirection>(SortDirection.Asc);
   const requestsRef = useRef<IRequest[]>([]);
-  // Navigations whose document has not finished yet — the normal order.
-  const pendingNavigationsRef = useRef<string[]>([]);
-  // Documents that finished before their own navigation event — the late order.
-  const lateDocumentsRef = useRef<ILateDocument[]>([]);
+  // Server row uuid → browser start of the response that carried it. The row's
+  // own `startTime` is on the server's clock, which may be skewed.
+  const carrierStartsRef = useRef(new Map<string, number>());
 
   const {
     preserveLog,
@@ -160,6 +156,7 @@ const useRequest = () => {
   const effectiveSortField = isColumnVisible[sortField] ? sortField : fallbackSortField;
 
   const clear = () => {
+    carrierStartsRef.current.clear();
     requestsRef.current = [];
     setRequests(requestsRef.current);
     setSelected(null);
@@ -201,22 +198,12 @@ const useRequest = () => {
     }
   }, [filteredRequests, selected]);
 
-  /**
-   * Appends a document's server rows and pairs the document with its navigation.
-   *
-   * **`onNavigated` can arrive after the document has finished and been drained.**
-   * The two come from different CDP domains — `Network.loadingFinished` from the
-   * browser process, the frame commit from the renderer — so nothing orders
-   * them, and on a fast local document the finish regularly wins by up to a
-   * second. `handleNavigation` then wipes rows that belong to the page it is
-   * announcing; browser rows recover because the page keeps making calls, server
-   * rows never do, so they showed for a moment and vanished (with Preserve log
-   * off). The document and the navigation are therefore matched by url in
-   * whichever order they land: a navigation seen first is consumed here, a
-   * document seen first is remembered so the navigation can keep its rows.
-   */
   const appendServerRequests = (request: chrome.devtools.network.Request, serverRequests: IRequest[]) => {
     if (!serverRequests.length) return;
+
+    const carrierStart = getStartedAt(request);
+
+    serverRequests.forEach(({ uuid }) => carrierStartsRef.current.set(uuid, carrierStart));
 
     requestsRef.current = [
       ...requestsRef.current,
@@ -224,22 +211,6 @@ const useRequest = () => {
     ];
 
     setRequests(requestsRef.current);
-
-    if (!isDocumentRequest(request)) return;
-
-    const key = getNavigationKey(request.request.url);
-    const pendingIndex = pendingNavigationsRef.current.indexOf(key);
-
-    if (pendingIndex !== -1) {
-      pendingNavigationsRef.current.splice(pendingIndex, 1);
-
-      return;
-    }
-
-    lateDocumentsRef.current = [
-      ...lateDocumentsRef.current.slice(-4),
-      { key, seenAt: Date.now(), uuids: serverRequests.map(({ uuid }) => uuid) }
-    ];
   };
 
   const handleInitialRequestsData = useCallback(async (e: CustomEvent<{
@@ -270,28 +241,46 @@ const useRequest = () => {
     carriers.forEach(({ request, serverRequests }) => appendServerRequests(request, serverRequests));
   }, [requestsRef.current, setRequests]);
 
-  const handleNavigation = useCallback((url: string) => {
-    const key = getNavigationKey(url);
-    const now = Date.now();
-    const lateDocument = lateDocumentsRef.current.find((document) => (
-      document.key === key && now - document.seenAt < lateDocumentWindowMs
+  /**
+   * Drops every row that started before the inspected document did, and keeps
+   * the rest. Resolves `false` when the document's `timeOrigin` is unreadable.
+   *
+   * This replaces pairing `onNavigated` with its document, which lost server
+   * rows — they arrive once, with the document, so a wrong clear is final. The
+   * event is not ordered against the document's `onRequestFinished`, and it
+   * also fires for pushState/replaceState, which Next's App Router calls during
+   * hydration. A time cut needs neither answer: a soft navigation drops nothing,
+   * a reload drops exactly the previous page, and running it twice is harmless.
+   */
+  const pruneToCurrentDocument = useCallback(async (): Promise<boolean> => {
+    const timeOrigin = await getDocumentTimeOrigin();
+
+    if (timeOrigin === null) return false;
+
+    const threshold = timeOrigin - documentClockSkewMs;
+    const kept = requestsRef.current.filter(({ uuid, startTime }) => (
+      (carrierStartsRef.current.get(uuid) ?? startTime) >= threshold
     ));
 
-    lateDocumentsRef.current = [];
+    if (kept.length !== requestsRef.current.length) {
+      const keptIds = new Set(kept.map(({ uuid }) => uuid));
 
-    if (lateDocument) {
-      // This navigation's document already finished; its rows are the new page.
-      const keep = new Set(lateDocument.uuids);
-
-      requestsRef.current = requestsRef.current.filter(({ uuid }) => keep.has(uuid));
-      pendingNavigationsRef.current = [];
-    } else {
-      requestsRef.current = [];
-      pendingNavigationsRef.current = [key];
+      carrierStartsRef.current = new Map([...carrierStartsRef.current].filter(([uuid]) => keptIds.has(uuid)));
+      requestsRef.current = kept;
+      setRequests(requestsRef.current);
     }
 
+    return true;
+  }, []);
+
+  const handleNavigation = useCallback(async () => {
+    if (await pruneToCurrentDocument()) return;
+
+    // Unreadable document: fall back to the plain clear-on-navigate.
+    carrierStartsRef.current.clear();
+    requestsRef.current = [];
     setRequests(requestsRef.current);
-  }, [requestsRef.current, setRequests]);
+  }, []);
 
   const handleRequest = useCallback(async (request: chrome.devtools.network.Request) => {
     if (isJsonRpcRequest(request)) {
@@ -308,7 +297,13 @@ const useRequest = () => {
     if (hasServerLog(request)) {
       appendServerRequests(request, await getServerRequests(request));
     }
-  }, [requestsRef.current, setRequests]);
+
+    // Again on a document's finish: the `onNavigated` eval can still land in
+    // the outgoing document, which cuts at the old origin and keeps everything.
+    if (!preserveLog && isDocumentRequest(request)) {
+      pruneToCurrentDocument();
+    }
+  }, [requestsRef.current, setRequests, preserveLog]);
 
   const handleRuntimeMessage = useCallback((
     message: {

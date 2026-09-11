@@ -1,10 +1,20 @@
+// With the extension: `next` ships no exports map, so bare Node ESM cannot
+// resolve the extensionless `next/server`. Bundlers load the same file either
+// way — Next aliases only `next/dist/*` for the edge build, never this.
+import { NextResponse } from 'next/server.js';
 import type { NextFetchEvent, NextMiddleware, NextRequest } from 'next/server.js';
+import { drainLog, setLogIdResolver } from '../core/collector.js';
 import { isEnabled } from '../core/options.js';
 import { deferredLogHeader, drainPath, logIdRequestHeader } from '../core/types.js';
-import { GET, instrumentFetch } from './next.js';
-import { isUntaggedPath, tagRequest } from './tagRequest.js';
+import { instrumentFetch } from '../instrument/fetch.js';
 
 type ProxyResult = Awaited<ReturnType<NextMiddleware>>;
+
+interface IHeaderStore {
+  get(name: string): string | null,
+}
+
+type HeadersFn = () => Promise<IHeaderStore>;
 
 /**
  * Next's own protocol for handing request headers from a proxy to the render,
@@ -18,11 +28,41 @@ const requestHeaderPrefix = 'x-middleware-request-';
 
 const drainPrefix = `${ drainPath }/`;
 
+let headersFn: HeadersFn | null = null;
+
+/**
+ * `next/headers` is imported lazily and cached: importing it at module scope
+ * would make this entry unusable outside a Next app, and re-importing per call
+ * would put a module resolution on the path of every JSON-RPC request.
+ */
+const getHeadersFn = async (): Promise<HeadersFn> => {
+  if (!headersFn) {
+    const mod = await import('next/headers.js');
+
+    headersFn = mod.headers as unknown as HeadersFn;
+  }
+
+  return headersFn;
+};
+
+/**
+ * Finds the current render's log id on its request headers, where `tagResponse`
+ * put it. Reading `headers()` marks a render dynamic, which is harmless because
+ * the logger is development-only by default — and one reason enabling it in
+ * production is a deliberate opt-in.
+ */
+const resolveLogIdFromHeaders = async (): Promise<string | undefined> => {
+  const headers = await getHeadersFn();
+  const store = await headers();
+
+  return store.get(logIdRequestHeader) || undefined;
+};
+
 /**
  * Patches `fetch` on the first request rather than at import, so importing this
  * module — from a build step, a test, a type check — changes nothing about the
- * process. It can replace `instrumentation.ts` at all only because Next 16 runs
- * `proxy.ts` on Node.js, in the same process as the render.
+ * process. That works only because Next 16 runs `proxy.ts` on Node.js, in the
+ * same process as the render.
  *
  * **It runs on every request, and a one-shot guard here would be a bug.**
  * `next dev` restores the pristine `fetch` on every recompile (`resetFetch` in
@@ -33,10 +73,66 @@ const drainPrefix = `${ drainPath }/`;
  * back. `instrumentFetch` answers "am I still installed" by identity and is a
  * couple of comparisons when nothing has changed.
  */
+const armFetch = (): void => {
+  setLogIdResolver(resolveLogIdFromHeaders);
+  instrumentFetch();
+};
+
+/**
+ * Next reads `config.matcher` only from an `export const config` in the host's
+ * own file, so a matcher re-exported from this package never applies — Next 16
+ * says so on every request and falls back to matching everything. The
+ * exclusions are therefore applied here at runtime. Without them every static
+ * chunk would carry an id, and the panel would drain an empty log for each.
+ */
+const isUntaggedPath = (pathname: string): boolean => (
+  pathname.startsWith(drainPath)
+  || pathname.startsWith('/_next/static')
+  || pathname.startsWith('/_next/image')
+  || pathname === '/favicon.ico'
+);
 
 const getDrainLogId = (pathname: string): string | null => (
   pathname.startsWith(drainPrefix) ? pathname.slice(drainPrefix.length) : null
 );
+
+/**
+ * Answers `/__jsonrpc-log/<id>`. Draining consumes the log, so a second read of
+ * the same id returns nothing rather than replaying one render's calls onto
+ * another.
+ */
+const drain = (logId: string): Response => (
+  new Response(JSON.stringify(drainLog(logId)), {
+    status: 200,
+    headers: {
+      'content-type': 'application/json',
+      'cache-control': 'no-store'
+    }
+  })
+);
+
+/**
+ * Mints the id before the render starts: an App Router page cannot set a
+ * response header from inside a Server Component, so the id has to be attached
+ * by something that runs earlier. It goes on the request (where the render
+ * reads it) and on the response (where the extension reads it).
+ */
+const tagRequest = (request: NextRequest): Response => {
+  if (isUntaggedPath(request.nextUrl.pathname)) {
+    return NextResponse.next();
+  }
+
+  const logId = crypto.randomUUID();
+  const headers = new Headers(request.headers);
+
+  headers.set(logIdRequestHeader, logId);
+
+  const response = NextResponse.next({ request: { headers } });
+
+  response.headers.set(deferredLogHeader, logId);
+
+  return response;
+};
 
 /**
  * Adds the id to a response the host's handler produced, keeping everything the
@@ -108,11 +204,11 @@ export const withJsonRpcLogger = (handler: NextMiddleware) => async (
 ): Promise<ProxyResult> => {
   if (!isEnabled()) return handler(request, event as NextFetchEvent);
 
-  instrumentFetch();
+  armFetch();
 
   const logId = getDrainLogId(request.nextUrl.pathname);
 
-  if (logId !== null) return GET(request, { params: Promise.resolve({ logId }) });
+  if (logId !== null) return drain(logId);
 
   const response = (await handler(request, event as NextFetchEvent)) as Response | null | undefined;
 
@@ -120,9 +216,8 @@ export const withJsonRpcLogger = (handler: NextMiddleware) => async (
 };
 
 /**
- * The whole integration for Next 16: re-exported from a `proxy.ts`, it patches
- * `fetch`, tags every render and serves the drain — replacing
- * `instrumentation.ts` and the route file. It is the wrapper around a host
- * handler that does nothing, so there is one code path to keep correct.
+ * The whole integration: re-exported from a `proxy.ts`, it patches `fetch`, tags
+ * every render and serves the drain. It is the wrapper around a host handler
+ * that does nothing, so there is one code path to keep correct.
  */
 export const proxy = withJsonRpcLogger(() => undefined);

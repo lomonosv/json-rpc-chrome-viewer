@@ -62,12 +62,6 @@ export const isDocumentRequest = (request: chrome.devtools.network.Request): boo
   return resourceType === 'document';
 };
 
-/**
- * `onNavigated` reports the committed url, the HAR entry the requested one; the
- * two agree except for the fragment, which never reaches the server.
- */
-export const getNavigationKey = (url: string): string => url.split('#')[0];
-
 export const hasServerLog = (request: chrome.devtools.network.Request): boolean => (
   getResponseHeaders(request).some(({ name }) => {
     const lowerName = name.toLowerCase();

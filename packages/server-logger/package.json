@@ -34,16 +34,6 @@
       "import": "./dist/esm/index.js",
       "require": "./dist/cjs/index.js"
     },
-    "./next": {
-      "types": "./dist/esm/adapters/next.d.ts",
-      "import": "./dist/esm/adapters/next.js",
-      "require": "./dist/cjs/adapters/next.js"
-    },
-    "./next/middleware": {
-      "types": "./dist/esm/adapters/nextMiddleware.d.ts",
-      "import": "./dist/esm/adapters/nextMiddleware.js",
-      "require": "./dist/cjs/adapters/nextMiddleware.js"
-    },
     "./next/proxy": {
       "types": "./dist/esm/adapters/nextProxy.d.ts",
       "import": "./dist/esm/adapters/nextProxy.js",
@@ -66,7 +56,7 @@
     "prepublishOnly": "npm run build"
   },
   "peerDependencies": {
-    "next": ">=14"
+    "next": ">=16"
   },
   "peerDependenciesMeta": {
     "next": {

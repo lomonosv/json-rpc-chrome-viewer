@@ -379,36 +379,52 @@ caused the calls:
 - **Deferred** (`X-Json-Rpc-Log-Id` plus `GET /__jsonrpc-log/<id>`), which is the
   only mode that works for **Next.js App Router pages**: RSC calls happen during
   the response and a Server Component cannot set a response header, so the id is
-  minted by `proxy.ts` (`middleware.ts` before Next 16), which runs earlier, and placed on both the request
+  minted by `proxy.ts`, which runs earlier, and placed on both the request
   and the response. Draining consumes, so one render's calls can never be served
   onto another.
 
 These are load-bearing in the package:
 
-- **Two Next entries with different reach, over one edge-safe tagger.**
-  `adapters/tagRequest.ts` mints the id and skips static assets. It imports
-  only plain constants from `core`, because the `middleware.ts` path can land on
-  the edge, where `node:async_hooks`, `node:zlib` and `node:crypto` do not
-  exist; pulling one in breaks the host's entire middleware.
-  - `./next/middleware` (`nextMiddleware.ts`; Next 14-15, edge by default) only
-    tags, so the host still needs `instrumentation.ts` and the drain route. It
-    gates production on `NODE_ENV`, not `isEnabled()`: options live in the Node
-    process, which an edge function cannot see.
-  - `./next/proxy` (`nextProxy.ts`; Next 16+) is the **whole integration in one
-    file**. Next 16 runs `proxy.ts` on Node.js in the same process as the
-    render, so it patches `fetch` (replacing `instrumentation.ts`), tags, and
-    answers `/__jsonrpc-log/<id>` itself by calling the route's own `GET`
-    (replacing the route file) — verified in a real Next 16 app with neither
-    file present. It patches lazily on the first request, so importing it has
-    no side effects. `proxy` is literally `withJsonRpcLogger(() => undefined)`,
-    so there is one code path. Sharing a process with the render holds for
-    `next dev` and `next start`; serverless hosts may split them, which is
-    acceptable only because the logger is development-only by default.
+- **Next 16 only, through one entry.** `./next/proxy` (`nextProxy.ts`) is the
+  **whole integration in one file**. Next 16 runs `proxy.ts` on Node.js in the
+  same process as the render, so it patches `fetch`, tags, and answers
+  `/__jsonrpc-log/<id>` itself — verified in a real Next 16 app with no
+  `instrumentation.ts` and no route file. It patches lazily on the first
+  request, so importing it has no side effects. `proxy` is literally
+  `withJsonRpcLogger(() => undefined)`, so there is one code path. Sharing a
+  process with the render holds for `next dev` and `next start`; serverless
+  hosts may split them, which is acceptable only because the logger is
+  development-only by default.
+
+  **Next 14-15 support was dropped in 0.2; 0.1.5 remains the version for them.**
+  Their middleware runs on the edge by default, which can neither patch Node's
+  `fetch` nor reach the collector, so they needed a three-file setup
+  (`middleware.ts` + `instrumentation.ts` + a drain route) and a set of
+  constraints that existed only for it: a tagger importing nothing from `core`
+  (the edge has no `node:async_hooks`, `node:zlib` or `node:crypto`), a
+  production gate on `NODE_ENV` (the edge cannot see options), the route folder
+  spelled `app/%5F_jsonrpc-log` (a `_` folder is private in the App Router and
+  never routed — 0.1.x 404'd every drain), and a `NEXT_RUNTIME === 'nodejs'`
+  guard in `instrumentation.ts` (without it every route failed to build with
+  `UnhandledSchemeError: Reading from "node:crypto"`). Reintroducing a
+  middleware entry means reintroducing all of them. Nothing in the extension
+  depends on the Next version; the wire format is the contract.
 
   Next resolves the handler by file name — `(isProxy ? mod.proxy :
   mod.middleware) || mod.default` in its `build/templates/middleware.js` — so
-  each entry exports only the name its file needs, and the wrong name makes Next
-  refuse to start.
+  re-exporting `proxy` from a `middleware.ts` makes Next refuse to start.
+- **The master switch fails closed: `isEnabled` defaults to
+  `NODE_ENV === 'development'`.** It was `!== 'production'` through 0.1.x,
+  which — verified against the built package — tagged renders, served the drain
+  and patched `fetch` with `NODE_ENV` unset or `test`, the state a custom server
+  or an odd deploy can leave a real deployment in. Enabled there, it hands server
+  JSON-RPC bodies to an unauthenticated endpoint and makes every render that
+  resolves a log id dynamic. Disabled, `withJsonRpcLogger` returns the host's
+  handler result before touching anything, so the only production cost is Next
+  invoking a `proxy.ts` at all. Do not flip this back to opt-out. Probing the
+  patch with `fetch.toString()` proves nothing on Node: undici's `fetch` is
+  JavaScript and never reads `[native code]`; check for the
+  `server-logger.fetch.v1` symbol on `globalThis` instead.
 - **`withJsonRpcLogger` answers the drain before the host's handler runs.** The
   panel drains with `credentials: 'omit'`, so any auth gate in the host's proxy
   would redirect every drain. It then tags whatever *renders*: a returned
@@ -432,25 +448,9 @@ These are load-bearing in the package:
   `config.matcher`: Next reads `config` with `extractExportedConstValue` against
   the host's own file AST, so a re-exported config never applies — Next 16 logs
   "can't recognize the exported `config` field ... it may be re-exported from
-  another file" on **every request**. `./next/proxy` offers no `config`;
-  `./next/middleware` keeps one only so 0.1.x `middleware.ts` files keep
-  resolving. It stays matcher-only — a `runtime` key would make Next reject it
-  inside `proxy.ts`.
-- **Two README details were live defects in 0.1.x, and must not regress.** Both
-  were found only by running a real Next 16 app, not by typechecking:
-  - **The drain route folder is `app/%5F_jsonrpc-log`, not `app/__jsonrpc-log`.**
-    An App Router folder starting with `_` is a *private folder* and is never
-    routed, so the 0.1.x instructions 404'd every drain and no server call ever
-    reached the panel. `%5F` is Next's escaped underscore; the URL stays
-    `/__jsonrpc-log/<id>`, which is the wire contract the extension hard-codes,
-    so fix the folder name — never the path.
-  - **`instrumentation.ts` must guard on `process.env.NEXT_RUNTIME === 'nodejs'`.**
-    Next calls `register()` for the edge runtime too, and the `/next` entry
-    reaches `node:crypto` via `encode.ts`; unguarded, every route fails to build
-    with `UnhandledSchemeError: Reading from "node:crypto"`. Next inlines
-    `NEXT_RUNTIME`, so the guard removes the import from the edge bundle.
-- **The log-id resolver is async.** `next/headers` returns a promise from Next 15
-  on, so `resolveLogId()` (sync, AsyncLocalStorage only) and
+  another file" on **every request**. `./next/proxy` therefore offers no
+  `config` at all.
+- **The log-id resolver is async.** `next/headers` returns a promise, so `resolveLogId()` (sync, AsyncLocalStorage only) and
   `resolveLogIdAsync()` (through the host resolver) are deliberately separate;
   only the slow path awaits.
 - **`patchedFetch` fires the request before resolving the log id**, so
@@ -471,8 +471,7 @@ These are load-bearing in the package:
   reset lands mid-request after the proxy has armed, and plain refreshes never
   recompile, so nothing heals it — a freshly restarted server showed rows for
   one load and then never again. `instrumentFetch` therefore runs on **every**
-  proxied request (and from the drain `GET`, the only per-request hook the
-  `instrumentation.ts` path has) and re-arms whenever `globalThis.fetch` is not
+  proxied request and re-arms whenever `globalThis.fetch` is not
   our wrapper, taking whatever is there as the delegate. Once Next has
   re-patched, being wrapped and being evicted are indistinguishable from here —
   an earlier version tried to infer it from what the outer function had been
@@ -489,13 +488,13 @@ These are load-bearing in the package:
   install / wrapped / cold-start / two unchecked cycles / bare reset / double
   wrap: one record and one wire call each, no hang.
 - **Collector and options state live on `globalThis`, not in module scope.**
-  Next's App Router bundles `node_modules` into each server entry, so
-  `instrumentation.ts` — where the fetch patch records — and the drain route
-  each load their *own copy* of the package. With module-scoped state the patch
-  recorded into one ring buffer and the route drained another, and every drain
-  came back empty. A probe in a real Next 16 app showed exactly that:
-  `sameModuleInstance: false`, one call on the instrumentation side, none on the
-  route side, while the `next/headers` resolver worked. `collector.ts` (log map,
+  Next's App Router bundles `node_modules` into each server entry, so separate
+  entries load their *own copy* of the package. 0.1.x hit this between
+  `instrumentation.ts` and the drain route — a probe in a real Next 16 app
+  showed `sameModuleInstance: false`, one call recorded on one side, none
+  drained on the other. With one entry it still holds: `proxy.ts` installs the
+  patch and drains, but `recordRpcCall` called from app code runs in the
+  render's copy, and must record into the same buffer. `collector.ts` (log map,
   ALS instance, host resolver) and `options.ts` therefore keep their state under
   `Symbol.for(...)` keys carrying a shape version (`.v1`), so a different copy of
   the package cannot misread it. Loading the ESM and CJS builds into one Node
@@ -540,25 +539,29 @@ no fetch, no parse, no row. Six things protect that, and each is load-bearing:
   — the request that matters most here — is captured before the panel exists.
   `handleInitialRequestsData` appends server rows **after** the browser backlog,
   so a slow drain cannot hold back rows already in hand.
-- **`onNavigated` is not ordered against the document's `onRequestFinished`, and
-  the clear-on-navigate has to cope with either order.** The finish comes from
-  the browser process (`Network.loadingFinished`), the navigation from the
-  renderer's frame commit, and on a fast local document the finish regularly
-  lands first — by up to a second. A blind clear in `handleNavigation` then
-  wiped rows belonging to the page it was announcing. Browser rows recovered
-  because the page keeps making calls after hydration; server rows are one-shot
-  and never came back, so with Preserve log off they showed for a moment and
-  vanished (the exact report that surfaced this). Both clears now pair the
-  navigation with its document **by url** (`getNavigationKey`, fragment
-  stripped) in whichever order they arrive: the panel keeps
-  `pendingNavigationsRef` (navigation seen first — consumed when its document
-  lands) and `lateDocumentsRef` (document seen first — `handleNavigation` keeps
-  exactly that document's server rows and drops everything else), and
-  `static/index.js` keeps the most recent buffered `document` entry for the
-  navigated url. Both are bounded by `lateDocumentWindowMs` (3s), so a stale
-  document with the same url — a refresh — cannot ride through a later
-  navigation. `isDocumentRequest` reads the HAR entry's `_resourceType`, which
-  is how the document is told apart from the page's own JSON-RPC responses.
+- **The clear-on-navigate cuts by time; it does not pair events with
+  documents.** Two facts about `onNavigated` defeat any pairing. It is not
+  ordered against the document's `onRequestFinished` — the finish comes from
+  the browser process, the commit from the renderer, and on a fast local
+  document the finish regularly wins by up to a second. And it fires for
+  **same-document** navigations too: DevTools'
+  `ResourceTreeModel.navigatedWithinDocument` calls `setInspectedURL` for the
+  main frame and `ExtensionServer` forwards every inspected-url change, so
+  `pushState`, `replaceState` (Next's App Router calls it on hydration) and
+  fragment changes all arrive as navigations. Browser rows survive a wrong
+  clear because the page keeps making calls; server rows are one-shot, so with
+  Preserve log off they showed for about a second and vanished — through two
+  earlier fixes that paired navigations with documents by url. Both clears now
+  read the inspected document's `performance.timeOrigin`
+  (`getDocumentTimeOrigin`, duplicated in `static/index.js`) and drop only rows
+  that **started before it**, less `documentClockSkewMs`. That is idempotent and
+  order-free: a soft navigation drops nothing, a reload drops exactly the
+  previous page, and it re-runs whenever a `document` finishes, which covers an
+  `onNavigated` whose eval still landed in the outgoing document. Server rows
+  are dated by their **carrier's** `startedDateTime` (`carrierStartsRef`), not by
+  their own `startTime`, which is on the server's clock. An unreadable
+  `timeOrigin` clears everything — the behaviour before the server logger.
+  `isDocumentRequest` reads the HAR entry's `_resourceType`.
 - **Server rows are appended directly, never through `mergeCompletedRequests`,
   and `findCompletedIndex` skips them.** Its `(url, id)` de-duplication is a
   heuristic for the browser's own reports. Without the skip, an SSR render

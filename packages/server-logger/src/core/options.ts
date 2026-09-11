@@ -1,9 +1,9 @@
 /** Everything tunable, in one place, with the safe value as the default. */
 export interface ILoggerOptions {
   /**
-   * Master switch. Defaults to `NODE_ENV !== 'production'`: this ships request
-   * and response bodies to whoever can read the response, so production is
-   * opt-in rather than opt-out.
+   * Master switch. Defaults to `NODE_ENV === 'development'`: this ships request
+   * and response bodies to whoever can read the response, so anything other than
+   * development is opt-in rather than opt-out.
    */
   isEnabled?: boolean,
   /** Per-body cap before members are replaced with a marker. */
@@ -20,7 +20,13 @@ export interface ILoggerOptions {
 
 type ResolvedOptions = Required<ILoggerOptions>;
 
-const isDevelopment = () => process.env.NODE_ENV !== 'production';
+/**
+ * Fails closed. `!== 'production'` enabled the logger wherever `NODE_ENV` was
+ * unset or unusual — a custom server, `test`, `staging` — which in a real
+ * deployment exposes server bodies through an unauthenticated drain and makes
+ * renders dynamic. `next dev` sets `development`, so nothing is lost there.
+ */
+const isDevelopment = () => process.env.NODE_ENV === 'development';
 
 const defaultOptions: ResolvedOptions = {
   isEnabled: isDevelopment(),

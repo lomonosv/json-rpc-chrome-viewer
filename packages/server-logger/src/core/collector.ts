@@ -63,7 +63,7 @@ const getState = (): ICollectorState => {
  * incoming request headers.
  *
  * The resolver may be async, because that is what the App Router requires:
- * `next/headers` returns a promise from Next 15 on. Only the slow path awaits
+ * `next/headers` returns a promise. Only the slow path awaits
  * it, so a host that answers synchronously still costs nothing.
  */
 export const setLogIdResolver = (resolver: LogIdResolver) => {
