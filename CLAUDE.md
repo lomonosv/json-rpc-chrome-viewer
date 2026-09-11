@@ -459,6 +459,28 @@ These are load-bearing in the package:
   that window is reported as unhandled. Same discipline as the panel's
   `patchedFetch`: a plain function that hands straight back to native for
   anything that is not a JSON-RPC body.
+- **The fetch patch must survive being evicted, and a one-shot install flag is
+  not enough.** `next dev` captures the pristine `fetch` at boot and restores it
+  on every recompile — `resetFetch()` in Next's `router-server.js`, called from
+  the hot reloader — then re-patches its own wrapper over the bare function at
+  the next render. Everything else keeps working through that: the id is still
+  minted, the request header still reaches the render, `resolveLogIdAsync()`
+  still answers. Only the calls vanish, so it reads as "the logger is off"
+  rather than "the patch is gone" — it made the logger work exactly until the
+  first recompile, which in a real app is the first page load. `instrumentFetch`
+  therefore runs on **every** proxied request and decides by identity, and the
+  awkward part is that being wrapped and being evicted look identical once Next
+  has re-patched. `state.outer` (what sat on `globalThis.fetch` at the end of
+  the last check) is what separates them, and `state.seen` — a `WeakSet` of
+  every function we have taken as a delegate — is the proof that a host put one
+  back. The rule that makes re-arming safe: a new outer function can only
+  contain our wrapper if we were outermost at the previous check, since nothing
+  else ever installs it, so we only take a delegate that provably cannot call
+  back into us and the chain can never close into a loop. The wrapper is built
+  once and reads its delegate from the state, because two live copies would
+  report every call twice. Worst case — a recompile lands between arming and the
+  next request — one render is missed and the check after it re-arms; never a
+  cycle, never a silent permanent stop.
 - **Collector and options state live on `globalThis`, not in module scope.**
   Next's App Router bundles `node_modules` into each server entry, so
   `instrumentation.ts` — where the fetch patch records — and the drain route

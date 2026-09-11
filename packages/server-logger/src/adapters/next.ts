@@ -53,6 +53,12 @@ export const instrumentFetch = (): boolean => {
  * Re-export as the GET handler of `app/__jsonrpc-log/[logId]/route.ts`. Draining
  * consumes the log, so a second read of the same id returns nothing rather than
  * replaying one render's calls onto another.
+ *
+ * It also re-arms the patch, which matters on the `instrumentation.ts` path:
+ * `register()` runs once per boot, while `next dev` throws the patch away on
+ * every recompile (see `instrumentFetch`). Draining is the only hook this path
+ * has that runs per request, so recovery lands one render later than on the
+ * `proxy.ts` path — but it lands.
  */
 export const GET = async (
   request: Request,
@@ -61,6 +67,8 @@ export const GET = async (
   if (!isEnabled()) {
     return new Response(null, { status: 404 });
   }
+
+  instrumentFetch();
 
   const { logId } = await context.params;
   const log = drainLog(logId);

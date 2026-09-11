@@ -18,21 +18,21 @@ const requestHeaderPrefix = 'x-middleware-request-';
 
 const drainPrefix = `${ drainPath }/`;
 
-let isInstrumented = false;
-
 /**
  * Patches `fetch` on the first request rather than at import, so importing this
  * module — from a build step, a test, a type check — changes nothing about the
  * process. It can replace `instrumentation.ts` at all only because Next 16 runs
- * `proxy.ts` on Node.js, in the same process as the render. `instrumentFetch`
- * is itself idempotent across copies of the package.
+ * `proxy.ts` on Node.js, in the same process as the render.
+ *
+ * **It runs on every request, and a one-shot guard here would be a bug.**
+ * `next dev` restores the pristine `fetch` on every recompile (`resetFetch` in
+ * Next's `router-server.js`), evicting the patch while every other part of the
+ * integration carries on working — so the logger would go quiet after the first
+ * recompile and look disabled rather than unpatched. This is the one hook that
+ * reliably runs before a render, which makes it the place the patch gets put
+ * back. `instrumentFetch` answers "am I still installed" by identity and is a
+ * couple of comparisons when nothing has changed.
  */
-const ensureInstrumented = () => {
-  if (isInstrumented) return;
-
-  isInstrumented = true;
-  instrumentFetch();
-};
 
 const getDrainLogId = (pathname: string): string | null => (
   pathname.startsWith(drainPrefix) ? pathname.slice(drainPrefix.length) : null
@@ -108,7 +108,7 @@ export const withJsonRpcLogger = (handler: NextMiddleware) => async (
 ): Promise<ProxyResult> => {
   if (!isEnabled()) return handler(request, event as NextFetchEvent);
 
-  ensureInstrumented();
+  instrumentFetch();
 
   const logId = getDrainLogId(request.nextUrl.pathname);
 
