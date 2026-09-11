@@ -51,6 +51,22 @@ jobs:
       - name: Pack
         run: npm pack --workspace @json-rpc-chrome-viewer/server-logger
 
+      # A prerelease must never become what `npm install` resolves to, so the
+      # dist-tag is derived from the version rather than defaulted: anything
+      # carrying a `-` (0.2.0-rc.0) publishes under `next`, everything else
+      # under `latest`. This is what makes a real end-to-end publish safe to
+      # rehearse against the live registry.
+      - name: Resolve dist-tag
+        id: distTag
+        run: |
+          PKG_VERSION="$(node -p "require('./packages/server-logger/package.json').version")"
+          case "$PKG_VERSION" in
+            *-*) TAG=next ;;
+            *)   TAG=latest ;;
+          esac
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "Publishing $PKG_VERSION under dist-tag $TAG"
+
       # Authentication is npm trusted publishing (OIDC): the job proves its
       # identity with the id-token permission above, so there is no token to
       # store or rotate. Deliberately no NODE_AUTH_TOKEN — setup-node writes
@@ -62,4 +78,7 @@ jobs:
       #   publish-server-logger.yml. Provenance is generated automatically.
       - name: Publish
         if: github.event_name == 'push' || inputs.dryRun == false
-        run: npm publish --provenance --workspace @json-rpc-chrome-viewer/server-logger
+        run: >-
+          npm publish --provenance
+          --tag ${{ steps.distTag.outputs.tag }}
+          --workspace @json-rpc-chrome-viewer/server-logger
