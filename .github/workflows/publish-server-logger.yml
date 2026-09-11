@@ -51,8 +51,15 @@ jobs:
       - name: Pack
         run: npm pack --workspace @json-rpc-chrome-viewer/server-logger
 
+      # Authentication is npm trusted publishing (OIDC): the job proves its
+      # identity with the id-token permission above, so there is no token to
+      # store or rotate. Deliberately no NODE_AUTH_TOKEN — setup-node writes
+      # `_authToken=${NODE_AUTH_TOKEN}` into .npmrc, and an unset secret would
+      # put a blank token there that shadows the OIDC exchange.
+      #
+      # Configured at npmjs.com on the package's Settings tab:
+      #   repository lomonosv/json-rpc-chrome-viewer, workflow
+      #   publish-server-logger.yml. Provenance is generated automatically.
       - name: Publish
         if: github.event_name == 'push' || inputs.dryRun == false
         run: npm publish --provenance --workspace @json-rpc-chrome-viewer/server-logger
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
