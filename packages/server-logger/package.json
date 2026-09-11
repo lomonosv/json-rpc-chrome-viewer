@@ -1,6 +1,6 @@
 {
   "name": "@json-rpc-chrome-viewer/server-logger",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Reports server-side JSON-RPC calls to the JSON RPC Chrome Viewer DevTools panel",
   "license": "MIT",
   "author": "lomonosv.developer@gmail.com",
