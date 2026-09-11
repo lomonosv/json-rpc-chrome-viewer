@@ -6,14 +6,33 @@ const callback = (panel) => {
     httpArchiveRequest.getContent((responseContent) => {
       httpArchiveRequests.push({
         request: httpArchiveRequest,
-        responseContent
+        responseContent,
+        pushedAt: Date.now()
       });
     });
   };
 
-  const handleNavigation = () => {
+  // `onNavigated` can land after the navigation's own document has finished —
+  // the two are not ordered — so a blind clear would drop the page-load
+  // document that carries the server-side calls. Keep the most recent document
+  // for the navigated url if it arrived just before; everything else goes.
+  // Mirrors the panel's `handleNavigation`, which owns the fuller explanation.
+  const lateDocumentWindowMs = 3000;
+  const getNavigationKey = (url) => url.split('#')[0];
+
+  const handleNavigation = (url) => {
     chrome.storage.local.get(['settings_preserveLog'], (result) => {
-      !result.settings_preserveLog && httpArchiveRequests.splice(0);
+      if (result.settings_preserveLog) return;
+
+      const key = getNavigationKey(url);
+      const now = Date.now();
+      const kept = httpArchiveRequests.filter(({ request, pushedAt }) => (
+        request._resourceType === 'document' &&
+        getNavigationKey(request.request.url) === key &&
+        now - pushedAt < lateDocumentWindowMs
+      )).slice(-1);
+
+      httpArchiveRequests.splice(0, httpArchiveRequests.length, ...kept);
     });
   }
 

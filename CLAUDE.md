@@ -466,21 +466,28 @@ These are load-bearing in the package:
   the next render. Everything else keeps working through that: the id is still
   minted, the request header still reaches the render, `resolveLogIdAsync()`
   still answers. Only the calls vanish, so it reads as "the logger is off"
-  rather than "the patch is gone" — it made the logger work exactly until the
-  first recompile, which in a real app is the first page load. `instrumentFetch`
-  therefore runs on **every** proxied request and decides by identity, and the
-  awkward part is that being wrapped and being evicted look identical once Next
-  has re-patched. `state.outer` (what sat on `globalThis.fetch` at the end of
-  the last check) is what separates them, and `state.seen` — a `WeakSet` of
-  every function we have taken as a delegate — is the proof that a host put one
-  back. The rule that makes re-arming safe: a new outer function can only
-  contain our wrapper if we were outermost at the previous check, since nothing
-  else ever installs it, so we only take a delegate that provably cannot call
-  back into us and the chain can never close into a loop. The wrapper is built
-  once and reads its delegate from the state, because two live copies would
-  report every call twice. Worst case — a recompile lands between arming and the
-  next request — one render is missed and the check after it re-arms; never a
-  cycle, never a silent permanent stop.
+  rather than "the patch is gone". **It is the cold-start default, not an edge
+  case**: the first request after `next dev` starts compiles the page, so the
+  reset lands mid-request after the proxy has armed, and plain refreshes never
+  recompile, so nothing heals it — a freshly restarted server showed rows for
+  one load and then never again. `instrumentFetch` therefore runs on **every**
+  proxied request (and from the drain `GET`, the only per-request hook the
+  `instrumentation.ts` path has) and re-arms whenever `globalThis.fetch` is not
+  our wrapper, taking whatever is there as the delegate. Once Next has
+  re-patched, being wrapped and being evicted are indistinguishable from here —
+  an earlier version tried to infer it from what the outer function had been
+  last time, and was wrong in exactly the cold-start case; wrong the other way
+  it would have built a loop. So there is no inference, and what makes the
+  unconditional re-arm safe is that **the wrapper is loop-proof by
+  construction**: every call runs its delegate inside an `AsyncLocalStorage`
+  scope (`state.reentry`), and a call arriving while that scope is open is the
+  same request coming back round through a host's wrapper — it goes straight to
+  `state.root` (the first function we ever replaced, which cannot call us) and
+  is not observed twice. An ALS, not a counter, because Next's fetcher awaits
+  before calling back. The wrapper is built once and reads its delegate from
+  the state, since two live copies would report every call twice. Verified for
+  install / wrapped / cold-start / two unchecked cycles / bare reset / double
+  wrap: one record and one wire call each, no hang.
 - **Collector and options state live on `globalThis`, not in module scope.**
   Next's App Router bundles `node_modules` into each server entry, so
   `instrumentation.ts` — where the fetch patch records — and the drain route
@@ -528,11 +535,30 @@ no fetch, no parse, no row. Six things protect that, and each is load-bearing:
   The branch in `handleRequest` is deliberately **not an `else`**: one response
   can be both a browser JSON-RPC call and the carrier of the server calls made
   while answering it (a route handler forwarding upstream).
-- **`static/index.js` needed no change.** Its cold-start buffer already keeps
-  *every* finished request with its headers, not just JSON-RPC ones, so the
-  page-load document — the request that matters most here — is captured before
-  the panel exists. `handleInitialRequestsData` appends server rows **after** the
-  browser backlog, so a slow drain cannot hold back rows already in hand.
+- **`static/index.js`'s cold-start buffer already keeps *every* finished
+  request with its headers**, not just JSON-RPC ones, so the page-load document
+  — the request that matters most here — is captured before the panel exists.
+  `handleInitialRequestsData` appends server rows **after** the browser backlog,
+  so a slow drain cannot hold back rows already in hand.
+- **`onNavigated` is not ordered against the document's `onRequestFinished`, and
+  the clear-on-navigate has to cope with either order.** The finish comes from
+  the browser process (`Network.loadingFinished`), the navigation from the
+  renderer's frame commit, and on a fast local document the finish regularly
+  lands first — by up to a second. A blind clear in `handleNavigation` then
+  wiped rows belonging to the page it was announcing. Browser rows recovered
+  because the page keeps making calls after hydration; server rows are one-shot
+  and never came back, so with Preserve log off they showed for a moment and
+  vanished (the exact report that surfaced this). Both clears now pair the
+  navigation with its document **by url** (`getNavigationKey`, fragment
+  stripped) in whichever order they arrive: the panel keeps
+  `pendingNavigationsRef` (navigation seen first — consumed when its document
+  lands) and `lateDocumentsRef` (document seen first — `handleNavigation` keeps
+  exactly that document's server rows and drops everything else), and
+  `static/index.js` keeps the most recent buffered `document` entry for the
+  navigated url. Both are bounded by `lateDocumentWindowMs` (3s), so a stale
+  document with the same url — a refresh — cannot ride through a later
+  navigation. `isDocumentRequest` reads the HAR entry's `_resourceType`, which
+  is how the document is told apart from the page's own JSON-RPC responses.
 - **Server rows are appended directly, never through `mergeCompletedRequests`,
   and `findCompletedIndex` skips them.** Its `(url, id)` de-duplication is a
   heuristic for the browser's own reports. Without the skip, an SSR render

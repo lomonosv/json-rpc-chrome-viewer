@@ -16,7 +16,12 @@ import {
 import { IRequest } from '~/logic/HTTPArchive/IRequest';
 import { SortDirection, SortField } from '~/logic/HTTPArchive/SortField';
 import { MessageType } from '~/logic/common/messages';
-import { getServerLogCalls, hasServerLog } from '~/logic/HTTPArchive/serverLog';
+import {
+  getNavigationKey,
+  getServerLogCalls,
+  hasServerLog,
+  isDocumentRequest
+} from '~/logic/HTTPArchive/serverLog';
 import {
   IInterceptedRequestPayload,
   IObservedRequestPayload,
@@ -88,6 +93,20 @@ const getServerRequests = async (request: chrome.devtools.network.Request): Prom
   (await getServerLogCalls(request)).flatMap(getPreparedServerRequests)
 );
 
+/**
+ * A document whose server rows landed before the `onNavigated` for the very
+ * navigation it belongs to. See `useRequest`'s navigation bookkeeping.
+ */
+interface ILateDocument {
+  key: string,
+  seenAt: number,
+  uuids: string[],
+}
+
+// How long a finished document waits for its own navigation event before its
+// rows are treated as belonging to the previous page after all.
+const lateDocumentWindowMs = 3000;
+
 const getSortValue = (request: IRequest, field: SortField): string | number => {
   switch (field) {
     case SortField.Method:
@@ -111,6 +130,10 @@ const useRequest = () => {
   const [sortField, setSortField] = useState<SortField>(SortField.Waterfall);
   const [sortDirection, setSortDirection] = useState<SortDirection>(SortDirection.Asc);
   const requestsRef = useRef<IRequest[]>([]);
+  // Navigations whose document has not finished yet — the normal order.
+  const pendingNavigationsRef = useRef<string[]>([]);
+  // Documents that finished before their own navigation event — the late order.
+  const lateDocumentsRef = useRef<ILateDocument[]>([]);
 
   const {
     preserveLog,
@@ -178,6 +201,47 @@ const useRequest = () => {
     }
   }, [filteredRequests, selected]);
 
+  /**
+   * Appends a document's server rows and pairs the document with its navigation.
+   *
+   * **`onNavigated` can arrive after the document has finished and been drained.**
+   * The two come from different CDP domains — `Network.loadingFinished` from the
+   * browser process, the frame commit from the renderer — so nothing orders
+   * them, and on a fast local document the finish regularly wins by up to a
+   * second. `handleNavigation` then wipes rows that belong to the page it is
+   * announcing; browser rows recover because the page keeps making calls, server
+   * rows never do, so they showed for a moment and vanished (with Preserve log
+   * off). The document and the navigation are therefore matched by url in
+   * whichever order they land: a navigation seen first is consumed here, a
+   * document seen first is remembered so the navigation can keep its rows.
+   */
+  const appendServerRequests = (request: chrome.devtools.network.Request, serverRequests: IRequest[]) => {
+    if (!serverRequests.length) return;
+
+    requestsRef.current = [
+      ...requestsRef.current,
+      ...serverRequests
+    ];
+
+    setRequests(requestsRef.current);
+
+    if (!isDocumentRequest(request)) return;
+
+    const key = getNavigationKey(request.request.url);
+    const pendingIndex = pendingNavigationsRef.current.indexOf(key);
+
+    if (pendingIndex !== -1) {
+      pendingNavigationsRef.current.splice(pendingIndex, 1);
+
+      return;
+    }
+
+    lateDocumentsRef.current = [
+      ...lateDocumentsRef.current.slice(-4),
+      { key, seenAt: Date.now(), uuids: serverRequests.map(({ uuid }) => uuid) }
+    ];
+  };
+
   const handleInitialRequestsData = useCallback(async (e: CustomEvent<{
     request: chrome.devtools.network.Request,
     responseContent: string,
@@ -197,22 +261,35 @@ const useRequest = () => {
 
     // After the browser rows, not alongside them: a slow drain endpoint must
     // not hold back the backlog that was already in hand.
-    const serverRequests = (await Promise.all(
-      e.detail.filter(({ request }) => hasServerLog(request)).map(({ request }) => getServerRequests(request))
-    )).flat();
+    const carriers = await Promise.all(
+      e.detail.filter(({ request }) => hasServerLog(request)).map(
+        async ({ request }) => ({ request, serverRequests: await getServerRequests(request) })
+      )
+    );
 
-    if (serverRequests.length) {
-      requestsRef.current = [
-        ...requestsRef.current,
-        ...serverRequests
-      ];
-
-      setRequests(requestsRef.current);
-    }
+    carriers.forEach(({ request, serverRequests }) => appendServerRequests(request, serverRequests));
   }, [requestsRef.current, setRequests]);
 
-  const handleNavigation = useCallback(() => {
-    requestsRef.current = [];
+  const handleNavigation = useCallback((url: string) => {
+    const key = getNavigationKey(url);
+    const now = Date.now();
+    const lateDocument = lateDocumentsRef.current.find((document) => (
+      document.key === key && now - document.seenAt < lateDocumentWindowMs
+    ));
+
+    lateDocumentsRef.current = [];
+
+    if (lateDocument) {
+      // This navigation's document already finished; its rows are the new page.
+      const keep = new Set(lateDocument.uuids);
+
+      requestsRef.current = requestsRef.current.filter(({ uuid }) => keep.has(uuid));
+      pendingNavigationsRef.current = [];
+    } else {
+      requestsRef.current = [];
+      pendingNavigationsRef.current = [key];
+    }
+
     setRequests(requestsRef.current);
   }, [requestsRef.current, setRequests]);
 
@@ -229,16 +306,7 @@ const useRequest = () => {
     // carrier of the server calls made while answering it — a route handler
     // that forwards upstream, for one.
     if (hasServerLog(request)) {
-      const serverRequests = await getServerRequests(request);
-
-      if (serverRequests.length) {
-        requestsRef.current = [
-          ...requestsRef.current,
-          ...serverRequests
-        ];
-
-        setRequests(requestsRef.current);
-      }
+      appendServerRequests(request, await getServerRequests(request));
     }
   }, [requestsRef.current, setRequests]);
 

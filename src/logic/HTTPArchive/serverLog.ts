@@ -50,6 +50,24 @@ const findHeader = (request: chrome.devtools.network.Request, name: string): str
   getResponseHeaders(request).find((header) => header.name.toLowerCase() === name)?.value
 );
 
+/**
+ * The navigation's own document — the request whose response carries the calls
+ * the server made rendering the page. Chrome stamps `_resourceType` on every
+ * HAR entry it hands to extensions; destructured, not dot-accessed, purely to
+ * keep `no-underscore-dangle` quiet at this one boundary.
+ */
+export const isDocumentRequest = (request: chrome.devtools.network.Request): boolean => {
+  const { _resourceType: resourceType } = request;
+
+  return resourceType === 'document';
+};
+
+/**
+ * `onNavigated` reports the committed url, the HAR entry the requested one; the
+ * two agree except for the fragment, which never reaches the server.
+ */
+export const getNavigationKey = (url: string): string => url.split('#')[0];
+
 export const hasServerLog = (request: chrome.devtools.network.Request): boolean => (
   getResponseHeaders(request).some(({ name }) => {
     const lowerName = name.toLowerCase();

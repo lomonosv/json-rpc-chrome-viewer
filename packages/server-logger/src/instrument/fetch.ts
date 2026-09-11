@@ -1,3 +1,4 @@
+import { AsyncLocalStorage } from 'node:async_hooks';
 import { recordCall, resolveLogIdAsync } from '../core/collector.js';
 import { createCallId } from '../core/encode.js';
 import { isJsonRpcBody, truncateJsonRpcBody } from '../core/jsonRpc.js';
@@ -11,29 +12,21 @@ type Fetch = typeof globalThis.fetch;
  *
  * It is a single long-lived object rather than a fresh closure per install
  * because re-arming must swap what the wrapper *calls*, never add another layer
- * to the chain: two live copies of the wrapper would report every call twice,
- * and pointing the wrapper at a chain that already contains it loops forever.
+ * to the chain: two live copies of the wrapper would report every call twice.
  */
 interface IFetchPatchState {
   /** Identity is how we recognise our own patch on `globalThis`. */
   patched: Fetch,
-  /** The function the wrapper hands the call to. */
+  /** The function the wrapper hands a call to. Re-pointed on every re-arm. */
   native: Fetch,
   /**
-   * Every function we have ever taken as a delegate. A host that evicts us puts
-   * one of these back, so seeing one is proof we are out of the chain — and it
-   * is the only such proof that survives several re-arms, since `origin` is
-   * only ever the most recent one. Weak so that stale wrappers are not pinned
-   * in memory for the life of a dev session.
+   * The very first function we ever replaced — the real fetch, or whatever
+   * chain sat under us at install, which by construction cannot call back into
+   * us. A re-entered call goes straight here; see `createPatchedFetch`.
    */
-  seen: WeakSet<object>,
-  /**
-   * What sat on `globalThis.fetch` at the end of the last check: our own wrapper
-   * when we were outermost, otherwise whoever had wrapped us. Comparing it to
-   * what is there now is what tells eviction apart from being wrapped — see
-   * `instrumentFetch`.
-   */
-  outer: Fetch,
+  root: Fetch,
+  /** Marks a call that is already inside the wrapper; see `createPatchedFetch`. */
+  reentry: AsyncLocalStorage<true>,
 }
 
 const stateKey = Symbol.for('json-rpc-chrome-viewer.server-logger.fetch.v1');
@@ -151,33 +144,47 @@ const observeFetch = async (
  * where it reads the function to delegate to — so re-arming is a pointer swap,
  * not another layer.
  *
- * It stays cheap on the hot path: a plain function that hands straight back to
- * the delegate for anything that is not a JSON-RPC call, and only then goes to
- * the async observer.
+ * **It cannot be made to loop, and that is what lets `instrumentFetch` re-arm
+ * without proving anything about the chain.** Re-arming points `native` at
+ * whatever is on `globalThis.fetch`, which after a host has wrapped us is a
+ * function that calls *this wrapper* — Next's patched fetcher wraps whatever it
+ * finds. Left alone, that is a cycle. So every call runs its delegate inside a
+ * `reentry` scope, and a call that arrives while that scope is open is the
+ * same request coming back round: it goes straight to `root`, the real fetch,
+ * and is not observed a second time. The scope is an `AsyncLocalStorage`, not a
+ * counter, because the wrapper in between may await before it calls us back.
+ *
+ * It stays cheap on the hot path otherwise: a plain function that hands
+ * straight back to the delegate for anything that is not a JSON-RPC call, and
+ * only then goes to the async observer.
  */
 const createPatchedFetch = (state: IFetchPatchState): Fetch => ((input, init) => {
-  const { native } = state;
+  if (state.reentry.getStore()) return state.root(input, init);
 
-  if (!isEnabled()) return native(input, init);
+  return state.reentry.run(true, () => {
+    const { native } = state;
 
-  let url = '';
-  let rawRequest: string | null = null;
+    if (!isEnabled()) return native(input, init);
 
-  try {
-    url = getUrl(input);
+    let url = '';
+    let rawRequest: string | null = null;
 
-    if (isDrainRequest(url)) return native(input, init);
+    try {
+      url = getUrl(input);
 
-    rawRequest = readRequestBody(init?.body);
+      if (isDrainRequest(url)) return native(input, init);
 
-    if (rawRequest === null || !isJsonRpcBody(rawRequest)) {
+      rawRequest = readRequestBody(init?.body);
+
+      if (rawRequest === null || !isJsonRpcBody(rawRequest)) {
+        return native(input, init);
+      }
+    } catch (e) {
       return native(input, init);
     }
-  } catch (e) {
-    return native(input, init);
-  }
 
-  return observeFetch(native, input, init, url, rawRequest);
+    return observeFetch(native, input, init, url, rawRequest);
+  });
 }) as Fetch;
 
 const bind = (fetchFn: Fetch): Fetch => {
@@ -189,43 +196,31 @@ const bind = (fetchFn: Fetch): Fetch => {
 };
 
 /**
- * Installs the patch, and puts it back when a host has thrown it away.
+ * Installs the patch, and puts it back whenever it is not the outermost fetch.
  *
  * **A one-shot install flag is not enough, and this is the bug it hid.**
  * `next dev` captures the pristine `fetch` at boot and restores it on every
  * recompile — `resetFetch()` in Next's `router-server.js`, called from the hot
- * reloader — and then re-patches its own wrapper over the bare function at the
+ * reloader — then re-patches its own wrapper over the bare function at the
  * next render. That evicts this wrapper while every other signal keeps working:
  * the id is still minted, the request header still reaches the render, the
  * resolver still answers. Only the calls go missing, so the failure reads as
- * "the logger is off" rather than "the patch is gone". Guarding on "have I
- * patched before" therefore made the logger work until the first recompile,
- * which in a real app is the first thing that happens.
+ * "the logger is off" rather than "the patch is gone". And it is the cold-start
+ * default, not an edge case: the first request after `next dev` starts compiles
+ * the page, so the reset lands mid-request, after this has armed — and plain
+ * refreshes never recompile, so nothing heals it.
  *
- * The hard part is that by the time we look, Next has usually re-patched, so
- * `globalThis.fetch` is a wrapper either way — being wrapped and being evicted
- * are the same picture. **Identity of the previous outer function is what tells
- * them apart**, and it is enough on its own:
- *
- * - it is our wrapper — we are outermost, nothing to do;
- * - it is a function we have wrapped before — a host put one back, which only
- *   happens when it has taken ours out; re-arm over it;
- * - it is unchanged since the last check — whatever we concluded then still
- *   holds;
- * - it changed, and last time *we* were outermost — something wrapped us, which
- *   is the normal case; we are inside it;
- * - it changed, and last time we were already inside someone else's wrapper —
- *   nothing but this function ever puts our wrapper back on `globalThis`, so a
- *   new outer function cannot contain it. We were evicted; re-arm.
- *
- * That last rule is what makes re-arming safe: we only ever take a delegate
- * that provably does not call back into us, so the chain cannot close into a
- * loop. The wrapper itself is built once and reads its delegate from `state`,
- * so re-arming is a pointer swap rather than another layer — two live copies
- * would report every call twice.
- *
- * Cheap enough to call on every request, which is what makes the recovery
- * automatic rather than something a host has to notice and trigger.
+ * Once Next has re-patched, being wrapped and being evicted look identical from
+ * here, and an earlier version tried to tell them apart by remembering what the
+ * outer function had been last time. That inference was wrong exactly in the
+ * cold-start case above, and getting it wrong the other way would have built a
+ * loop. So there is no inference: whenever `globalThis.fetch` is not our
+ * wrapper, take it as the delegate and put the wrapper back on top. The wrapper
+ * is loop-proof by construction (see `createPatchedFetch`), which is the only
+ * reason this is safe. Steady state costs one identity comparison per request;
+ * a host wrapping us costs one pointer swap, and a call then travels
+ * wrapper → host → wrapper (re-entered, straight to `root`) → network, observed
+ * once.
  */
 export const instrumentFetch = (): boolean => {
   const target = globalThis as IPatchedGlobal;
@@ -236,38 +231,19 @@ export const instrumentFetch = (): boolean => {
   const state = target[stateKey];
 
   if (!state) {
-    const created = { seen: new WeakSet(), native: bind(current) } as IFetchPatchState;
+    const native = bind(current);
+    const created = { native, root: native, reentry: new AsyncLocalStorage<true>() } as IFetchPatchState;
 
-    created.seen.add(current);
     created.patched = createPatchedFetch(created);
-    created.outer = created.patched;
     target[stateKey] = created;
     globalThis.fetch = created.patched;
 
     return true;
   }
 
-  if (current === state.patched) {
-    state.outer = current;
+  if (current === state.patched) return false;
 
-    return false;
-  }
-
-  const wasOutermost = state.outer === state.patched;
-
-  if (!state.seen.has(current)) {
-    if (current === state.outer) return false;
-
-    if (wasOutermost) {
-      state.outer = current;
-
-      return false;
-    }
-  }
-
-  state.seen.add(current);
   state.native = bind(current);
-  state.outer = state.patched;
   globalThis.fetch = state.patched;
 
   return true;
