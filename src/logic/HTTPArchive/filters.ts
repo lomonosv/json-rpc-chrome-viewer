@@ -18,8 +18,8 @@ export const isJsonRpcRequest = (request: chrome.devtools.network.Request) => (
   request.request.postData.text && request.request.postData.text.match(jsonRPCRegex)
 );
 
-export const isJsonRpcMessage = (message: string) => (
-  message.match(jsonRPCRegex)
+export const isJsonRpcMessage = (message: unknown): message is string => (
+  typeof message === 'string' && jsonRPCRegex.test(message)
 );
 
 const parse = (message: string) => {
