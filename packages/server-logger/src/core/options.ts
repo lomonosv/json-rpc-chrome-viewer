@@ -32,19 +32,36 @@ const defaultOptions: ResolvedOptions = {
   logTtlMs: 60_000
 };
 
-let options: ResolvedOptions = { ...defaultOptions };
+/**
+ * Process-wide rather than module-scoped, for the same reason as the collector
+ * state: a bundler may load several copies of this module into one process, and
+ * `configure()` called through one must govern the others.
+ */
+const optionsKey = Symbol.for('json-rpc-chrome-viewer.server-logger.options.v1');
 
-export const configure = (next: ILoggerOptions = {}) => {
-  options = { ...defaultOptions, ...options, ...next };
+interface IOptionsGlobal {
+  [optionsKey]?: ResolvedOptions,
+}
 
-  return options;
+const target = globalThis as IOptionsGlobal;
+
+export const getOptions = (): ResolvedOptions => {
+  if (!target[optionsKey]) {
+    target[optionsKey] = { ...defaultOptions };
+  }
+
+  return target[optionsKey];
 };
 
-export const getOptions = (): ResolvedOptions => options;
+export const configure = (next: ILoggerOptions = {}) => {
+  target[optionsKey] = { ...defaultOptions, ...getOptions(), ...next };
 
-export const isEnabled = () => options.isEnabled;
+  return target[optionsKey];
+};
+
+export const isEnabled = () => getOptions().isEnabled;
 
 /** Test seam; also what a host calls to drop every buffered body at once. */
 export const resetOptions = () => {
-  options = { ...defaultOptions };
+  target[optionsKey] = { ...defaultOptions };
 };

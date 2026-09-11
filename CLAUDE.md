@@ -379,16 +379,44 @@ caused the calls:
 - **Deferred** (`X-Json-Rpc-Log-Id` plus `GET /__jsonrpc-log/<id>`), which is the
   only mode that works for **Next.js App Router pages**: RSC calls happen during
   the response and a Server Component cannot set a response header, so the id is
-  minted by `middleware.ts`, which runs earlier, and placed on both the request
+  minted by `proxy.ts` (`middleware.ts` before Next 16), which runs earlier, and placed on both the request
   and the response. Draining consumes, so one render's calls can never be served
   onto another.
 
-Four things in the package are load-bearing:
+These are load-bearing in the package:
 
-- **`adapters/nextMiddleware.ts` imports only plain constants from `core`.** It
-  runs on the edge runtime, where `node:async_hooks`, `node:zlib` and
-  `node:crypto` do not exist — pulling one in breaks the host's entire
-  middleware, not just this feature.
+- **One handler in `adapters/nextMiddleware.ts` serves both Next conventions**,
+  exported as `proxy` and as `middleware`. `./next/proxy` is a thin re-export for
+  `proxy.ts` (Next 16+, always the Node.js runtime); `./next/middleware` serves
+  `middleware.ts` (Next 14-15, still run by 16 with a deprecation warning, edge
+  by default). Next resolves the handler by file name — `(isProxy ? mod.proxy :
+  mod.middleware) || mod.default` in its `build/templates/middleware.js` — so
+  re-exporting the wrong name for the file makes Next refuse to start. It
+  **imports only plain constants from `core`**, because the `middleware.ts` path
+  can land on the edge, where `node:async_hooks`, `node:zlib` and `node:crypto`
+  do not exist; pulling one in breaks the host's entire middleware. Static
+  assets are skipped **at runtime** in `isUntaggedPath`, not only via
+  `config.matcher`: Next reads `config` with `extractExportedConstValue` against
+  the host's own file AST, so a config re-exported from the package is not
+  guaranteed to apply — verified: Next 16 logs "can't recognize the exported
+  `config` field ... it may be re-exported from another file" on **every
+  request** and falls back to matching everything. `./next/proxy` therefore
+  does not offer `config` at all; `./next/middleware` keeps it only so 0.1.x
+  `middleware.ts` files keep resolving. It stays matcher-only — a `runtime` key
+  would make Next reject it inside `proxy.ts`.
+- **Two README details were live defects in 0.1.x, and must not regress.** Both
+  were found only by running a real Next 16 app, not by typechecking:
+  - **The drain route folder is `app/%5F_jsonrpc-log`, not `app/__jsonrpc-log`.**
+    An App Router folder starting with `_` is a *private folder* and is never
+    routed, so the 0.1.x instructions 404'd every drain and no server call ever
+    reached the panel. `%5F` is Next's escaped underscore; the URL stays
+    `/__jsonrpc-log/<id>`, which is the wire contract the extension hard-codes,
+    so fix the folder name — never the path.
+  - **`instrumentation.ts` must guard on `process.env.NEXT_RUNTIME === 'nodejs'`.**
+    Next calls `register()` for the edge runtime too, and the `/next` entry
+    reaches `node:crypto` via `encode.ts`; unguarded, every route fails to build
+    with `UnhandledSchemeError: Reading from "node:crypto"`. Next inlines
+    `NEXT_RUNTIME`, so the guard removes the import from the edge bundle.
 - **The log-id resolver is async.** `next/headers` returns a promise from Next 15
   on, so `resolveLogId()` (sync, AsyncLocalStorage only) and
   `resolveLogIdAsync()` (through the host resolver) are deliberately separate;
@@ -399,6 +427,18 @@ Four things in the package are load-bearing:
   that window is reported as unhandled. Same discipline as the panel's
   `patchedFetch`: a plain function that hands straight back to native for
   anything that is not a JSON-RPC body.
+- **Collector and options state live on `globalThis`, not in module scope.**
+  Next's App Router bundles `node_modules` into each server entry, so
+  `instrumentation.ts` — where the fetch patch records — and the drain route
+  each load their *own copy* of the package. With module-scoped state the patch
+  recorded into one ring buffer and the route drained another, and every drain
+  came back empty. A probe in a real Next 16 app showed exactly that:
+  `sameModuleInstance: false`, one call on the instrumentation side, none on the
+  route side, while the `next/headers` resolver worked. `collector.ts` (log map,
+  ALS instance, host resolver) and `options.ts` therefore keep their state under
+  `Symbol.for(...)` keys carrying a shape version (`.v1`), so a different copy of
+  the package cannot misread it. Loading the ESM and CJS builds into one Node
+  process gives two genuine instances — a Next-free way to reproduce this.
 - **Truncation replaces members, never cuts strings.** `params`/`result`/`error`
   are swapped for a marker and the body re-serialised, so it stays parseable
   JSON-RPC. A cut string reaches the panel as a warning row with no method —

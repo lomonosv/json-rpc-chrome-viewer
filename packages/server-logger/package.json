@@ -44,6 +44,11 @@
       "import": "./dist/esm/adapters/nextMiddleware.js",
       "require": "./dist/cjs/adapters/nextMiddleware.js"
     },
+    "./next/proxy": {
+      "types": "./dist/esm/adapters/nextProxy.d.ts",
+      "import": "./dist/esm/adapters/nextProxy.js",
+      "require": "./dist/cjs/adapters/nextProxy.js"
+    },
     "./package.json": "./package.json"
   },
   "files": [

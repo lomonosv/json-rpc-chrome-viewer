@@ -64,7 +64,7 @@ The response carries only an id; the payload is pulled afterwards from
 
 This is the mode that makes **Next.js App Router pages work at all**. RSC calls
 happen *during* the response, and a Server Component cannot set a response
-header — so the id is minted by `middleware.ts`, which runs before the render,
+header — so the id is minted by `proxy.ts` (`middleware.ts` before Next 16), which runs before the render,
 and placed on both the request (where the render reads it) and the response
 (where the extension reads it).
 
