@@ -413,6 +413,22 @@ These are load-bearing in the package:
   Next resolves the handler by file name — `(isProxy ? mod.proxy :
   mod.middleware) || mod.default` in its `build/templates/middleware.js` — so
   re-exporting `proxy` from a `middleware.ts` makes Next refuse to start.
+- **The Pages Router needs one more line: `withJsonRpcLog` from
+  `./next/pages` (`nextPages.ts`) around `getServerSideProps`.** The proxy
+  tags a Pages Router render exactly as it does an App Router one — the id
+  reaches `req.headers` through Next's `x-middleware-request-*` protocol — but
+  the App Router resolver reads it back through `next/headers`, which throws
+  outside an App Router request scope, so `resolveLogIdAsync` answers "no
+  log" and every call is dropped. Symptom: the response carries
+  `X-Json-Rpc-Log-Id`, the drain answers, and `calls` is always `[]`. The
+  wrapper reads the id off `req.headers` (accepting `{ req }` for
+  `getServerSideProps`/`getInitialProps` and a bare `req` for API routes) and
+  runs the handler inside `runWithLog`, whose `AsyncLocalStorage` every
+  `await` beneath inherits; `resolveLogIdAsync` then answers from storage
+  before it ever reaches the host resolver. It imports nothing from `next`,
+  so it also runs on bare Node. There is no zero-line variant: the proxy's
+  async scope ends when it returns, so a store entered there cannot reach
+  the render's continuation.
 - **The master switch fails closed: `isEnabled` defaults to
   `NODE_ENV === 'development'`.** It was `!== 'production'` through 0.1.x,
   which — verified against the built package — tagged renders, served the drain

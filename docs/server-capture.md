@@ -66,7 +66,10 @@ This is the mode that makes **Next.js App Router pages work at all**. RSC calls
 happen *during* the response, and a Server Component cannot set a response
 header — so the id is minted by the Next 16 `proxy.ts`, which runs before the render,
 and placed on both the request (where the render reads it) and the response
-(where the extension reads it).
+(where the extension reads it). The same id serves Pages Router renders, where
+it arrives on `req.headers` and the emitter has to carry it explicitly into the
+scope `getServerSideProps` runs in — there is no framework request context to
+read it back from, as `next/headers` provides for the App Router.
 
 No size ceiling, nothing for a proxy to strip. Costs one endpoint and one extra
 request.

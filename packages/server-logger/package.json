@@ -39,6 +39,11 @@
       "import": "./dist/esm/adapters/nextProxy.js",
       "require": "./dist/cjs/adapters/nextProxy.js"
     },
+    "./next/pages": {
+      "types": "./dist/esm/adapters/nextPages.d.ts",
+      "import": "./dist/esm/adapters/nextPages.js",
+      "require": "./dist/cjs/adapters/nextPages.js"
+    },
     "./package.json": "./package.json"
   },
   "files": [

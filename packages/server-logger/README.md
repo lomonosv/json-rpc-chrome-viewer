@@ -55,6 +55,28 @@ too, and means "continue", as it does to Next.
 This relies on the proxy sharing a process with your pages, which holds for
 `next dev` and `next start`.
 
+### Pages Router
+
+Keep the same `proxy.ts`, and wrap `getServerSideProps` once:
+
+```ts
+import { withJsonRpcLog } from '@json-rpc-chrome-viewer/server-logger/next/pages';
+
+export const getServerSideProps = withJsonRpcLog(async (context) => {
+  // your data fetching, unchanged
+});
+```
+
+If your pages already go through a shared factory, wrap the function it
+returns there instead and every page is covered. The same wrapper works for
+`getInitialProps` and for API route handlers.
+
+Why the extra line: the App Router reads the log id back through
+`next/headers`, which throws outside an App Router render. In
+`getServerSideProps` the id is on `context.req.headers` instead, and the
+wrapper is what carries it to the calls made underneath. Without it the panel
+still sees the page tagged, but every log drains empty.
+
 ### Next 14 and 15
 
 Not supported from 0.2. Their middleware runs on the edge runtime, which needs a
