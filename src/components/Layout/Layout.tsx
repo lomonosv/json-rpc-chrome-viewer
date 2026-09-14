@@ -13,7 +13,8 @@ import ZeroCase from './ZeroCase';
 import styles from './layout.scss';
 
 const Layout = () => {
-  const { selected, requests } = useRequestContext();
+  const { selected, requests, serverRequestsCount } = useRequestContext();
+  const hasRows = !!requests.length || !!serverRequestsCount;
   const { isDarkTheme } = useSettingsContext();
   const isAccordionView = useIsAccordionView();
 
@@ -34,8 +35,8 @@ const Layout = () => {
         <Toolbar />
       </Header>
       <div className={ styles.layoutContainer }>
-        { !requests.length && <ZeroCase /> }
-        { !!requests.length && (
+        { !hasRows && <ZeroCase /> }
+        { hasRows && (
           <>
             <RequestList className={ styles.leftSideContainer } />
             { !isAccordionView && !!selected && (

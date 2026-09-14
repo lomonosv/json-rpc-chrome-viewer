@@ -15,6 +15,7 @@ import {
 } from '~/logic/HTTPArchive/filters';
 import { IRequest } from '~/logic/HTTPArchive/IRequest';
 import { SortDirection, SortField } from '~/logic/HTTPArchive/SortField';
+import { ServerGroupState } from '~/logic/SettingsContext/ServerGroupState';
 import { MessageType } from '~/logic/common/messages';
 import {
   getServerLogCalls,
@@ -126,6 +127,11 @@ const useRequest = () => {
   const [filteredRequests, setFilteredRequests] = useState<IRequest[]>([]);
   const [sortField, setSortField] = useState<SortField>(SortField.Waterfall);
   const [sortDirection, setSortDirection] = useState<SortDirection>(SortDirection.Asc);
+  const [serverRequestsCount, setServerRequestsCount] = useState<number>(0);
+  const [serverGroupToggle, setServerGroupToggle] = useState<{
+    basis: ServerGroupState,
+    isExpanded: boolean,
+  }>(null);
   const requestsRef = useRef<IRequest[]>([]);
   // Server row uuid → browser start of the response that carried it. The row's
   // own `startTime` is on the server's clock, which may be skewed.
@@ -136,6 +142,7 @@ const useRequest = () => {
     includeJsonRpcLogs,
     includeWebsocketLogs,
     includeServerLogs,
+    serverGroupState,
     searchScope,
     caseSensitiveSearch,
     showWaterfallColumn,
@@ -154,6 +161,14 @@ const useRequest = () => {
 
   const fallbackSortField = showWaterfallColumn ? SortField.Waterfall : SortField.Method;
   const effectiveSortField = isColumnVisible[sortField] ? sortField : fallbackSortField;
+
+  const isServerGroupExpanded = serverGroupToggle?.basis === serverGroupState
+    ? serverGroupToggle.isExpanded
+    : serverGroupState === ServerGroupState.Expanded;
+
+  const toggleServerGroup = () => {
+    setServerGroupToggle({ basis: serverGroupState, isExpanded: !isServerGroupExpanded });
+  };
 
   const clear = () => {
     carrierStartsRef.current.clear();
@@ -426,12 +441,18 @@ const useRequest = () => {
       return sortDirection === SortDirection.Asc ? result : -result;
     });
 
-    setFilteredRequests(filteredRequests);
+    const serverRequests = filteredRequests.filter(({ isServerSide }) => isServerSide);
+    const browserRequests = filteredRequests.filter(({ isServerSide }) => !isServerSide);
+    const visibleRequests = isServerGroupExpanded ? [...serverRequests, ...browserRequests] : browserRequests;
 
-    if (!filteredRequests.some(({ uuid }) => uuid === selected?.uuid)) {
+    setServerRequestsCount(serverRequests.length);
+    setFilteredRequests(visibleRequests);
+
+    if (!visibleRequests.some(({ uuid }) => uuid === selected?.uuid)) {
       clearSelection();
     }
   }, [
+    isServerGroupExpanded,
     requests,
     filter,
     searchScope,
@@ -448,6 +469,9 @@ const useRequest = () => {
     sortField: effectiveSortField,
     sortDirection,
     toggleSort,
+    serverRequestsCount,
+    isServerGroupExpanded,
+    toggleServerGroup,
     selected,
     filter,
     setSelected,

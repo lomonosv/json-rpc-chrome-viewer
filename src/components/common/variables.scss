@@ -13,14 +13,7 @@ $hoverBackground: #f2f6fc;
 $waterfallBar: #4c8bf5;
 $waterfallTick: #1e8e3e;
 
-$compactWidth: 900px;
 $narrowWidth: 620px;
-
-@mixin compactLayout {
-  @media (max-width: $compactWidth) {
-    @content;
-  }
-}
 
 @mixin narrowLayout {
   @media (max-width: $narrowWidth) {
@@ -31,6 +24,8 @@ $narrowWidth: 620px;
 $waterfallColumnPadding: 8px;
 $resizeHandleColor: #4c8bf5;
 $focusOutlineColor: #4d90fe;
+$linkColor: #1a73e8;
+$darkLinkColor: #8ab4f8;
 $searchHighlightBackground: #ffdf5d;
 $searchHighlightColor: #000;
 

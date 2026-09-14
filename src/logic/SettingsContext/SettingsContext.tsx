@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { DevToolsTheme, ExtensionTheme, JsonViewerTheme } from '~/logic/SettingsContext/Theme';
 import { ViewMode } from '~/logic/SettingsContext/ViewMode';
+import { ServerGroupState } from '~/logic/SettingsContext/ServerGroupState';
 import { ExpandTreeState } from '~/components/common/JsonViewer/ExpandTreeState';
 import { expandAllLevels } from '~/components/common/JsonViewer/ExpandLevel';
 import { SearchScope } from '~/logic/HTTPArchive/SearchScope';
@@ -29,6 +30,7 @@ const defaultShowStatusColumnValue = true;
 const defaultShowSizeColumnValue = true;
 const defaultShowTimeColumnValue = true;
 const defaultViewModeValue = ViewMode.Panes;
+const defaultServerGroupStateValue = ServerGroupState.Collapsed;
 const defaultResilientCaptureValue = true;
 
 const useSettings = () => {
@@ -58,6 +60,7 @@ const useSettings = () => {
   const [showSizeColumn, setShowSizeColumn] = useState<boolean>(defaultShowSizeColumnValue);
   const [showTimeColumn, setShowTimeColumn] = useState<boolean>(defaultShowTimeColumnValue);
   const [viewMode, setViewMode] = useState<ViewMode>(defaultViewModeValue);
+  const [serverGroupState, setServerGroupState] = useState<ServerGroupState>(defaultServerGroupStateValue);
   const [resilientCapture, setResilientCapture] = useState<boolean>(defaultResilientCaptureValue);
 
   useEffect(() => {
@@ -91,6 +94,7 @@ const useSettings = () => {
     getConfig('settings_showSizeColumn', defaultShowSizeColumnValue).then(setShowSizeColumn);
     getConfig('settings_showTimeColumn', defaultShowTimeColumnValue).then(setShowTimeColumn);
     getConfig('settings_viewMode', defaultViewModeValue).then(setViewMode);
+    getConfig('settings_serverGroupState', defaultServerGroupStateValue).then(setServerGroupState);
     getConfig('settings_resilientCapture', defaultResilientCaptureValue).then(setResilientCapture);
   }, []);
 
@@ -203,6 +207,11 @@ const useSettings = () => {
     setConfig({ settings_viewMode });
   };
 
+  const handleServerGroupStateChange = (settings_serverGroupState: ServerGroupState) => {
+    setServerGroupState(settings_serverGroupState);
+    setConfig({ settings_serverGroupState });
+  };
+
   const handleResilientCaptureChange = (settings_resilientCapture: boolean) => {
     setResilientCapture(settings_resilientCapture);
     setConfig({ settings_resilientCapture });
@@ -230,6 +239,7 @@ const useSettings = () => {
     showSizeColumn,
     showTimeColumn,
     viewMode,
+    serverGroupState,
     resilientCapture,
     systemJsonViewerTheme: jsonViewerTheme === JsonViewerTheme.System ? getSystemJsonViewerTheme() : jsonViewerTheme,
     isDarkTheme: (isDevtoolsDarkTheme && extensionTheme === ExtensionTheme.System)
@@ -255,6 +265,7 @@ const useSettings = () => {
     setShowSizeColumn: handleShowSizeColumnChange,
     setShowTimeColumn: handleShowTimeColumnChange,
     setViewMode: handleViewModeChange,
+    setServerGroupState: handleServerGroupStateChange,
     setResilientCapture: handleResilientCaptureChange
   };
 };

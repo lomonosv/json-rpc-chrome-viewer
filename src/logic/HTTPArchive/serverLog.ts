@@ -28,6 +28,9 @@ const drainTimeoutMs = 5000;
 // since the id arrives in a header the page's server controls.
 const logIdPattern = /^[A-Za-z0-9-]{1,128}$/;
 
+export const serverLoggerPackageName = '@json-rpc-chrome-viewer/server-logger';
+export const serverLoggerPackageUrl = 'https://www.npmjs.com/package/@json-rpc-chrome-viewer/server-logger';
+
 export interface IServerRpcCall {
   url: string,
   startTime: number,

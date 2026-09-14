@@ -11,6 +11,8 @@ import { ExpandTreeState, ExpandTreeStateTitlesMap } from '~/components/common/J
 import { expandLevelOptions } from '~/components/common/JsonViewer/ExpandLevel';
 import { ExtensionTheme, JsonViewerTheme } from '~/logic/SettingsContext/Theme';
 import { ViewMode, viewModeOptions } from '~/logic/SettingsContext/ViewMode';
+import { ServerGroupState, serverGroupStateOptions } from '~/logic/SettingsContext/ServerGroupState';
+import { serverLoggerPackageName, serverLoggerPackageUrl } from '~/logic/HTTPArchive/serverLog';
 import useIsNarrowLayout from '~/logic/common/useIsNarrowLayout';
 import SettingsCard from './SettingsCard';
 import { SettingsTab, settingsTabs } from './SettingsTab';
@@ -100,6 +102,8 @@ const Settings = ({ onClose }: IComponentProps) => {
     setShowTimeColumn,
     viewMode,
     setViewMode,
+    serverGroupState,
+    setServerGroupState,
     resilientCapture,
     setResilientCapture,
   } = useSettingsContext();
@@ -156,6 +160,11 @@ const Settings = ({ onClose }: IComponentProps) => {
     setIncludeServerLogs(e.target.checked);
   };
 
+  const handleServerLoggerLinkClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    chrome.tabs.create({ url: serverLoggerPackageUrl });
+  };
+
   const handleIncludeWebsocketLogsChange: ChangeEventHandler<HTMLInputElement> = (e) => {
     setIncludeWebsocketLogs(e.target.checked);
   };
@@ -178,6 +187,10 @@ const Settings = ({ onClose }: IComponentProps) => {
 
   const handleViewModeChange: ChangeEventHandler<HTMLSelectElement> = (e) => {
     setViewMode(e.target.value as ViewMode);
+  };
+
+  const handleServerGroupStateChange: ChangeEventHandler<HTMLSelectElement> = (e) => {
+    setServerGroupState(e.target.value as ServerGroupState);
   };
 
   const handleResilientCaptureChange: ChangeEventHandler<HTMLInputElement> = (e) => {
@@ -292,12 +305,22 @@ const Settings = ({ onClose }: IComponentProps) => {
                     <Input
                       name="includeServerLogs"
                       label="Include server-side logs"
-                      title="JSON-RPC calls your server made, reported by the server-logger package"
+                      title={ `JSON-RPC calls your server made, reported by ${ serverLoggerPackageName }` }
                       wrapperClassName={ styles.checkboxRow }
                       type={ Type.Checkbox }
                       checked={ includeServerLogs }
                       onChange={ handleIncludeServerLogsChange }
                     />
+                    <span className={ styles.fieldHint }>
+                      Server-side calls appear only when your app uses the{ ' ' }
+                      <a
+                        href={ serverLoggerPackageUrl }
+                        onClick={ handleServerLoggerLinkClick }
+                      >
+                        { serverLoggerPackageName }
+                      </a>
+                      { ' ' }package.
+                    </span>
                   </SettingsCard>
                 </>
               ) }
@@ -338,6 +361,23 @@ const Settings = ({ onClose }: IComponentProps) => {
                         value={ extensionTheme }
                         onChange={ handleExtensionThemeChange }
                       />
+                    </label>
+                    <label
+                      className={ styles.field }
+                      htmlFor="settings-serverGroupState"
+                    >
+                      <span className={ styles.fieldLabel }>Server calls group</span>
+                      <Select<ServerGroupState>
+                        id="settings-serverGroupState"
+                        name="serverGroupState"
+                        className={ styles.fieldControl }
+                        options={ serverGroupStateOptions }
+                        value={ serverGroupState }
+                        onChange={ handleServerGroupStateChange }
+                      />
+                      <span className={ styles.fieldHint }>
+                        How the group of server-side calls starts. Clicking the group still toggles it.
+                      </span>
                     </label>
                   </SettingsCard>
                   <SettingsCard title="Request row">

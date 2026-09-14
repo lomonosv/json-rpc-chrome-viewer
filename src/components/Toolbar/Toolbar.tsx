@@ -9,10 +9,23 @@ import SettingsButton from '~/components/common/SettingsButton';
 import Input, { Type } from '~/components/common/Input';
 import Select from '~/components/common/Select';
 import Icon, { IconType } from '~/components/common/Icon';
+import { serverLoggerPackageName } from '~/logic/HTTPArchive/serverLog';
+import useToolbarFit from './useToolbarFit';
 import styles from './toolbar.scss';
 
 const Toolbar = () => {
   const inputRef = useRef<HTMLInputElement>(null);
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const preserveLogRef = useRef<HTMLInputElement>(null);
+  const includeJsonRpcLogsRef = useRef<HTMLInputElement>(null);
+  const includeWebsocketLogsRef = useRef<HTMLInputElement>(null);
+  const includeServerLogsRef = useRef<HTMLInputElement>(null);
+  const visibleOptionalCount = useToolbarFit(sectionRef, inputRef, [
+    preserveLogRef,
+    includeJsonRpcLogsRef,
+    includeWebsocketLogsRef,
+    includeServerLogsRef
+  ]);
   const { filter, clear, setFilter } = useRequestContext();
   const {
     preserveLog,
@@ -21,6 +34,8 @@ const Toolbar = () => {
     setIncludeJsonRpcLogs,
     includeWebsocketLogs,
     setIncludeWebsocketLogs,
+    includeServerLogs,
+    setIncludeServerLogs,
     searchScope,
     setSearchScope,
     caseSensitiveSearch,
@@ -51,13 +66,24 @@ const Toolbar = () => {
     setIncludeWebsocketLogs(e.target.checked);
   };
 
+  const handleIncludeServerLogsChange: ChangeEventHandler<HTMLInputElement> = (e) => {
+    setIncludeServerLogs(e.target.checked);
+  };
+
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
 
+  const getOptionalClassName = (index: number) => cn(styles.settingsItemWrapper, {
+    [styles.isOverflowing]: index >= visibleOptionalCount
+  });
+
   return (
       <div className={ styles.toolbarContainer }>
-        <div className={ styles.toolbarSection }>
+        <div
+          ref={ sectionRef }
+          className={ styles.toolbarSection }
+        >
           <Button
             onClick={ clear }
             className={ styles.clearButton }
@@ -73,6 +99,7 @@ const Toolbar = () => {
             ref={ inputRef }
             placeholder="Filter"
             className={ styles.filter }
+            wrapperClassName={ styles.filterWrapper }
             value={ filter }
             onChange={ handleFilterChange }
             clearComponent={ (
@@ -106,27 +133,40 @@ const Toolbar = () => {
           />
           <Input
             name="preserveLog"
+            ref={ preserveLogRef }
             label="Preserve log"
-            wrapperClassName={ cn(styles.settingsItemWrapper, styles.narrowHidden) }
+            wrapperClassName={ getOptionalClassName(0) }
             type={ Type.Checkbox }
             checked={ preserveLog }
             onChange={ handlePreserveLogChange }
           />
           <Input
             name="includeJsonRpcLogs"
+            ref={ includeJsonRpcLogsRef }
             label="Include JSON-RPC Logs"
-            wrapperClassName={ cn(styles.settingsItemWrapper, styles.compactHidden) }
+            wrapperClassName={ getOptionalClassName(1) }
             type={ Type.Checkbox }
             checked={ includeJsonRpcLogs }
             onChange={ handleIncludeJsonRpcLogsChange }
           />
           <Input
             name="includeWebsocketLogs"
+            ref={ includeWebsocketLogsRef }
             label="Include Websocket Logs"
-            wrapperClassName={ cn(styles.settingsItemWrapper, styles.compactHidden) }
+            wrapperClassName={ getOptionalClassName(2) }
             type={ Type.Checkbox }
             checked={ includeWebsocketLogs }
             onChange={ handleIncludeWebsocketLogsChange }
+          />
+          <Input
+            name="includeServerLogs"
+            ref={ includeServerLogsRef }
+            label="Include Server Logs"
+            title={ `JSON-RPC calls your server made. Requires ${ serverLoggerPackageName } in your app.` }
+            wrapperClassName={ getOptionalClassName(3) }
+            type={ Type.Checkbox }
+            checked={ includeServerLogs }
+            onChange={ handleIncludeServerLogsChange }
           />
         </div>
         <div className={ styles.toolbarSection }>

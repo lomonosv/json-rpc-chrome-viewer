@@ -221,6 +221,20 @@
   font-size: 11px;
   line-height: 1.4;
   white-space: normal;
+
+  a {
+    color: variables.$linkColor;
+    text-decoration: underline;
+    cursor: pointer;
+
+    :global(.isDark) & {
+      color: variables.$darkLinkColor;
+    }
+
+    &:hover {
+      text-decoration: none;
+    }
+  }
 }
 
 .hint {

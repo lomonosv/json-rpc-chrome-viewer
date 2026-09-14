@@ -17,6 +17,7 @@ Every JSON-RPC call to a given endpoint hits the same URL with the same method (
 - **Batch requests** are split into one row per call, with responses correlated back by `id`
 - **Background accumulation** - requests are buffered from the moment DevTools opens, so calls made before you switch to the panel are not lost
 - **Preserve log** across page navigations
+- **Server-side calls** - JSON-RPC calls your server makes while answering a page (SSR renders, BFF handlers) are listed beside the browser's own, gathered under one collapsible **SERVER** group. **This needs the [`@json-rpc-chrome-viewer/server-logger`](https://www.npmjs.com/package/@json-rpc-chrome-viewer/server-logger) package installed in your app** - the browser never sees those calls on the wire, so the server has to report them. Without the package nothing changes
 
 **Inspect**
 
@@ -96,8 +97,8 @@ The dialog is organised into tabs, each holding a couple of grouped panels.
 
 | Tab | Setting |
 | --- | --- |
-| Preferences | **General**: Preserve log · Autoscroll to the latest request<br>**Filters**: Include JSON-RPC logs · Include Websocket logs |
-| Appearance | **Layout**: Request view (Panes / Accordion) · Theme<br>**Request row**: Show url for each request · CORS badge · Websocket badge<br>**Columns**: Waterfall, Status, Size, Time |
+| Preferences | **General**: Preserve log · Autoscroll to the latest request<br>**Filters**: Include JSON-RPC logs · Include Websocket logs · Include server-side logs (needs [server-logger](https://www.npmjs.com/package/@json-rpc-chrome-viewer/server-logger)) |
+| Appearance | **Layout**: Request view (Panes / Accordion) · Theme · Server calls group (Collapsed / Expanded)<br>**Request row**: Show url for each request · CORS badge · Websocket badge<br>**Columns**: Waterfall, Status, Size, Time |
 | JSON Viewer | **JSON tree**: Theme · Open state · Expand level (shown only when Open state is Expanded) · Preview collapsed nodes<br>**Websocket messages**: Open state |
 | Troubleshooting | Resilient capture (patch fetch in page) |
 

@@ -195,3 +195,58 @@
     background: variables.$darkResizeHandleColor;
   }
 }
+
+.serverGroup {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 7px;
+  border: none;
+  border-bottom: 1px solid variables.$borderColor;
+  background: variables.$headerBackground;
+  font: inherit;
+  font-family: monospace;
+  font-size: 12px;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+
+  :global(.isDark) & {
+    border-bottom-color: variables.$darkBorderColor;
+    background: variables.$darkHeaderBackground;
+    color: #bdc4cc;
+  }
+
+  &:hover {
+    color: variables.$highLightedColor;
+
+    :global(.isDark) & {
+      color: variables.$darkHighLightedColor;
+    }
+  }
+}
+
+.serverGroupChevron {
+  position: absolute;
+  right: 5px;
+  width: 10px;
+  font-size: 10px;
+}
+
+.serverGroupBadge {
+  padding: 1px 5px;
+  border-radius: 2px;
+  font-size: 9px;
+  color: #fff;
+  background: variables.$serverAccent;
+
+  :global(.isDark) & {
+    background: variables.$darkServerAccent;
+  }
+}
+
+.serverGroupCount {
+  opacity: 0.7;
+}

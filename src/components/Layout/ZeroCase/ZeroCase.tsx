@@ -8,11 +8,13 @@ const ZeroCase = () => {
   const {
     includeJsonRpcLogs,
     includeWebsocketLogs,
+    includeServerLogs,
     setIncludeJsonRpcLogs,
     setIncludeWebsocketLogs,
+    setIncludeServerLogs,
   } = useSettingsContext();
 
-  const filterExists = filter || (!includeJsonRpcLogs && !includeWebsocketLogs);
+  const filterExists = filter || (!includeJsonRpcLogs && !includeWebsocketLogs && !includeServerLogs);
 
   const handleClearFilter = (e) => {
     e.stopPropagation();
@@ -20,6 +22,7 @@ const ZeroCase = () => {
     setFilter('');
     setIncludeJsonRpcLogs(true);
     setIncludeWebsocketLogs(false);
+    setIncludeServerLogs(true);
   };
 
   const handlePageReload: MouseEventHandler<HTMLAnchorElement> = (e) => {

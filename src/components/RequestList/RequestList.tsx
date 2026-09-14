@@ -81,7 +81,14 @@ interface IComponentProps {
 const RequestList = ({ className }: IComponentProps) => {
   const resizableRef = useRef<Resizable>(null);
   const requestsWrapperRef = useRef<HTMLDivElement>(null);
-  const { requests, selected, filter } = useRequestContext();
+  const {
+    requests,
+    selected,
+    filter,
+    serverRequestsCount,
+    isServerGroupExpanded,
+    toggleServerGroup
+  } = useRequestContext();
   const {
     requestListSectionWidth,
     updateRequestListSectionWidth,
@@ -154,7 +161,17 @@ const RequestList = ({ className }: IComponentProps) => {
     });
   }, [isSideBySide]);
 
+  const lastServerGroupExpandedRef = useRef<boolean>(isServerGroupExpanded);
+
   useEffect(() => {
+    const isGroupToggle = lastServerGroupExpandedRef.current !== isServerGroupExpanded;
+
+    lastServerGroupExpandedRef.current = isServerGroupExpanded;
+
+    if (isGroupToggle) {
+      return;
+    }
+
     if (autoScroll && !selected) {
       requestsWrapperRef.current.scrollTop = requestsWrapperRef.current.scrollHeight;
     }
@@ -258,6 +275,21 @@ const RequestList = ({ className }: IComponentProps) => {
               </div>
             </Header>
           </div>
+          { !!serverRequestsCount && (
+            <button
+              type="button"
+              className={ styles.serverGroup }
+              aria-expanded={ isServerGroupExpanded }
+              title={ isServerGroupExpanded ? 'Collapse server-side calls' : 'Expand server-side calls' }
+              onClick={ toggleServerGroup }
+            >
+              <span className={ styles.serverGroupChevron }>{ isServerGroupExpanded ? '▾' : '▸' }</span>
+              <span>Server calls</span>
+              <span className={ styles.serverGroupCount }>
+                { serverRequestsCount } { serverRequestsCount === 1 ? 'call' : 'calls' }
+              </span>
+            </button>
+          ) }
           {
             requests.map((item, index) => (
               <React.Fragment key={ `${ item.request.url } - ${ index }` }>
