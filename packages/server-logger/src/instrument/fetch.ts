@@ -27,7 +27,16 @@ interface IFetchPatchState {
   root: Fetch,
   /** Marks a call that is already inside the wrapper; see `createPatchedFetch`. */
   reentry: AsyncLocalStorage<true>,
+  /** Delegates displaced by later assignments, newest last; see the setter. */
+  history: Fetch[],
 }
+
+/**
+ * Enough for any realistic nesting of save/restore pairs. Older entries are
+ * dropped rather than grown without bound, because `next dev` pushes one on
+ * every recompile and never pops.
+ */
+const maxDelegateHistory = 16;
 
 const stateKey = Symbol.for('json-rpc-chrome-viewer.server-logger.fetch.v1');
 
@@ -90,6 +99,44 @@ const report = (
   }, logId);
 };
 
+/**
+ * Recording must never reach the caller. Everything above this point is chosen
+ * so it cannot throw — the body comes from `JSON.parse`, so it has no cycles —
+ * but "cannot throw" is an argument, and the caller here is the host's own
+ * request. A thrown error would reject a `fetch` the application made, turning
+ * a logging bug into a failed render, which on a shared environment means a
+ * failed test rather than a missing row.
+ */
+const reportSafely = (
+  callId: string,
+  url: string,
+  startTime: number,
+  status: number,
+  rawRequest: string,
+  rawResponse: string,
+  logId: string
+) => {
+  try {
+    report(callId, url, startTime, status, rawRequest, rawResponse, logId);
+  } catch (e) {
+    // Deliberately swallowed; a missing row beats a broken request.
+  }
+};
+
+/**
+ * A real `Response` never throws here, but this wrapper sees whatever the host
+ * installed under it — a mock, a proxy, a plain object from a test double — and
+ * that is exactly what an environment running e2e suites is full of. Reading it
+ * defensively keeps the boundary airtight rather than merely argued.
+ */
+const readStatus = (response: Response): number => {
+  try {
+    return response.status;
+  } catch (e) {
+    return 0;
+  }
+};
+
 const observeFetch = async (
   nativeFetch: Fetch,
   input: Parameters<Fetch>[0],
@@ -119,7 +166,7 @@ const observeFetch = async (
   } catch (e) {
     // A rejected call is still a call worth listing, and rethrowing the original
     // rejection leaves the caller's error semantics untouched.
-    report(callId, url, startTime, 0, rawRequest, '', logId);
+    reportSafely(callId, url, startTime, 0, rawRequest, '', logId);
 
     throw e;
   }
@@ -134,7 +181,7 @@ const observeFetch = async (
     rawResponse = '';
   }
 
-  report(callId, url, startTime, response.status, rawRequest, rawResponse, logId);
+  reportSafely(callId, url, startTime, readStatus(response), rawRequest, rawResponse, logId);
 
   return response;
 };
@@ -196,6 +243,65 @@ const bind = (fetchFn: Fetch): Fetch => {
 };
 
 /**
+ * Takes `globalThis.fetch` as an accessor rather than a value, so that being
+ * overwritten re-points the delegate instead of evicting the wrapper.
+ *
+ * **This is what makes the patch survive `next dev`.** Next captures the
+ * pristine `fetch` at boot and restores it on every recompile (`resetFetch()`
+ * in its `router-server.js`, called from the hot reloader). Re-arming per
+ * request cannot win that race: the proxy runs *before* the render, so a reset
+ * landing in between leaves the render unpatched, and the failure is silent —
+ * the id is still minted and still travels to the render, the drain still
+ * answers, so the panel asks for a log the server recorded nothing into and
+ * gets `calls: []` back. Intermittently, because only a recompile triggers it.
+ *
+ * With the accessor installed, `globalThis.fetch = original` runs the setter:
+ * the assignment is remembered as what we delegate to, and the getter keeps
+ * handing out the wrapper. A host that then wraps what it reads simply becomes
+ * the delegate, and the re-entry guard in `createPatchedFetch` keeps the round
+ * trip from being observed twice.
+ */
+const installAccessor = (state: IFetchPatchState): boolean => {
+  try {
+    Object.defineProperty(globalThis, 'fetch', {
+      configurable: true,
+      enumerable: true,
+      get: () => state.patched,
+      set: (next: unknown) => {
+        if (typeof next !== 'function') return;
+
+        /**
+         * Assigning the wrapper back is the second half of a save/restore —
+         * `const saved = globalThis.fetch` handed out the wrapper, not the
+         * delegate, so this means "undo my swap", not "make the wrapper its
+         * own delegate" (which would hang the first call through it).
+         *
+         * Every mocking library does this: MSW, nock, `vi.stubGlobal`. Simply
+         * ignoring it left the mock installed for the life of the process.
+         */
+        if (next === state.patched) {
+          const previous = state.history.pop();
+
+          if (previous) state.native = previous;
+
+          return;
+        }
+
+        state.history.push(state.native);
+
+        if (state.history.length > maxDelegateHistory) state.history.shift();
+
+        state.native = bind(next as Fetch);
+      }
+    });
+
+    return true;
+  } catch (e) {
+    return false;
+  }
+};
+
+/**
  * Installs the patch, and puts it back whenever it is not the outermost fetch.
  *
  * **A one-shot install flag is not enough, and this is the bug it hid.**
@@ -232,19 +338,34 @@ export const instrumentFetch = (): boolean => {
 
   if (!state) {
     const native = bind(current);
-    const created = { native, root: native, reentry: new AsyncLocalStorage<true>() } as IFetchPatchState;
+    // `patched` closes over the state it lives on, so it is filled in below
+    // rather than in the literal.
+    const created: IFetchPatchState = {
+      patched: null as unknown as Fetch,
+      native,
+      root: native,
+      reentry: new AsyncLocalStorage<true>(),
+      history: []
+    };
 
     created.patched = createPatchedFetch(created);
     target[stateKey] = created;
-    globalThis.fetch = created.patched;
+
+    // A frozen or non-configurable `fetch` cannot take an accessor; fall back
+    // to a plain assignment, which is the pre-accessor behaviour.
+    if (!installAccessor(created)) globalThis.fetch = created.patched;
 
     return true;
   }
 
   if (current === state.patched) return false;
 
+  // Reached only when something replaced the property itself rather than
+  // assigning through the setter — another `defineProperty`, or the assignment
+  // fallback above. Take the delegate and re-install.
   state.native = bind(current);
-  globalThis.fetch = state.patched;
+
+  if (!installAccessor(state)) globalThis.fetch = state.patched;
 
   return true;
 };
@@ -256,11 +377,22 @@ export const uninstrumentFetch = (): boolean => {
 
   if (!state) return false;
 
-  if (globalThis.fetch === state.patched) {
-    globalThis.fetch = state.native;
-  }
+  const { native } = state;
 
   delete target[stateKey];
+
+  // Put the delegate back as a plain data property: leaving the accessor in
+  // place would keep handing out the wrapper after it has been uninstalled.
+  try {
+    Object.defineProperty(globalThis, 'fetch', {
+      configurable: true,
+      enumerable: true,
+      writable: true,
+      value: native
+    });
+  } catch (e) {
+    globalThis.fetch = native;
+  }
 
   return true;
 };

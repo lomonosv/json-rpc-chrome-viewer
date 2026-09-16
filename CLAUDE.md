@@ -528,7 +528,20 @@ These are load-bearing in the package:
   that window is reported as unhandled. Same discipline as the panel's
   `patchedFetch`: a plain function that hands straight back to native for
   anything that is not a JSON-RPC body.
-- **The fetch patch must survive being evicted, and a one-shot install flag is
+- **The fetch patch is installed as an accessor on `globalThis.fetch`, and that
+  is what makes it survive eviction.** The getter returns the wrapper; the
+  setter records what was assigned as the delegate. `next dev`'s
+  `resetFetch()` therefore re-points the delegate instead of removing the
+  wrapper, and a host that wraps what it reads just becomes the delegate.
+  **Re-arming per request cannot replace this**: `armFetch()` runs in the proxy,
+  *before* the render, so a reset landing in between leaves the render
+  unpatched — and that failure is silent and looks like a panel bug, because the
+  id is still minted, the request header still reaches the render and the drain
+  still answers, so the panel gets `calls: []` for a log nothing recorded into.
+  It reproduces exactly: arm, assign the pristine `fetch`, then make a call.
+  A non-configurable `fetch` falls back to a plain assignment, and
+  `uninstrumentFetch` restores a data property so the getter cannot outlive it.
+- **The per-request re-arm stays as the backstop, and a one-shot install flag is
   not enough.** `next dev` captures the pristine `fetch` at boot and restores it
   on every recompile — `resetFetch()` in Next's `router-server.js`, called from
   the hot reloader — then re-patches its own wrapper over the bare function at
