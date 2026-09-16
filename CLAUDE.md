@@ -114,13 +114,46 @@ Do not replace this with a `useEffect` that resets `sortField` — that trips `r
 
 ### Server calls group
 
-Server-side rows never interleave with browser rows. They are gathered under **one** "Server calls · N calls" group row at the top of the list (`.serverGroup` in `RequestList.tsx`), which toggles on click; expanded, the server rows sit directly beneath it in the current sort order, then the browser rows. The group appears only while at least one server row passes the filters, so a user without the server logger never sees it.
+Server-side rows never interleave with browser rows. They are gathered into a
+collapsible "SERVER · *carrier* · N calls" group row (`.serverGroup` in
+`RequestList.tsx`) that toggles on click, and there is **one group per carrier
+response**, not one per session.
+
+**The list is segmented by carrier, in carrier order, and each segment leads
+with its own group.** A segment runs from its carrier's start until the next
+carrier's, so the browser calls a page made sit under the server calls that
+rendered it, and a second navigation reads as a second section:
+
+```
+▾ SERVER  GET /dashboard  3 calls
+      eth_call …                  ← server rows, hidden while collapsed
+  getProfile                      ← browser rows from that page
+▾ SERVER  GET /settings   2 calls
+      getUser …
+  getFlags
+```
+
+One bucket pinned at the top was the original design and it was actively
+confusing: after a navigation the new page's server calls were filed alongside
+the previous page's, above every browser row, so the one thing the grouping
+should answer — *which page load made these* — was the one thing it hid.
+Browser rows that arrived before any carrier lead the list in an unlabelled
+segment.
+
+**Only the segments are chronological; the active sort orders rows within
+one.** Clicking a column still sorts what you see, and grouping stays stable
+whichever column that is. Segments are cut by the *carrier's* `startedDateTime`
+(browser clock), never by the server rows' own `startTime` — that one is on the
+server's clock, so a skewed server would scatter its rows through the list.
+Same reason `pruneToCurrentDocument` dates a server row by its group.
 
 **Every server row keeps its own SERVER badge, and so does the heading.** A nested variant was tried and rejected on sight — a quiet badge-less heading, rows without badges indented along a violet guide line — because the badges read better. Do not reintroduce it.
 
-**Collapsing happens in `HttpArchiveContext`, not in the component** — the same reason as sorting. The filter effect splits the matched rows and, while collapsed, leaves the server rows out of `filteredRequests` altogether, so ↑/↓ cannot land on a row nobody can see, and a selected server row is deselected when its group closes. `serverRequestsCount` is exposed separately because a collapsed group leaves `requests` empty while there is still something to render; `Layout` shows `ZeroCase` only when both are zero.
+**Collapsing happens in `HttpArchiveContext`, not in the component** — the same reason as sorting. The filter effect builds the segments and, for a collapsed group, emits the heading while leaving its rows out of `filteredRequests` altogether, so ↑/↓ cannot land on a row nobody can see, and a selected server row is deselected when its group closes. The component renders a single ordered `rows` array (`IListRow`, a group or a request) so it never has to work out where a heading goes; `requests` stays the flat navigable list that keyboard nav, the waterfall timeline and autoscroll read. `serverRequestsCount` is exposed separately because collapsed groups leave `requests` empty while there is still something to render; `Layout` shows `ZeroCase` only when both are zero.
 
-The starting state is `settings_serverGroupState` (`ServerGroupState.ts`, Settings → Appearance → Layout), **Collapsed** by default. A click overrides it for the panel session and is stored as `{ basis, isExpanded }` — the override *and the setting value it overrode*. `isServerGroupExpanded` honours it only while `basis` still equals the setting, so changing the setting takes effect immediately without a `useEffect` that resets the toggle (same derivation reflex as `effectiveSortField`). The toggle is deliberately not persisted.
+The starting state is `settings_serverGroupState` (`ServerGroupState.ts`, Settings → Appearance → Layout), **Collapsed** by default, and it seeds every group. A click overrides **one** group for the panel session, stored as `{ basis, expanded }` — a per-group map *and the setting value it overrode*. `isGroupExpanded` honours the map only while `basis` still equals the setting, so changing the setting takes effect immediately on every group without a `useEffect` that resets the toggles (same derivation reflex as `effectiveSortField`). The overrides are deliberately not persisted.
+
+`RequestList`'s autoscroll suppression compares **per-group** expansion against the previous render, and must keep ignoring groups it has not seen before: a *new* group is new traffic and has to scroll, while a toggle must not. A plain signature over all groups conflates the two and parks the panel on the previous page.
 
 "Include Server Logs" sits in the toolbar beside the other two include toggles and folds with them (see Narrow panels), and `ZeroCase` counts it both in "filter exists" and in Clear.
 
@@ -594,7 +627,9 @@ no fetch, no parse, no row. Six things protect that, and each is load-bearing:
   order-free: a soft navigation drops nothing, a reload drops exactly the
   previous page, and it re-runs whenever a `document` finishes, which covers an
   `onNavigated` whose eval still landed in the outgoing document. Server rows
-  are dated by their **carrier's** `startedDateTime` (`carrierStartsRef`), not by
+  are dated by their **carrier's** `startedDateTime` — looked up through the
+  row's `serverGroupId` in `serverGroupsRef`, which is also what segments the
+  list (see Server calls group) — not by
   their own `startTime`, which is on the server's clock. An unreadable
   `timeOrigin` clears everything — the behaviour before the server logger.
   `isDocumentRequest` reads the HAR entry's `_resourceType`.

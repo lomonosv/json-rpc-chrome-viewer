@@ -83,10 +83,9 @@ const RequestList = ({ className }: IComponentProps) => {
   const requestsWrapperRef = useRef<HTMLDivElement>(null);
   const {
     requests,
+    rows,
     selected,
     filter,
-    serverRequestsCount,
-    isServerGroupExpanded,
     toggleServerGroup
   } = useRequestContext();
   const {
@@ -161,12 +160,17 @@ const RequestList = ({ className }: IComponentProps) => {
     });
   }, [isSideBySide]);
 
-  const lastServerGroupExpandedRef = useRef<boolean>(isServerGroupExpanded);
+  const groupStates = new Map(
+    rows.flatMap((row) => (row.kind === 'group' ? [[row.group.id, row.group.isExpanded] as const] : []))
+  );
+  const lastGroupStatesRef = useRef(groupStates);
 
   useEffect(() => {
-    const isGroupToggle = lastServerGroupExpandedRef.current !== isServerGroupExpanded;
+    const isGroupToggle = [...groupStates].some(([id, isExpanded]) => (
+      lastGroupStatesRef.current.has(id) && lastGroupStatesRef.current.get(id) !== isExpanded
+    ));
 
-    lastServerGroupExpandedRef.current = isServerGroupExpanded;
+    lastGroupStatesRef.current = groupStates;
 
     if (isGroupToggle) {
       return;
@@ -275,31 +279,31 @@ const RequestList = ({ className }: IComponentProps) => {
               </div>
             </Header>
           </div>
-          { !!serverRequestsCount && (
-            <button
-              type="button"
-              className={ styles.serverGroup }
-              aria-expanded={ isServerGroupExpanded }
-              title={ isServerGroupExpanded ? 'Collapse server-side calls' : 'Expand server-side calls' }
-              onClick={ toggleServerGroup }
-            >
-              <span className={ styles.serverGroupChevron }>{ isServerGroupExpanded ? '▾' : '▸' }</span>
-              <span>Server calls</span>
-              <span className={ styles.serverGroupCount }>
-                { serverRequestsCount } { serverRequestsCount === 1 ? 'call' : 'calls' }
-              </span>
-            </button>
-          ) }
           {
-            requests.map((item, index) => (
-              <React.Fragment key={ `${ item.request.url } - ${ index }` }>
+            rows.map((row, index) => (row.kind === 'group' ? (
+              <button
+                key={ row.group.id }
+                type="button"
+                className={ styles.serverGroup }
+                aria-expanded={ row.group.isExpanded }
+                title={ row.group.isExpanded ? 'Collapse server-side calls' : 'Expand server-side calls' }
+                onClick={ () => toggleServerGroup(row.group.id) }
+              >
+                <span className={ styles.serverGroupChevron }>{ row.group.isExpanded ? '▾' : '▸' }</span>
+                <span className={ styles.serverGroupLabel }>{ row.group.label }</span>
+                <span className={ styles.serverGroupCount }>
+                  { row.group.count } { row.group.count === 1 ? 'call' : 'calls' }
+                </span>
+              </button>
+            ) : (
+              <React.Fragment key={ `${ row.request.request.url } - ${ index }` }>
                 <Request
-                  item={ item }
+                  item={ row.request }
                   timelineStart={ timelineStart }
                   timelineEnd={ timelineEnd }
                   now={ now }
                 />
-                { isAccordionView && selected?.uuid === item.uuid && (
+                { isAccordionView && selected?.uuid === row.request.uuid && (
                   <Resizable
                     className={ styles.accordionDetail }
                     enable={ {
@@ -322,7 +326,7 @@ const RequestList = ({ className }: IComponentProps) => {
                       bottom: styles.accordionResizeHandle
                     } }
                   >
-                    { item.isWebSocket ? (
+                    { row.request.isWebSocket ? (
                       <MessageInfo />
                     ) : (
                       <>
@@ -333,7 +337,7 @@ const RequestList = ({ className }: IComponentProps) => {
                   </Resizable>
                 ) }
               </React.Fragment>
-            ))
+            )))
           }
         </div>
       </div>

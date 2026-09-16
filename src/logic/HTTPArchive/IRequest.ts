@@ -33,6 +33,7 @@ export interface IRequest {
   // Made by the server while handling a browser request, reported through the
   // server logger's response header rather than seen on the wire.
   isServerSide?: boolean,
+  serverGroupId?: string,
   callId?: string,
   websocketMessageType?: 'income' | 'outcome',
   websocketJSON?: JSONValue & {

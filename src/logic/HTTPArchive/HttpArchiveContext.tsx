@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useState, useRef, useCallback } from 'react';
+import { v4 as uuid } from 'uuid';
 import { useSettingsContext } from '~/logic/SettingsContext/SettingsContext';
 import {
   isJsonRpcRequest,
@@ -14,6 +15,7 @@ import {
   parseJsonRpcMessage
 } from '~/logic/HTTPArchive/filters';
 import { IRequest } from '~/logic/HTTPArchive/IRequest';
+import { IListRow } from '~/logic/HTTPArchive/IListRow';
 import { SortDirection, SortField } from '~/logic/HTTPArchive/SortField';
 import { ServerGroupState } from '~/logic/SettingsContext/ServerGroupState';
 import { MessageType } from '~/logic/common/messages';
@@ -105,6 +107,24 @@ const getStartedAt = (request: chrome.devtools.network.Request): number => {
   return Number.isNaN(startedAt) ? Date.now() : startedAt;
 };
 
+const getCarrierLabel = (request: chrome.devtools.network.Request): string => {
+  const method = request.request.method || 'GET';
+
+  try {
+    const { pathname, search } = new URL(request.request.url);
+
+    return `${ method } ${ pathname }${ search }`;
+  } catch (e) {
+    return `${ method } ${ request.request.url }`;
+  }
+};
+
+interface ICarrierGroup {
+  id: string,
+  carrierStart: number,
+  label: string,
+}
+
 const getSortValue = (request: IRequest, field: SortField): string | number => {
   switch (field) {
     case SortField.Method:
@@ -128,14 +148,14 @@ const useRequest = () => {
   const [sortField, setSortField] = useState<SortField>(SortField.Waterfall);
   const [sortDirection, setSortDirection] = useState<SortDirection>(SortDirection.Asc);
   const [serverRequestsCount, setServerRequestsCount] = useState<number>(0);
-  const [serverGroupToggle, setServerGroupToggle] = useState<{
+  const [listRows, setListRows] = useState<IListRow[]>([]);
+  const [serverGroupToggles, setServerGroupToggles] = useState<{
     basis: ServerGroupState,
-    isExpanded: boolean,
+    expanded: Record<string, boolean>,
   }>(null);
   const requestsRef = useRef<IRequest[]>([]);
-  // Server row uuid → browser start of the response that carried it. The row's
-  // own `startTime` is on the server's clock, which may be skewed.
-  const carrierStartsRef = useRef(new Map<string, number>());
+  const [serverGroups, setServerGroups] = useState<ICarrierGroup[]>([]);
+  const serverGroupsRef = useRef<ICarrierGroup[]>([]);
 
   const {
     preserveLog,
@@ -162,16 +182,24 @@ const useRequest = () => {
   const fallbackSortField = showWaterfallColumn ? SortField.Waterfall : SortField.Method;
   const effectiveSortField = isColumnVisible[sortField] ? sortField : fallbackSortField;
 
-  const isServerGroupExpanded = serverGroupToggle?.basis === serverGroupState
-    ? serverGroupToggle.isExpanded
-    : serverGroupState === ServerGroupState.Expanded;
+  const isGroupExpanded = (id: string): boolean => (
+    serverGroupToggles?.basis === serverGroupState && id in serverGroupToggles.expanded
+      ? serverGroupToggles.expanded[id]
+      : serverGroupState === ServerGroupState.Expanded
+  );
 
-  const toggleServerGroup = () => {
-    setServerGroupToggle({ basis: serverGroupState, isExpanded: !isServerGroupExpanded });
+  const toggleServerGroup = (id: string) => {
+    const expanded = serverGroupToggles?.basis === serverGroupState ? serverGroupToggles.expanded : {};
+
+    setServerGroupToggles({
+      basis: serverGroupState,
+      expanded: { ...expanded, [id]: !isGroupExpanded(id) }
+    });
   };
 
   const clear = () => {
-    carrierStartsRef.current.clear();
+    serverGroupsRef.current = [];
+    setServerGroups(serverGroupsRef.current);
     requestsRef.current = [];
     setRequests(requestsRef.current);
     setSelected(null);
@@ -216,13 +244,18 @@ const useRequest = () => {
   const appendServerRequests = (request: chrome.devtools.network.Request, serverRequests: IRequest[]) => {
     if (!serverRequests.length) return;
 
-    const carrierStart = getStartedAt(request);
+    const group: ICarrierGroup = {
+      id: uuid(),
+      carrierStart: getStartedAt(request),
+      label: getCarrierLabel(request)
+    };
 
-    serverRequests.forEach(({ uuid }) => carrierStartsRef.current.set(uuid, carrierStart));
+    serverGroupsRef.current = [...serverGroupsRef.current, group];
+    setServerGroups(serverGroupsRef.current);
 
     requestsRef.current = [
       ...requestsRef.current,
-      ...serverRequests
+      ...serverRequests.map((serverRequest) => ({ ...serverRequest, serverGroupId: group.id }))
     ];
 
     setRequests(requestsRef.current);
@@ -273,14 +306,14 @@ const useRequest = () => {
     if (timeOrigin === null) return false;
 
     const threshold = timeOrigin - documentClockSkewMs;
-    const kept = requestsRef.current.filter(({ uuid, startTime }) => (
-      (carrierStartsRef.current.get(uuid) ?? startTime) >= threshold
-    ));
+    const groupStarts = new Map(serverGroupsRef.current.map(({ id, carrierStart }) => [id, carrierStart]));
+    const kept = requestsRef.current.filter(({ serverGroupId, startTime }) => (
+      (serverGroupId ? groupStarts.get(serverGroupId) : undefined) ?? startTime
+    ) >= threshold);
 
     if (kept.length !== requestsRef.current.length) {
-      const keptIds = new Set(kept.map(({ uuid }) => uuid));
-
-      carrierStartsRef.current = new Map([...carrierStartsRef.current].filter(([uuid]) => keptIds.has(uuid)));
+      serverGroupsRef.current = serverGroupsRef.current.filter(({ carrierStart }) => carrierStart >= threshold);
+      setServerGroups(serverGroupsRef.current);
       requestsRef.current = kept;
       setRequests(requestsRef.current);
     }
@@ -292,7 +325,8 @@ const useRequest = () => {
     if (await pruneToCurrentDocument()) return;
 
     // Unreadable document: fall back to the plain clear-on-navigate.
-    carrierStartsRef.current.clear();
+    serverGroupsRef.current = [];
+    setServerGroups(serverGroupsRef.current);
     requestsRef.current = [];
     setRequests(requestsRef.current);
   }, []);
@@ -443,16 +477,54 @@ const useRequest = () => {
 
     const serverRequests = filteredRequests.filter(({ isServerSide }) => isServerSide);
     const browserRequests = filteredRequests.filter(({ isServerSide }) => !isServerSide);
-    const visibleRequests = isServerGroupExpanded ? [...serverRequests, ...browserRequests] : browserRequests;
+
+    const orderedGroups = serverGroups
+      .filter(({ id }) => serverRequests.some(({ serverGroupId }) => serverGroupId === id))
+      .sort((a, b) => a.carrierStart - b.carrierStart);
+
+    const rows: IListRow[] = [];
+    const visibleRequests: IRequest[] = [];
+
+    const pushRequest = (request: IRequest) => {
+      rows.push({ kind: 'request', request });
+      visibleRequests.push(request);
+    };
+
+    const pushBrowserRequests = (from: number, to: number) => {
+      browserRequests
+        .filter(({ startTime }) => startTime >= from && startTime < to)
+        .forEach(pushRequest);
+    };
+
+    pushBrowserRequests(-Infinity, orderedGroups[0]?.carrierStart ?? Infinity);
+
+    orderedGroups.forEach((group, index) => {
+      const groupRequests = serverRequests.filter(({ serverGroupId }) => serverGroupId === group.id);
+      const isExpanded = isGroupExpanded(group.id);
+
+      rows.push({
+        kind: 'group',
+        group: { ...group, count: groupRequests.length, isExpanded }
+      });
+
+      if (isExpanded) {
+        groupRequests.forEach(pushRequest);
+      }
+
+      pushBrowserRequests(group.carrierStart, orderedGroups[index + 1]?.carrierStart ?? Infinity);
+    });
 
     setServerRequestsCount(serverRequests.length);
+    setListRows(rows);
     setFilteredRequests(visibleRequests);
 
     if (!visibleRequests.some(({ uuid }) => uuid === selected?.uuid)) {
       clearSelection();
     }
   }, [
-    isServerGroupExpanded,
+    serverGroups,
+    serverGroupState,
+    serverGroupToggles,
     requests,
     filter,
     searchScope,
@@ -466,11 +538,11 @@ const useRequest = () => {
 
   return {
     requests: filteredRequests,
+    rows: listRows,
     sortField: effectiveSortField,
     sortDirection,
     toggleSort,
     serverRequestsCount,
-    isServerGroupExpanded,
     toggleServerGroup,
     selected,
     filter,
