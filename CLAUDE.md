@@ -147,6 +147,33 @@ whichever column that is. Segments are cut by the *carrier's* `startedDateTime`
 server's clock, so a skewed server would scatter its rows through the list.
 Same reason `pruneToCurrentDocument` dates a server row by its group.
 
+**The heading is a neutral band with a violet left edge, not a violet fill.**
+The tinted fill (`#ece5f8` / `#332c45`) repeated on every carrier down a long
+list and read as decoration rather than structure; `$serverGroupBackground` is
+now `$headerBackground`'s grey and the accent survives as a 3px
+`border-left`, with `padding-left` dropped to 4px so the label does not shift.
+**The same edge continues down the group's rows** (`.isServerRow`), so a group
+reads as one block rather than a heading followed by loose rows. Both places
+give back in padding exactly what the border takes: `.requestWrapper` is
+content-box, and a row whose content width no longer matches the header's
+shifts every column separator (see Styling pitfalls). **An Accordion-selected
+server row drops the border**: `.isAccordionSelected`'s inset bar occupies the
+same 3px column, and the two together read as two rails rather than one guide
+line, so the selection bar takes the column over and the line simply changes
+colour for that row.
+
+**Expansion animates; collapse cannot.** A collapsed group emits no rows at all
+(the filter effect leaves them out of `filteredRequests`), so there is nothing
+mounted to animate out — only `.isRevealing` on the appearing rows, staggered by
+`revealIndex` and capped at `maxStaggeredRows`. The just-expanded group is held
+in `RequestList`'s own `revealingGroupId` for `groupRevealWindowMs`, not in
+`HttpArchiveContext`: it is scenery, and nothing navigable reads it. The chevron
+is **one arrow that rotates** rather than two glyphs that swap, because a
+swapped character cannot be transitioned — and it is a CSS border triangle
+centred in a square box, not a `▸`: a glyph's ink is off-centre inside an
+advance box taller than it is wide, so rotating the character about the box
+centre made the arrow hop.
+
 **Every server row keeps its own SERVER badge, and so does the heading.** A nested variant was tried and rejected on sight — a quiet badge-less heading, rows without badges indented along a violet guide line — because the badges read better. Do not reintroduce it.
 
 **Collapsing happens in `HttpArchiveContext`, not in the component** — the same reason as sorting. The filter effect builds the segments and, for a collapsed group, emits the heading while leaving its rows out of `filteredRequests` altogether, so ↑/↓ cannot land on a row nobody can see, and a selected server row is deselected when its group closes. The component renders a single ordered `rows` array (`IListRow`, a group or a request) so it never has to work out where a heading goes; `requests` stays the flat navigable list that keyboard nav, the waterfall timeline and autoscroll read. `serverRequestsCount` is exposed separately because collapsed groups leave `requests` empty while there is still something to render; `Layout` shows `ZeroCase` only when both are zero.

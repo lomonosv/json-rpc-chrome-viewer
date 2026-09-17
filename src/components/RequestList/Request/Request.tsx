@@ -16,14 +16,18 @@ import useVisibleColumns from '../useVisibleColumns';
 import { IRequest } from '~/logic/HTTPArchive/IRequest';
 import styles from './request.scss';
 
+const rowStaggerMs = 18;
+const maxStaggeredRows = 10;
+
 interface IComponentProps {
   item: IRequest,
   timelineStart: number,
   timelineEnd: number,
   now: number,
+  revealIndex?: number,
 }
 
-const Request = ({ item, timelineStart, timelineEnd, now }: IComponentProps) => {
+const Request = ({ item, timelineStart, timelineEnd, now, revealIndex }: IComponentProps) => {
   const rowRef = useRef<HTMLDivElement>(null);
   const { selected, setSelected, clearSelection } = useRequestContext();
   const isSelected = item.uuid === selected?.uuid;
@@ -40,6 +44,7 @@ const Request = ({ item, timelineStart, timelineEnd, now }: IComponentProps) => 
   // be reachable from the browser.
   const isReplayable = !item.isWebSocket && !item.isPending && !item.isServerSide;
   const isAccordionSelected = isAccordionView && isSelected;
+  const isRevealing = typeof revealIndex === 'number';
   const {
     EditRequestModal,
     isEditRequestModalVisible,
@@ -115,6 +120,8 @@ const Request = ({ item, timelineStart, timelineEnd, now }: IComponentProps) => 
     <div
       ref={ rowRef }
       className={ cn(styles.requestWrapper, {
+        [styles.isRevealing]: isRevealing,
+        [styles.isServerRow]: item.isServerSide,
         [styles.isSelected]: isSelected,
         [styles.isAccordionSelected]: isAccordionSelected,
         [styles.isDimmed]: isDimmed,
@@ -122,6 +129,9 @@ const Request = ({ item, timelineStart, timelineEnd, now }: IComponentProps) => 
         [styles.error]: item.isError,
         [styles.responseNotParsed]: item.isWarning
       }) }
+      style={ isRevealing
+        ? { animationDelay: `${ Math.min(revealIndex, maxStaggeredRows) * rowStaggerMs }ms` }
+        : undefined }
       onClick={ handleClick }
     >
       <div className={ styles.methodWrapper }>

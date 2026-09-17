@@ -89,6 +89,20 @@
   }
 }
 
+.isServerRow {
+  padding-left: 4px;
+  border-left: 3px solid variables.$serverAccent;
+
+  :global(.isDark) & {
+    border-left-color: variables.$darkServerAccent;
+  }
+
+  &.isAccordionSelected {
+    padding-left: 7px;
+    border-left: none;
+  }
+}
+
 .isDimmed {
   opacity: 0.3;
   transition: opacity 0.12s ease-in-out;
@@ -233,6 +247,22 @@
   .methodWrapper,
   .meta {
     animation: pending-pulse 1.4s ease-in-out infinite;
+  }
+}
+
+.isRevealing {
+  animation: row-reveal 0.18s ease-out backwards;
+}
+
+@keyframes row-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
   }
 }
 

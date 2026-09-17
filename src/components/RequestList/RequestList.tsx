@@ -25,6 +25,7 @@ import styles from './requestList.scss';
 
 const minLeftSideWidth = 200;
 const pendingTickIntervalMs = 250;
+const groupRevealWindowMs = 500;
 
 interface ISortableHeaderProps {
   field: SortField,
@@ -101,6 +102,8 @@ const RequestList = ({ className }: IComponentProps) => {
     updateColumnOrder
   } = useCacheContext();
   const { autoScroll, caseSensitiveSearch } = useSettingsContext();
+  const [revealingGroupId, setRevealingGroupId] = useState<string>(null);
+  const revealTimerRef = useRef<number>(null);
   const isAccordionView = useIsAccordionView();
   const isSideBySide = !!selected && !isAccordionView;
 
@@ -130,6 +133,42 @@ const RequestList = ({ className }: IComponentProps) => {
       { ...getResizeHandleProps(field) }
     />
   );
+
+  const handleServerGroupClick = (id: string, wasExpanded: boolean) => {
+    toggleServerGroup(id);
+
+    window.clearTimeout(revealTimerRef.current);
+
+    if (wasExpanded) {
+      setRevealingGroupId(null);
+
+      return;
+    }
+
+    setRevealingGroupId(id);
+
+    revealTimerRef.current = window.setTimeout(() => {
+      setRevealingGroupId(null);
+    }, groupRevealWindowMs);
+  };
+
+  useEffect(() => () => window.clearTimeout(revealTimerRef.current), []);
+
+  const revealIndexes = useMemo(() => {
+    const indexes = new Map<string, number>();
+
+    if (!revealingGroupId) {
+      return indexes;
+    }
+
+    rows.forEach((row) => {
+      if (row.kind === 'request' && row.request.serverGroupId === revealingGroupId) {
+        indexes.set(row.request.uuid, indexes.size);
+      }
+    });
+
+    return indexes;
+  }, [rows, revealingGroupId]);
 
   const shouldIgnoreHeaderClick = () => {
     const afterResize = consumeResizeClick();
@@ -287,9 +326,14 @@ const RequestList = ({ className }: IComponentProps) => {
                 className={ styles.serverGroup }
                 aria-expanded={ row.group.isExpanded }
                 title={ row.group.isExpanded ? 'Collapse server-side calls' : 'Expand server-side calls' }
-                onClick={ () => toggleServerGroup(row.group.id) }
+                onClick={ () => handleServerGroupClick(row.group.id, row.group.isExpanded) }
               >
-                <span className={ styles.serverGroupChevron }>{ row.group.isExpanded ? '▾' : '▸' }</span>
+                <span
+                  aria-hidden="true"
+                  className={ cn(styles.serverGroupChevron, {
+                    [styles.isGroupExpanded]: row.group.isExpanded
+                  }) }
+                />
                 <span className={ styles.serverGroupLabel }>{ row.group.label }</span>
                 <span className={ styles.serverGroupCount }>
                   { row.group.count } { row.group.count === 1 ? 'call' : 'calls' }
@@ -302,6 +346,7 @@ const RequestList = ({ className }: IComponentProps) => {
                   timelineStart={ timelineStart }
                   timelineEnd={ timelineEnd }
                   now={ now }
+                  revealIndex={ revealIndexes.get(row.request.uuid) }
                 />
                 { isAccordionView && selected?.uuid === row.request.uuid && (
                   <Resizable

@@ -203,10 +203,11 @@
   gap: 6px;
   box-sizing: border-box;
   width: 100%;
-  padding: 7px;
+  padding: 7px 7px 7px 4px;
   border: none;
   border-top: 1px solid variables.$borderColor;
   border-bottom: 1px solid variables.$borderColor;
+  border-left: 3px solid variables.$serverAccent;
   background: variables.$serverGroupBackground;
   font: inherit;
   font-family: monospace;
@@ -218,6 +219,7 @@
   :global(.isDark) & {
     border-top-color: variables.$darkBorderColor;
     border-bottom-color: variables.$darkBorderColor;
+    border-left-color: variables.$darkServerAccent;
     background: variables.$darkServerGroupBackground;
     color: #bdc4cc;
   }
@@ -235,9 +237,29 @@
 
 .serverGroupChevron {
   position: absolute;
-  right: 5px;
-  width: 10px;
-  font-size: 10px;
+  top: 50%;
+  right: 4px;
+  width: 12px;
+  height: 12px;
+  margin-top: -6px;
+  transition: transform 0.15s ease-out;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    margin: -4px 0 0 -2.5px;
+    border-top: 4px solid transparent;
+    border-bottom: 4px solid transparent;
+    border-left: 5px solid currentcolor;
+  }
+}
+
+.isGroupExpanded {
+  transform: rotate(90deg);
 }
 
 .serverGroupBadge {
