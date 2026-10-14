@@ -7,7 +7,6 @@ import RequestInfo from '~/components/RequestInfo';
 import ResponseInfo from '~/components/ResponseInfo';
 import MessageInfo from '~/components/MessageInfo';
 import Toolbar from '~/components/Toolbar';
-import FeedbackPrompt from '~/components/FeedbackPrompt';
 import Header from '~/components/common/Header';
 import ZeroCase from './ZeroCase';
 import styles from './layout.scss';
@@ -54,7 +53,6 @@ const Layout = () => {
           </>
         ) }
       </div>
-      <FeedbackPrompt />
     </div>
   );
 };
