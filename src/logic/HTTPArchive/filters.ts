@@ -89,7 +89,7 @@ const getSearchText = (request: IRequest): { request: string, response: string }
       .join(' '),
     response: responseJSON
       ? [stringify(responseJSON.result), stringify(responseJSON.error)].filter(Boolean).join(' ')
-      : request.rawResponse
+      : request.rawResponse ?? ''
   };
 
   searchTextCache.set(request, text);
