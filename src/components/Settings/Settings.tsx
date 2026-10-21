@@ -10,7 +10,8 @@ import { useSettingsContext } from '~/logic/SettingsContext/SettingsContext';
 import { ExpandTreeState, ExpandTreeStateTitlesMap } from '~/components/common/JsonViewer/ExpandTreeState';
 import { expandLevelOptions } from '~/components/common/JsonViewer/ExpandLevel';
 import { ExtensionTheme, JsonViewerTheme } from '~/logic/SettingsContext/Theme';
-import { ViewMode, viewModeOptions } from '~/logic/SettingsContext/ViewMode';
+import { ViewMode, viewModeLabels, viewModeOptions } from '~/logic/SettingsContext/ViewMode';
+import useEffectiveViewMode from '~/logic/common/useEffectiveViewMode';
 import { ServerGroupState, serverGroupStateOptions } from '~/logic/SettingsContext/ServerGroupState';
 import { serverLoggerPackageName, serverLoggerPackageUrl } from '~/logic/HTTPArchive/serverLog';
 import useIsNarrowLayout from '~/logic/common/useIsNarrowLayout';
@@ -33,6 +34,7 @@ const Settings = ({ onClose }: IComponentProps) => {
   const [activeTab, setActiveTab] = useState(SettingsTab.Preferences);
   const tabRefs = useRef<Partial<Record<SettingsTab, HTMLButtonElement>>>({});
   const isNarrowLayout = useIsNarrowLayout();
+  const effectiveViewMode = useEffectiveViewMode();
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -68,6 +70,8 @@ const Settings = ({ onClose }: IComponentProps) => {
     setPreserveLog,
     showRequestUrl,
     setShowRequestUrl,
+    compactRows,
+    setCompactRows,
     showCorsBadge,
     setShowCorsBadge,
     showWebsocketBadge,
@@ -114,6 +118,10 @@ const Settings = ({ onClose }: IComponentProps) => {
 
   const handleShowRequestUrlChange: ChangeEventHandler<HTMLInputElement> = (e) => {
     setShowRequestUrl(e.target.checked);
+  };
+
+  const handleCompactRowsChange: ChangeEventHandler<HTMLInputElement> = (e) => {
+    setCompactRows(e.target.checked);
   };
 
   const handleShowCorsBadgeChange: ChangeEventHandler<HTMLInputElement> = (e) => {
@@ -211,6 +219,11 @@ const Settings = ({ onClose }: IComponentProps) => {
     key,
     value: key
   }));
+
+  const isViewModeOverridden = viewMode !== ViewMode.Auto && effectiveViewMode !== viewMode;
+
+  const isUrlLineShown = showRequestUrl && !compactRows;
+  const urlDependentTitle = isUrlLineShown ? undefined : 'Requires "Show url for each request"';
 
   const columnsDescription = isNarrowLayout
     ? 'Method is always shown. The panel is too narrow to fit the others right now - '
@@ -337,13 +350,19 @@ const Settings = ({ onClose }: IComponentProps) => {
                         name="viewMode"
                         className={ styles.fieldControl }
                         options={ viewModeOptions }
-                        value={ isNarrowLayout ? ViewMode.Accordion : viewMode }
-                        isDisabled={ isNarrowLayout }
+                        value={ isViewModeOverridden ? effectiveViewMode : viewMode }
+                        isDisabled={ isViewModeOverridden }
                         onChange={ handleViewModeChange }
                       />
-                      { isNarrowLayout && (
+                      { viewMode === ViewMode.Auto && (
                         <span className={ styles.fieldHint }>
-                          The panel is too narrow to show a request beside the list, so Accordion is in
+                          Showing { viewModeLabels[effectiveViewMode] }. Auto follows the panel&apos;s shape:
+                          Panes when wide, Stacked when tall or narrow, Drill-down when very narrow.
+                        </span>
+                      ) }
+                      { isViewModeOverridden && (
+                        <span className={ styles.fieldHint }>
+                          The panel is too narrow to show a request beside the list, so Stacked is in
                           use. Widen it - or undock DevTools - to choose again. Your saved choice is kept.
                         </span>
                       ) }
@@ -382,32 +401,42 @@ const Settings = ({ onClose }: IComponentProps) => {
                   </SettingsCard>
                   <SettingsCard title="Request row">
                     <Input
-                      name="showRequestUrl"
-                      label="Show url for each request"
+                      name="compactRows"
+                      label="Compact rows"
                       wrapperClassName={ styles.checkboxRow }
                       type={ Type.Checkbox }
-                      checked={ showRequestUrl }
+                      checked={ compactRows }
+                      onChange={ handleCompactRowsChange }
+                    />
+                    <Input
+                      name="showRequestUrl"
+                      label="Show url for each request"
+                      title={ compactRows ? 'Compact rows have no url line' : undefined }
+                      wrapperClassName={ styles.checkboxRow }
+                      type={ Type.Checkbox }
+                      checked={ showRequestUrl && !compactRows }
+                      isDisabled={ compactRows }
                       onChange={ handleShowRequestUrlChange }
                     />
                     <div className={ styles.dependentRows }>
                       <Input
                         name="showCorsBadge"
                         label="CORS badge"
-                        title={ showRequestUrl ? undefined : 'Requires "Show url for each request"' }
+                        title={ urlDependentTitle }
                         wrapperClassName={ styles.checkboxRow }
                         type={ Type.Checkbox }
                         checked={ showCorsBadge }
-                        isDisabled={ !showRequestUrl }
+                        isDisabled={ !isUrlLineShown }
                         onChange={ handleShowCorsBadgeChange }
                       />
                       <Input
                         name="showWebsocketBadge"
                         label="Websocket badge"
-                        title={ showRequestUrl ? undefined : 'Requires "Show url for each request"' }
+                        title={ urlDependentTitle }
                         wrapperClassName={ styles.checkboxRow }
                         type={ Type.Checkbox }
                         checked={ showWebsocketBadge }
-                        isDisabled={ !showRequestUrl }
+                        isDisabled={ !isUrlLineShown }
                         onChange={ handleShowWebsocketBadgeChange }
                       />
                     </div>

@@ -111,13 +111,28 @@ Do not replace this with a `useEffect` that resets `sortField` — that trips `r
 
 `getRequestLabel()` in `filters.ts` derives the Method-column text and is what the Method sort orders by. `matchesLabel()` in the same file keeps its own copy of that expression — it relies on `.toLowerCase?.()` short-circuiting for numeric websocket ids, so routing it through `getRequestLabel`'s `String()` coercion would change filter behaviour.
 
-### Accordion view mode
+### View modes
 
-`ViewMode` (`Panes` default, `Accordion`) is a `SettingsContext` value (`settings_viewMode`) chosen in Settings → Appearance. Panes is the untouched original layout — `RequestList` beside a fixed `RequestInfo`/`ResponseInfo`/`MessageInfo` pane. Accordion instead renders the selected row's detail **inline**, directly under that row in the same scroll container, and hides `Layout`'s right-hand pane entirely.
+`ViewMode` (`settings_viewMode`) has six values. Nothing reads `viewMode` directly: everything goes through `useEffectiveViewMode()`, which resolves Auto and the narrow-panel fallback and never returns `Auto`.
 
-`RequestList` computes `isSideBySide = !!selected && !isAccordionView` (see Narrow panels for where that flag comes from) and drives the list's own width/resize behaviour off that instead of off `selected` directly — this is what keeps the list full-width in Accordion mode even while a row is selected. In the row loop, when `isAccordionView && selected?.uuid === item.uuid`, it renders `MessageInfo` (websocket) or `RequestInfo` + `ResponseInfo` (HTTP) unmodified — same components, same state, same search highlighting as Panes — wrapped in their own `Resizable` (`styles.accordionDetail`, height persisted as `accordionSectionHeight` in `CacheContext`, same ref-mirror-free pattern as `requestSectionHeight`). `RequestInfo`'s own internal Resizable (the Request/Response split) is reused as-is inside that box; the two are independent drags, exactly like the list-width/pane-height split in Panes mode.
+- **Auto** (default) — Drill-down at or below `compactWidth` (420px), Stacked when narrow or portrait, Panes otherwise.
+- **Panes** — list beside the detail.
+- **Stacked** — list above the detail; list height is `stackedListHeight` in `CacheContext`.
+- **Drawer** — detail overlays the right of a full-width list; width is `drawerWidth`.
+- **Drill-down** — detail covers the list, with `DrillDownNav` (Back, `n / total`, ▲▼ via `selectAdjacent()`). The list is covered, not unmounted, to keep its scroll position.
+- **Accordion** — detail inline under the selected row.
 
-`Request.tsx` derives three Accordion-only visual states, all `false` in Panes mode so nothing there changes:
+Drawer and Drill-down close on Escape, ignored when the event comes from a portalled dialog. `handleKeyDown` in `HttpArchiveContext` must stay arrow-only: it used to re-select on every key, which undid the Escape.
+
+Every mode renders the detail through `RequestDetail`. Stacked always shows Request/Response as tabs (`isAlwaysTabbed`); other modes switch to tabs below 360px of measured height. The tabs sit inside the pane header (`label` prop; `RequestInfo` gets `isFill`, `ResponseInfo` gets a close button). Drill-down passes `isClosable={ false }`.
+
+`RequestList` sizes its `Resizable` by mode: width for Panes, height for Stacked, full size otherwise.
+
+#### Accordion
+
+When `isAccordionView && selected?.uuid === item.uuid`, `RequestList` renders `RequestDetail` under the row inside its own `Resizable` (`accordionSectionHeight` in `CacheContext`).
+
+`Request.tsx` derives three Accordion-only visual states, all `false` in every other mode:
 
 - `isDimmed` — every non-selected row fades to `opacity: 0.45` plus a 1px `blur`, both cleared on `:hover`, while any row is expanded. This exists so the expanded block reads as the focal point without losing the ability to glance at neighbouring rows.
 - `isAccordionSelected` — the expanded row itself gets a black `box-shadow` above it, paired with a matching one on `.accordionDetail`'s bottom edge, visually sandwiching the expanded block between the two shadows. It does **not** reuse Panes' `.isSelected` grey background — that looked flat/washed out once dimming was added to the siblings, so Accordion styles the active row purely through the shadow pair.
@@ -158,20 +173,11 @@ whichever column that is. Segments are cut by the *carrier's* `startedDateTime`
 server's clock, so a skewed server would scatter its rows through the list.
 Same reason `pruneToCurrentDocument` dates a server row by its group.
 
-**The heading is a neutral band with a violet left edge, not a violet fill.**
-The tinted fill (`#ece5f8` / `#332c45`) repeated on every carrier down a long
-list and read as decoration rather than structure; `$serverGroupBackground` is
-now `$headerBackground`'s grey and the accent survives as a 3px
-`border-left`, with `padding-left` dropped to 4px so the label does not shift.
-**The same edge continues down the group's rows** (`.isServerRow`), so a group
-reads as one block rather than a heading followed by loose rows. Both places
-give back in padding exactly what the border takes: `.requestWrapper` is
-content-box, and a row whose content width no longer matches the header's
-shifts every column separator (see Styling pitfalls). **An Accordion-selected
-server row drops the border**: `.isAccordionSelected`'s inset bar occupies the
-same 3px column, and the two together read as two rails rather than one guide
-line, so the selection bar takes the column over and the line simply changes
-colour for that row.
+**A group is a blue region.** The heading is a darker band (`$serverGroupBackground`) with no top border, a plain-weight label and the chevron on the left — no badge and no bold; its rows use a lighter tint (`$serverRowBackground` / `$serverRowAltBackground`), declared inside `.requestWrapper` before the hover rule so hover still wins. A 3px blue left edge runs down the heading and rows, and both give back that 3px in padding — `.requestWrapper` is content-box, so a width mismatch shifts every column separator. An Accordion-selected server row drops the edge, since the selection bar uses the same column.
+
+Blue was picked from a side-by-side of grey, blue, teal, sand and slate; it overlaps the selection/resize/waterfall blue, which was accepted. Dark mode uses `$darkServerBadge` for the badge because the light-blue edge cannot carry white text. Rejected, do not reintroduce: violet for the server colour; a grey heading with only a coloured edge (indistinguishable from a row); any top border on the heading (a coloured one bevels against the left edge, a grey one doubles under the column header).
+
+**One colour per meaning:** red is error, blue-tinted bands are server, amber/orange is slowness (MOCK's amber is the exception). Error rows colour only the method and error line, not the meta cells.
 
 **Expansion animates; collapse cannot.** A collapsed group emits no rows at all
 (the filter effect leaves them out of `filteredRequests`), so there is nothing
@@ -185,7 +191,7 @@ centred in a square box, not a `▸`: a glyph's ink is off-centre inside an
 advance box taller than it is wide, so rotating the character about the box
 centre made the arrow hop.
 
-**Every server row keeps its own SERVER badge, and so does the heading.** A nested variant was tried and rejected on sight — a quiet badge-less heading, rows without badges indented along a violet guide line — because the badges read better. Do not reintroduce it.
+**Every server row keeps its own SERVER badge; the heading has none.** A variant with badge-less rows indented along a guide line was rejected — the row badges read better.
 
 **Collapsing happens in `HttpArchiveContext`, not in the component** — the same reason as sorting. The filter effect builds the segments and, for a collapsed group, emits the heading while leaving its rows out of `filteredRequests` altogether, so ↑/↓ cannot land on a row nobody can see, and a selected server row is deselected when its group closes. The component renders a single ordered `rows` array (`IListRow`, a group or a request) so it never has to work out where a heading goes; `requests` stays the flat navigable list that keyboard nav, the waterfall timeline and autoscroll read. `serverRequestsCount` is exposed separately because collapsed groups leave `requests` empty while there is still something to render; `Layout` shows `ZeroCase` only when both are zero.
 
@@ -199,14 +205,14 @@ The starting state is `settings_serverGroupState` (`ServerGroupState.ts`, Settin
 
 DevTools docked to the side leaves the panel around 350-600px wide, and the layout used to assume a wide dock: `src/index.scss` carried a hard `min-width: 760px`, so anything narrower scrolled the whole panel sideways. That floor is gone, and three things adapt instead.
 
-Breakpoints are defined **twice on purpose** — `src/logic/common/breakpoints.ts` for the parts that adapt in JS and `$narrowWidth` in `variables.scss` for the parts that adapt in CSS. Keep the pair in sync. The SCSS side is only ever consumed through the `narrowLayout` mixin, so a breakpoint change lands in one place per realm. `media-query-no-invalid` is disabled in `.stylelintrc.js` because it cannot parse a Sass variable inside a media feature; that mixin is the only media query in the project. There is no compact breakpoint any more: the toolbar, its only user, now fits itself by measurement (below).
+Breakpoints are defined **twice on purpose** — `src/logic/common/breakpoints.ts` for the parts that adapt in JS and `$narrowWidth` in `variables.scss` for the parts that adapt in CSS. Keep the pair in sync. The SCSS side is only ever consumed through the `narrowLayout` mixin, so a breakpoint change lands in one place per realm. `media-query-no-invalid` is disabled in `.stylelintrc.js` because it cannot parse a Sass variable inside a media feature; that mixin is the only media query in the project. `compactWidth` exists only in `breakpoints.ts`, for Auto's drill-down step; the toolbar fits itself by measurement (below).
 
 `useMediaQuery` measures the **panel**, not the inspected page or the browser window — the panel is its own iframe, so its `window.matchMedia` reports the panel's box.
 
 - **Below `narrowWidth` the meta columns disappear**, the way Chrome's own Network list collapses to just Name. 300px of Method plus ~400px of meta columns cannot fit, and a horizontally scrolling list is worse than a readable one. `useVisibleColumns()` returns `[]`, which is why the header and rows drop them together. Nothing is written to settings, so widening the panel brings the user's columns straight back. `.methodHeader`'s and `.methodWrapper`'s 300px floors also lift here, and **they must lift together** — a mismatch shifts every column separator (see Styling pitfalls). Both overrides are written last in their rule, because Sass emits a nested `@media` after the surrounding declarations.
-- **Below `narrowWidth` Panes falls back to Accordion.** `useIsAccordionView()` is `viewMode === Accordion || isNarrowLayout`, and `Layout`, `RequestList` and `Request` all read it rather than `viewMode` directly. There is no room for a list and a detail pane at once, and Accordion is already the full-width inline-detail layout. `viewMode` itself is untouched.
+- **Below `narrowWidth` Panes and Drawer fall back to Stacked** in `useEffectiveViewMode()`; the other modes are honoured at any width, and `viewMode` itself is untouched.
 
-  **Both overrides say so in Settings, and that is the rule for adding another one.** The Request view select is *disabled* while narrow and shows `Accordion` — the effective mode, not the stored one, since a select reading "Panes" beside an accordion looks broken — with a hint that the choice is kept and returns on widening. The Columns checkboxes stay *enabled* and only swap the card description, because their stored value is still what will be honoured the moment the panel grows; disabling them would block a user from setting up the wide layout while docked narrow. The distinction: disable a control the layout is currently overriding, annotate one it is only postponing.
+  **Both overrides say so in Settings, and that is the rule for adding another one.** The Request view select is *disabled* while an explicit choice is overridden and shows the effective mode, not the stored one, since a select reading "Panes" beside a stacked layout looks broken — with a hint that the choice is kept and returns on widening. Auto is never overridden (it *is* the choice), so it stays enabled and its hint names the layout currently in use. The Columns checkboxes stay *enabled* and only swap the card description, because their stored value is still what will be honoured the moment the panel grows; disabling them would block a user from setting up the wide layout while docked narrow. The distinction: disable a control the layout is currently overriding, annotate one it is only postponing.
 - **The toolbar keeps as many controls as fit - measured, not breakpointed.** Only the four controls that are also in Settings → Preferences may leave it - Preserve log and the three include toggles - and that is the condition for hiding one, not a nicety; it makes **the gear the one control that must never leave the screen.** `useToolbarFit` (`Toolbar/useToolbarFit.ts`) sums the real outer widths of the fixed controls, counting the filter at `comfortableFilterWidth`, and adds the optional ones in toolbar order while they fit, so they drop **right to left**: Server Logs, Websocket Logs, JSON-RPC Logs, Preserve log. The filter gives way first, from 160px down to that comfortable width, before any toggle hides.
 
   It replaced two pixel breakpoints, `compactHidden` (1120px, all three include toggles at once) and `narrowHidden` (620px, Preserve log). Both were tuned to one font - the compact one had already been 900px, which let "Include Server Logs" paint over the gear on a real 964px side-docked panel - and all-or-nothing steps hid three toggles where one would have done. Do not reintroduce breakpoints for this. These are load-bearing:
@@ -245,6 +251,15 @@ Each row carries a `.rowActions` slot after the method label — a copy button (
 The wrapper **stops click propagation**, and must keep doing so: the row's own `onClick` selects the request, so without it copying a method name would also change the selection and swap out both info panes.
 
 `CopyButton` confirms a copy by tinting its icon `$success` for 700ms rather than swapping to the word "Copied". That keeps its width fixed, which is what lets it sit in a row slot beside the resend button — restoring a text confirmation would reflow the method label mid-hover. The behaviour is shared by every copy button in the app, including the pane headers.
+
+### Row signals and the summary footer
+
+Error and slowness come from `src/logic/HTTPArchive/summary.ts`, shared by the row and the footer.
+
+- **Error line** — `getRequestError()` returns `{ code, message }` from `responseJSON.error` or `websocketJSON.error`; it replaces the url line, and shows even with urls hidden. Count errors through it, not `isError`, which websocket frames never set.
+- **Slow calls** — `getSlowness()`: 1 s amber, 3 s bold orange, in the Time cell only. Never red. Skipped on warning rows, whose meta cells are already tinted.
+- **Compact rows** (`settings_compactRows`) — one line per row; the error moves beside the method. `Request.tsx` derives `showRequestUrl = setting && !compactRows`, and Settings disables the url checkbox while compact is on.
+- **`ListSummary`** — footer inside the list's `Resizable`; counts the filtered `requests`, so collapsed server rows are excluded.
 
 ### Resizable and reorderable columns
 
@@ -393,7 +408,7 @@ Costs, all real and all in the Settings disclaimer: `fetch` is patched on every 
 
 ### Persistence
 
-All settings flow through `getConfig()` in `src/logic/common/helpers.ts` into `chrome.storage.local`, keyed with a `settings_` prefix. **Panel code never calls `chrome.storage.local.set` directly — every write goes through `setConfig()`**, which no-ops when `isExtensionAlive()` is false. Reloading, updating or disabling the extension orphans the still-open devtools panel: Chrome strips the API bindings, `chrome.storage` becomes `undefined`, and the panel keeps rendering, so the next write throws — most visibly from a pane-divider drag's `onResizeStop`, which fires with no user intent behind it. `getConfig()` resolves the default in that state and `InterceptorContext.pingPort()` carries the same guard. Adding one means touching five places in `SettingsContext.tsx`: a `default*Value` const, a `useState`, a `getConfig` call in the load effect, a `handle*Change` writer, and two entries in the returned object. Column visibility follows this as `settings_showWaterfallColumn`, `settings_showStatusColumn`, `settings_showSizeColumn`, `settings_showTimeColumn`. Search scope and case sensitivity follow it too, as `settings_searchScope` and `settings_caseSensitiveSearch` — the search *term* itself stays in `HttpArchiveContext` and is not persisted. `settings_expandLevel` follows it as well; the Settings row for it renders only while `expandTreeState` is `Expanded`, since it has no meaning for the other two states. `settings_viewMode` (`ViewMode.ts`) follows the same recipe and defaults to `Panes`, so existing users see no layout change until they opt into Accordion. `settings_includeServerLogs` follows it too and defaults to **on** — safe precisely because it is inert until a server emits the log header; it is a display filter like its two Filters-card siblings, not a capture gate. `settings_serverGroupState` follows it too and defaults to `Collapsed` (see Server calls group). `settings_resilientCapture` follows it too and defaults to off; note it is a **second cross-realm key** alongside `settings_preserveLog` — `background.ts` reads it directly from storage to build the payload it pushes to the page, so the key name is shared with the unbundled content scripts.
+All settings flow through `getConfig()` in `src/logic/common/helpers.ts` into `chrome.storage.local`, keyed with a `settings_` prefix. **Panel code never calls `chrome.storage.local.set` directly — every write goes through `setConfig()`**, which no-ops when `isExtensionAlive()` is false. Reloading, updating or disabling the extension orphans the still-open devtools panel: Chrome strips the API bindings, `chrome.storage` becomes `undefined`, and the panel keeps rendering, so the next write throws — most visibly from a pane-divider drag's `onResizeStop`, which fires with no user intent behind it. `getConfig()` resolves the default in that state and `InterceptorContext.pingPort()` carries the same guard. Adding one means touching five places in `SettingsContext.tsx`: a `default*Value` const, a `useState`, a `getConfig` call in the load effect, a `handle*Change` writer, and two entries in the returned object. Column visibility follows this as `settings_showWaterfallColumn`, `settings_showStatusColumn`, `settings_showSizeColumn`, `settings_showTimeColumn`. Search scope and case sensitivity follow it too, as `settings_searchScope` and `settings_caseSensitiveSearch` — the search *term* itself stays in `HttpArchiveContext` and is not persisted. `settings_expandLevel` follows it as well; the Settings row for it renders only while `expandTreeState` is `Expanded`, since it has no meaning for the other two states. `settings_viewMode` (`ViewMode.ts`) follows the same recipe and defaults to `Auto` (see View modes); a user who explicitly saved a mode keeps it. `settings_compactRows` follows it too and defaults to off. `settings_includeServerLogs` follows it too and defaults to **on** — safe precisely because it is inert until a server emits the log header; it is a display filter like its two Filters-card siblings, not a capture gate. `settings_serverGroupState` follows it too and defaults to `Collapsed` (see Server calls group). `settings_resilientCapture` follows it too and defaults to off; note it is a **second cross-realm key** alongside `settings_preserveLog` — `background.ts` reads it directly from storage to build the payload it pushes to the page, so the key name is shared with the unbundled content scripts.
 
 ### Collapsed-node previews
 
@@ -414,7 +429,7 @@ A collapsed node shows `key: value, …` instead of `...` — the first entry on
 
 Sort field and direction are **not** persisted — they reset with the panel.
 
-**There is a second, separate family of persisted values.** Layout state — `requestSectionHeight`, `requestListSectionWidth`, `accordionSectionHeight`, `columnWidths`, `columnOrder` — lives in `CacheContext`, is written **without the `settings_` prefix**, and never appears in the Settings dialog. `accordionSectionHeight` follows `requestSectionHeight`'s exact pattern (plain `useState` + write-on-drop, no ref mirror) and sizes the whole inline detail block in Accordion mode; `requestSectionHeight` itself is shared between Panes' right pane and the Request/Response split inside that block, since it is the same setting semantically in both places. Do not add layout state to `SettingsContext` by following the five-step recipe above; it belongs in `CacheContext`, which also owns the pattern for values that change continuously during a drag (ref mirror + a deferred write, see Resizable columns). `getConfig()` is shared by both and accepts an object default for the two structured keys.
+**There is a second, separate family of persisted values.** Layout state — `requestSectionHeight`, `requestListSectionWidth`, `accordionSectionHeight`, `stackedListHeight`, `drawerWidth`, `columnWidths`, `columnOrder` — lives in `CacheContext`, is written **without the `settings_` prefix**, and never appears in the Settings dialog. `accordionSectionHeight` follows `requestSectionHeight`'s exact pattern (plain `useState` + write-on-drop, no ref mirror) and sizes the whole inline detail block in Accordion mode; `requestSectionHeight` itself is shared between Panes' right pane and the Request/Response split inside that block, since it is the same setting semantically in both places. Do not add layout state to `SettingsContext` by following the five-step recipe above; it belongs in `CacheContext`, which also owns the pattern for values that change continuously during a drag (ref mirror + a deferred write, see Resizable columns). `getConfig()` is shared by both and accepts an object default for the two structured keys.
 
 **And a third family: interceptor rules.** `interceptor_rules` and `interceptor_enabled` live in `InterceptorContext` and carry their own `interceptor_` prefix, which marks them as read outside the panel — the *service worker* reads them, and gates them on a panel actually being open before any page sees them (see Response interceptor). Do not fold these into `SettingsContext`, and note that `interceptor_enabled` persisting does **not** mean interception persists: it is remembered for the checkbox, not honoured on its own.
 
@@ -727,7 +742,7 @@ The request-list table is hand-built from flexbox, and these bit repeatedly. Whe
 
 Waterfall colours are `$waterfallBar` / `$waterfallTick` and `$darkWaterfallBar` / `$darkWaterfallTick` in `variables.scss`, drawn from the Chrome DevTools palette so the panel reads as native. These now cover only the *unsegmented* bar (a row with no timings) and the websocket tick — a segmented bar and the popover both use the separate `$phase*` palette described under Waterfall timing breakdown, which is deliberately paler. `$resizeHandleColor` is shared by the column dividers and both pane dividers. Note `$greenHeaderBackground` is still neon `#32ff00`, used by the WEBSOCKET badge and the income/outcome triangles. `$interceptorAccent` / `$darkInterceptorAccent` is DevTools' alert amber, shared by the MOCK badge and the toolbar button — deliberately louder than `$warning`, which stays muted because it tints whole rows down the list.
 
-The MOCK badge repeats its own `:global(.isDark)` override inside `&.isIntercepted::before` rather than inheriting the base badge's. `.badge.isIntercepted::before` and `.isDark .badge::before` both land at (0,2,1), so without the repeat the theme colour would be decided by source order rather than by intent — the same hazard `.isCopied.isCopied` doubles itself to avoid. The SERVER badge (`$serverAccent` / `$darkServerAccent`, a violet chosen to be unmistakable beside MOCK's amber) repeats its dark override for exactly the same reason.
+The MOCK badge repeats its own `:global(.isDark)` override inside `&.isIntercepted::before` rather than inheriting the base badge's. `.badge.isIntercepted::before` and `.isDark .badge::before` both land at (0,2,1), so without the repeat the theme colour would be decided by source order rather than by intent — the same hazard `.isCopied.isCopied` doubles itself to avoid. The SERVER badge (`$serverAccent` / `$darkServerAccent`, Chrome's accent blue, chosen to be unmistakable beside MOCK's amber) repeats its dark override for exactly the same reason.
 
 ## Toolchain constraints
 

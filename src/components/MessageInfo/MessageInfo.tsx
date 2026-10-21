@@ -12,7 +12,11 @@ import JsonViewer from '~/components/common/JsonViewer';
 import { ExpandTreeState } from '~/components/common/JsonViewer/ExpandTreeState';
 import styles from './messageInfo.scss';
 
-const MessageInfo = () => {
+interface IComponentProps {
+  isClosable?: boolean,
+}
+
+const MessageInfo = ({ isClosable = true }: IComponentProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const { selected, clearSelection, filter } = useRequestContext();
   const { expandedWebsocketMessagesState, caseSensitiveSearch } = useSettingsContext();
@@ -32,13 +36,15 @@ const MessageInfo = () => {
     <div className={ styles.messageInfoWrapper }>
       <Header className={ styles.messageInfoHeader }>
         <div className={ styles.messageInfoHeaderLeftSide }>
-          <Button
-            onClick={ clearSelection }
-            className={ styles.closeButton }
-            title="Close"
-          >
-            <Icon type={ IconType.Close } />
-          </Button>
+          { isClosable && (
+            <Button
+              onClick={ clearSelection }
+              className={ styles.closeButton }
+              title="Close"
+            >
+              <Icon type={ IconType.Close } />
+            </Button>
+          ) }
           <ExpandButton
             className={ styles.expandButton }
             expandedState={ expandTreeStateValue }

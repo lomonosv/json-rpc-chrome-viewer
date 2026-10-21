@@ -3,7 +3,8 @@ import cn from 'classnames';
 import Header from '~/components/common/Header';
 import JsonViewer from '~/components/common/JsonViewer';
 import CopyButton from '~/components/common/CopyButton';
-import { IconType } from '~/components/common/Icon';
+import Button from '~/components/common/Button';
+import Icon, { IconType } from '~/components/common/Icon';
 import ExpandButton from '~/components/common/ExpandButton';
 import { ExpandTreeState } from '~/components/common/JsonViewer/ExpandTreeState';
 import { expandAllLevels } from '~/components/common/JsonViewer/ExpandLevel';
@@ -14,9 +15,14 @@ import { formatJson, convertJsonToTS } from '~/logic/common/helpers';
 import useSearchHighlight, { HighlightName } from '~/logic/common/useSearchHighlight';
 import styles from './responseInfo.scss';
 
-const ResponseInfo = () => {
+interface IComponentProps {
+  label?: React.ReactNode,
+  isClosable?: boolean,
+}
+
+const ResponseInfo = ({ label = 'Response', isClosable = false }: IComponentProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const { selected, filter } = useRequestContext();
+  const { selected, clearSelection, filter } = useRequestContext();
   const { expandTreeState, expandLevel, caseSensitiveSearch } = useSettingsContext();
   const [expandTreeStateValue, setExpandTreeStateValue] = useState<ExpandTreeState>(expandTreeState);
   const [expandLevelValue, setExpandLevelValue] = useState<number>(expandLevel);
@@ -44,6 +50,15 @@ const ResponseInfo = () => {
     <div className={ styles.responseInfoWrapper }>
       <Header className={ styles.responseInfoHeader }>
         <div className={ styles.responseInfoHeaderLeftSide }>
+          { isClosable && (
+            <Button
+              onClick={ clearSelection }
+              className={ styles.closeButton }
+              title="Close"
+            >
+              <Icon type={ IconType.Close } />
+            </Button>
+          ) }
           { isJsonResponse && (
             <ExpandButton
               className={ styles.expandButton }
@@ -51,7 +66,7 @@ const ResponseInfo = () => {
               onChangeState={ handleExpandTreeStateChange }
             />
           ) }
-          <span>Response</span>
+          <span>{ label }</span>
         </div>
         <div className={ styles.responseInfoHeaderRightSide }>
           { jsonTSRepresentation && (

@@ -1,0 +1,39 @@
+@use "../common/variables";
+
+.requestDetail {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+
+.tabs {
+  display: inline-flex;
+  height: 27px;
+  gap: 2px;
+}
+
+.tab {
+  padding: 0 6px;
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: none;
+  font: inherit;
+  color: inherit;
+  opacity: 0.7;
+  cursor: pointer;
+
+  &:hover {
+    opacity: 1;
+  }
+
+  &.isActive {
+    border-bottom-color: variables.$resizeHandleColor;
+    opacity: 1;
+
+    :global(.isDark) & {
+      border-bottom-color: variables.$darkResizeHandleColor;
+    }
+  }
+}

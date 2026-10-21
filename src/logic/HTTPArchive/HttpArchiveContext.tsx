@@ -209,6 +209,17 @@ const useRequest = () => {
     setSelected(null);
   };
 
+  const selectAdjacent = (step: number) => {
+    if (!selected || !filteredRequests.length) {
+      return;
+    }
+
+    const index = filteredRequests.findIndex(({ uuid }) => selected.uuid === uuid);
+    const count = filteredRequests.length;
+
+    setSelected(filteredRequests[(((index + step) % count) + count) % count]);
+  };
+
   const toggleSort = (field: SortField) => {
     if (field === effectiveSortField) {
       setSortDirection(sortDirection === SortDirection.Asc ? SortDirection.Desc : SortDirection.Asc);
@@ -220,7 +231,8 @@ const useRequest = () => {
   };
 
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    if (!selected) {
+    // Arrows only: re-selecting on other keys would undo the overlay layouts' Escape.
+    if (!selected || (e.key !== 'ArrowUp' && e.key !== 'ArrowDown')) {
       return;
     }
 
@@ -547,6 +559,7 @@ const useRequest = () => {
     selected,
     filter,
     setSelected,
+    selectAdjacent,
     setFilter,
     clear,
     clearSelection

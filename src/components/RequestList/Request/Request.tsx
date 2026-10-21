@@ -2,7 +2,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import cn from 'classnames';
 import { useRequestContext } from '~/logic/HTTPArchive/HttpArchiveContext';
 import { useSettingsContext } from '~/logic/SettingsContext/SettingsContext';
-import useIsAccordionView from '~/logic/common/useIsAccordionView';
+import useEffectiveViewMode from '~/logic/common/useEffectiveViewMode';
+import { ViewMode } from '~/logic/SettingsContext/ViewMode';
 import { useInterceptorContext } from '~/logic/Interceptor/InterceptorContext';
 import useEditRequestModal from './EditRequestModal/useEditRequestModal';
 import Button from '~/components/common/Button';
@@ -11,6 +12,7 @@ import Icon, { IconType } from '~/components/common/Icon';
 import Waterfall from './Waterfall';
 import { getRequestLabel } from '~/logic/HTTPArchive/filters';
 import { SortField } from '~/logic/HTTPArchive/SortField';
+import { Slowness, getErrorSummary, getRequestError, getSlowness } from '~/logic/HTTPArchive/summary';
 import { ResizableColumn, getColumnWidthStyle } from '../columns';
 import useVisibleColumns from '../useVisibleColumns';
 import { IRequest } from '~/logic/HTTPArchive/IRequest';
@@ -34,9 +36,11 @@ const Request = ({ item, timelineStart, timelineEnd, now, revealIndex }: ICompon
   const {
     showCorsBadge,
     showWebsocketBadge,
-    showRequestUrl
+    showRequestUrl: showRequestUrlSetting,
+    compactRows
   } = useSettingsContext();
-  const isAccordionView = useIsAccordionView();
+  const showRequestUrl = showRequestUrlSetting && !compactRows;
+  const isAccordionView = useEffectiveViewMode() === ViewMode.Accordion;
   const visibleColumns = useVisibleColumns();
   const isDimmed = isAccordionView && !!selected && !isSelected;
   // Resend fires from the inspected page and interceptor rules patch the page's
@@ -45,6 +49,9 @@ const Request = ({ item, timelineStart, timelineEnd, now, revealIndex }: ICompon
   const isReplayable = !item.isWebSocket && !item.isPending && !item.isServerSide;
   const isAccordionSelected = isAccordionView && isSelected;
   const isRevealing = typeof revealIndex === 'number';
+  const requestError = getRequestError(item);
+  // Warning rows already colour their meta cells; two tints would race on source order.
+  const slowness = item.isWarning ? Slowness.Normal : getSlowness(item);
   const {
     EditRequestModal,
     isEditRequestModalVisible,
@@ -91,6 +98,16 @@ const Request = ({ item, timelineStart, timelineEnd, now, revealIndex }: ICompon
     return Math.ceil(item.time);
   };
 
+  const renderError = () => (
+    <div
+      className={ styles.errorLine }
+      title={ `${ getErrorSummary(item) }\n${ item.request.url }` }
+    >
+      { requestError.code && <span className={ styles.errorCode }>{ requestError.code }</span> }
+      <span className={ styles.errorMessage }>{ requestError.message }</span>
+    </div>
+  );
+
   const handleClick = () => {
     if (isAccordionView && isSelected) {
       clearSelection();
@@ -123,6 +140,7 @@ const Request = ({ item, timelineStart, timelineEnd, now, revealIndex }: ICompon
         [styles.isRevealing]: isRevealing,
         [styles.isServerRow]: item.isServerSide,
         [styles.isSelected]: isSelected,
+        [styles.isCompact]: compactRows,
         [styles.isAccordionSelected]: isAccordionSelected,
         [styles.isDimmed]: isDimmed,
         [styles.isPendingRow]: item.isPending && !isDimmed,
@@ -157,6 +175,7 @@ const Request = ({ item, timelineStart, timelineEnd, now, revealIndex }: ICompon
             />
           ) }
           <span className={ styles.methodLabel }>{ getRequestLabel(item) }</span>
+          { compactRows && requestError && renderError() }
           <div
             className={ styles.rowActions }
             onClick={ (e) => e.stopPropagation() }
@@ -186,11 +205,15 @@ const Request = ({ item, timelineStart, timelineEnd, now, revealIndex }: ICompon
             ) }
           </div>
         </div>
-        { showRequestUrl && (
+        { (showRequestUrl || (requestError && !compactRows)) && (
           <div className={ styles.urlRow }>
-            <div className={ cn(styles.badge, { [styles.isCors]: item.isCors && showCorsBadge }) } />
-            <div className={ cn(styles.badge, { [styles.isWebsocket]: item.isWebSocket && showWebsocketBadge }) } />
-            { item.isWebSocket && (
+            <div className={ cn(styles.badge, { [styles.isCors]: showRequestUrl && item.isCors && showCorsBadge }) } />
+            <div
+              className={ cn(styles.badge, {
+                [styles.isWebsocket]: showRequestUrl && item.isWebSocket && showWebsocketBadge
+              }) }
+            />
+            { showRequestUrl && item.isWebSocket && (
               <div
                 className={ cn(styles.badgeMessageType, {
                   [styles.income]: item.websocketMessageType === 'income',
@@ -198,9 +221,13 @@ const Request = ({ item, timelineStart, timelineEnd, now, revealIndex }: ICompon
                 }) }
               />
             ) }
-            <div className={ styles.url }>
-              <span>{ item.request.url }</span>
-            </div>
+            { requestError ? (
+              renderError()
+            ) : (
+              <div className={ styles.url }>
+                <span>{ item.request.url }</span>
+              </div>
+            ) }
           </div>
         ) }
       </div>
@@ -208,7 +235,11 @@ const Request = ({ item, timelineStart, timelineEnd, now, revealIndex }: ICompon
         { visibleColumns.map((field) => (
           <div
             key={ field }
-            className={ cn({ [styles.waterfallCell]: field === SortField.Waterfall }) }
+            className={ cn({
+              [styles.waterfallCell]: field === SortField.Waterfall,
+              [styles.isSlow]: field === SortField.Time && slowness === Slowness.Slow,
+              [styles.isVerySlow]: field === SortField.Time && slowness === Slowness.VerySlow
+            }) }
             style={ getColumnWidthStyle(field) }
           >
             { renderCellContent(field) }

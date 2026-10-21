@@ -1,3 +1,4 @@
+@use "sass:color";
 @use "../../common/variables";
 
 .requestWrapper {
@@ -24,6 +25,23 @@
     }
   }
 
+  // Before the hover rule, which ties on specificity and has to win.
+  &.isServerRow:nth-child(2n) {
+    background: variables.$serverRowBackground;
+
+    :global(.isDark) & {
+      background: variables.$darkServerRowBackground;
+    }
+  }
+
+  &.isServerRow:nth-child(2n + 1) {
+    background: variables.$serverRowAltBackground;
+
+    :global(.isDark) & {
+      background: variables.$darkServerRowAltBackground;
+    }
+  }
+
   .meta {
     display: flex;
     align-items: stretch;
@@ -44,14 +62,30 @@
     > .waterfallCell {
       padding: 0 variables.$waterfallColumnPadding;
     }
+
+    > .isSlow {
+      color: variables.$slowCall;
+
+      :global(.isDark) & {
+        color: variables.$darkSlowCall;
+      }
+    }
+
+    > .isVerySlow {
+      font-weight: 600;
+      color: variables.$verySlowCall;
+
+      :global(.isDark) & {
+        color: variables.$darkVerySlowCall;
+      }
+    }
   }
 
   :global(.isDark) & {
     color: #bdc4cc;
   }
 
-  &.error .method,
-  &.error .meta {
+  &.error .method {
     color: variables.$error;
   }
 
@@ -136,6 +170,14 @@
   padding-right: 5px;
   overflow: hidden;
   position: relative;
+}
+
+.isCompact .methodWrapper {
+  padding: 3px 0;
+}
+
+.isCompact .errorLine {
+  margin-left: 10px;
 }
 
 .methodLabel {
@@ -234,8 +276,8 @@
       color: #fff;
 
       :global(.isDark) & {
-        background: variables.$darkServerAccent;
-        border-color: variables.$darkServerAccent;
+        background: variables.$darkServerBadge;
+        border-color: variables.$darkServerBadge;
         color: #fff;
       }
     }
@@ -316,4 +358,36 @@
     white-space: nowrap;
     opacity: 0.5;
   }
+}
+
+.errorLine {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 14px;
+  flex: 1 1 auto;
+  width: 0;
+  min-width: 0;
+  font-family: monospace;
+  font-size: 11px;
+  color: variables.$error;
+}
+
+.errorCode {
+  flex-shrink: 0;
+  padding: 0 4px;
+  border-radius: 2px;
+  line-height: 14px;
+  background: color.change(variables.$error, $alpha: 0.12);
+
+  :global(.isDark) & {
+    background: color.change(variables.$error, $alpha: 0.22);
+  }
+}
+
+.errorMessage {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  opacity: 0.8;
 }

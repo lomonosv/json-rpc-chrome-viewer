@@ -6,6 +6,12 @@
   max-height: calc(100% - 28px);
 }
 
+.isFill {
+  flex: 1 1 0;
+  min-height: 0;
+  max-height: none;
+}
+
 .requestInfoHeader {
   justify-content: space-between;
 }

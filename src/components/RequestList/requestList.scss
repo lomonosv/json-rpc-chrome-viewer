@@ -5,6 +5,49 @@
   overflow: auto;
 }
 
+.listSummary {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 6px;
+  height: 22px;
+  padding: 0 7px;
+  overflow: hidden;
+  border-top: 1px solid variables.$borderColor;
+  background: variables.$headerBackground;
+  font-size: 11px;
+  white-space: nowrap;
+  user-select: none;
+
+  :global(.isDark) & {
+    border-top-color: variables.$darkBorderColor;
+    background: variables.$darkHeaderBackground;
+  }
+
+  > span:not(:first-child)::before {
+    content: "·";
+    margin-right: 6px;
+    opacity: 0.5;
+  }
+}
+
+.summaryErrors {
+  color: variables.$error;
+}
+
+.summarySlow {
+  color: variables.$slowCall;
+
+  :global(.isDark) & {
+    color: variables.$darkSlowCall;
+  }
+}
+
+.summarySpan {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .requestList {
   display: table;
   min-width: 100%;
@@ -123,6 +166,30 @@
   }
 }
 
+.stackedResizeHandle {
+  cursor: row-resize;
+  z-index: 3;
+}
+
+.stackedResizeHandle::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 2px;
+  transform: translateY(-50%);
+}
+
+.stackedResizeHandle:hover::after,
+.stackedResizeHandle:active::after {
+  background: variables.$resizeHandleColor;
+
+  :global(.isDark) & {
+    background: variables.$darkResizeHandleColor;
+  }
+}
+
 .dropIndicator {
   align-self: stretch;
   width: 0;
@@ -203,25 +270,23 @@
   gap: 6px;
   box-sizing: border-box;
   width: 100%;
-  padding: 7px 7px 7px 4px;
+  padding: 5px 7px 5px 4px;
   border: none;
-  border-top: 1px solid variables.$borderColor;
   border-bottom: 1px solid variables.$borderColor;
   border-left: 3px solid variables.$serverAccent;
   background: variables.$serverGroupBackground;
   font: inherit;
   font-family: monospace;
   font-size: 12px;
-  color: inherit;
+  color: variables.$highLightedColor;
   text-align: left;
   cursor: pointer;
 
   :global(.isDark) & {
-    border-top-color: variables.$darkBorderColor;
     border-bottom-color: variables.$darkBorderColor;
     border-left-color: variables.$darkServerAccent;
     background: variables.$darkServerGroupBackground;
-    color: #bdc4cc;
+    color: variables.$darkHighLightedColor;
   }
 
   &:hover {
@@ -236,12 +301,10 @@
 }
 
 .serverGroupChevron {
-  position: absolute;
-  top: 50%;
-  right: 4px;
+  position: relative;
+  flex-shrink: 0;
   width: 12px;
   height: 12px;
-  margin-top: -6px;
   transition: transform 0.15s ease-out;
 
   &::before {
@@ -262,27 +325,13 @@
   transform: rotate(90deg);
 }
 
-.serverGroupBadge {
-  padding: 1px 5px;
-  border-radius: 2px;
-  font-size: 9px;
-  color: #fff;
-  background: variables.$serverAccent;
-
-  :global(.isDark) & {
-    background: variables.$darkServerAccent;
-  }
-}
-
 .serverGroupLabel {
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
-  opacity: 0.85;
 }
 
 .serverGroupCount {
   flex-shrink: 0;
-  margin-right: 18px;
-  opacity: 0.7;
+  opacity: 0.65;
 }

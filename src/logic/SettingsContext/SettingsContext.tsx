@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { DevToolsTheme, ExtensionTheme, JsonViewerTheme } from '~/logic/SettingsContext/Theme';
-import { ViewMode } from '~/logic/SettingsContext/ViewMode';
+import { ViewMode, isViewMode } from '~/logic/SettingsContext/ViewMode';
 import { ServerGroupState } from '~/logic/SettingsContext/ServerGroupState';
 import { ExpandTreeState } from '~/components/common/JsonViewer/ExpandTreeState';
 import { expandAllLevels } from '~/components/common/JsonViewer/ExpandLevel';
@@ -16,6 +16,7 @@ const defaultIncludeServerLogsValue = true;
 const defaultSearchScopeValue = SearchScope.Method;
 const defaultCaseSensitiveSearchValue = false;
 const defaultShowRequestUrlValue = true;
+const defaultCompactRowsValue = false;
 const defaultShowCorsBadgeValue = true;
 const defaultShowWebsocketBadgeValue = true;
 const defaultExtensionThemeValue = ExtensionTheme.System;
@@ -29,7 +30,7 @@ const defaultShowWaterfallColumnValue = true;
 const defaultShowStatusColumnValue = true;
 const defaultShowSizeColumnValue = true;
 const defaultShowTimeColumnValue = true;
-const defaultViewModeValue = ViewMode.Panes;
+const defaultViewModeValue = ViewMode.Auto;
 const defaultServerGroupStateValue = ServerGroupState.Collapsed;
 const defaultResilientCaptureValue = true;
 
@@ -44,6 +45,7 @@ const useSettings = () => {
   const [searchScope, setSearchScope] = useState<SearchScope>(defaultSearchScopeValue);
   const [caseSensitiveSearch, setCaseSensitiveSearch] = useState<boolean>(defaultCaseSensitiveSearchValue);
   const [showRequestUrl, setShowRequestUrl] = useState<boolean>(defaultShowRequestUrlValue);
+  const [compactRows, setCompactRows] = useState<boolean>(defaultCompactRowsValue);
   const [showCorsBadge, setShowCorsBadge] = useState<boolean>(defaultShowCorsBadgeValue);
   const [showWebsocketBadge, setShowWebsocketBadge] = useState<boolean>(defaultShowWebsocketBadgeValue);
   const [expandTreeState, setExpandTreeState] = useState<ExpandTreeState>(defaultExpandTreeStateValue);
@@ -79,6 +81,7 @@ const useSettings = () => {
     getConfig('settings_searchScope', defaultSearchScopeValue).then(setSearchScope);
     getConfig('settings_caseSensitiveSearch', defaultCaseSensitiveSearchValue).then(setCaseSensitiveSearch);
     getConfig('settings_showRequestUrl', defaultShowRequestUrlValue).then(setShowRequestUrl);
+    getConfig('settings_compactRows', defaultCompactRowsValue).then(setCompactRows);
     getConfig('settings_showCorsBadge', defaultShowCorsBadgeValue).then(setShowCorsBadge);
     getConfig('settings_showWebsocketBadge', defaultShowWebsocketBadgeValue).then(setShowWebsocketBadge);
     getConfig('settings_expandTreeState', defaultExpandTreeStateValue).then(setExpandTreeState);
@@ -93,7 +96,8 @@ const useSettings = () => {
     getConfig('settings_showStatusColumn', defaultShowStatusColumnValue).then(setShowStatusColumn);
     getConfig('settings_showSizeColumn', defaultShowSizeColumnValue).then(setShowSizeColumn);
     getConfig('settings_showTimeColumn', defaultShowTimeColumnValue).then(setShowTimeColumn);
-    getConfig('settings_viewMode', defaultViewModeValue).then(setViewMode);
+    getConfig('settings_viewMode', defaultViewModeValue)
+      .then((stored) => setViewMode(isViewMode(stored) ? stored : defaultViewModeValue));
     getConfig('settings_serverGroupState', defaultServerGroupStateValue).then(setServerGroupState);
     getConfig('settings_resilientCapture', defaultResilientCaptureValue).then(setResilientCapture);
   }, []);
@@ -131,6 +135,11 @@ const useSettings = () => {
   const handleShowRequestUrlChange = (settings_showRequestUrl: boolean) => {
     setShowRequestUrl(settings_showRequestUrl);
     setConfig({ settings_showRequestUrl });
+  };
+
+  const handleCompactRowsChange = (settings_compactRows: boolean) => {
+    setCompactRows(settings_compactRows);
+    setConfig({ settings_compactRows });
   };
 
   const handleShowCorsBadgeChange = (settings_showCorsBadge: boolean) => {
@@ -226,6 +235,7 @@ const useSettings = () => {
     caseSensitiveSearch,
     expandedWebsocketMessagesState,
     showRequestUrl,
+    compactRows,
     showCorsBadge,
     showWebsocketBadge,
     expandTreeState,
@@ -252,6 +262,7 @@ const useSettings = () => {
     setCaseSensitiveSearch: handleCaseSensitiveSearchChange,
     setExpandedWebsocketMessagesState: handleExpandedWebsocketMessagesStateChange,
     setShowRequestUrl: handleShowRequestUrlChange,
+    setCompactRows: handleCompactRowsChange,
     setShowCorsBadge: handleShowCorsBadgeChange,
     setShowWebsocketBadge: handleShowWebsocketBadgeChange,
     setExpandTreeState: handleExpandTreeStateChange,

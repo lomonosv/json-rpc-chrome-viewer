@@ -5,16 +5,16 @@ import { useRequestContext } from '~/logic/HTTPArchive/HttpArchiveContext';
 import { SortDirection, SortField } from '~/logic/HTTPArchive/SortField';
 import { useCacheContext } from '~/logic/CacheContext/CacheContext';
 import { useSettingsContext } from '~/logic/SettingsContext/SettingsContext';
-import useIsAccordionView from '~/logic/common/useIsAccordionView';
+import useEffectiveViewMode from '~/logic/common/useEffectiveViewMode';
+import { ViewMode } from '~/logic/SettingsContext/ViewMode';
 import useSearchHighlight, { HighlightName } from '~/logic/common/useSearchHighlight';
 import Header from '~/components/common/Header';
 import Request from './Request';
-import RequestInfo from '~/components/RequestInfo';
-import ResponseInfo from '~/components/ResponseInfo';
-import MessageInfo from '~/components/MessageInfo';
+import RequestDetail from '~/components/RequestDetail';
 import useColumnResize from './useColumnResize';
 import useColumnReorder from './useColumnReorder';
 import useVisibleColumns from './useVisibleColumns';
+import ListSummary from './ListSummary';
 import {
   ResizableColumn,
   columnLabels,
@@ -24,6 +24,7 @@ import {
 import styles from './requestList.scss';
 
 const minLeftSideWidth = 200;
+const minStackedListHeight = 80;
 const pendingTickIntervalMs = 250;
 const groupRevealWindowMs = 500;
 
@@ -94,6 +95,8 @@ const RequestList = ({ className }: IComponentProps) => {
     updateRequestListSectionWidth,
     accordionSectionHeight,
     updateAccordionSectionHeight,
+    stackedListHeight,
+    updateStackedListHeight,
     columnWidths,
     getColumnWidth,
     setColumnWidth,
@@ -104,8 +107,10 @@ const RequestList = ({ className }: IComponentProps) => {
   const { autoScroll, caseSensitiveSearch } = useSettingsContext();
   const [revealingGroupId, setRevealingGroupId] = useState<string>(null);
   const revealTimerRef = useRef<number>(null);
-  const isAccordionView = useIsAccordionView();
-  const isSideBySide = !!selected && !isAccordionView;
+  const viewMode = useEffectiveViewMode();
+  const isAccordionView = viewMode === ViewMode.Accordion;
+  const isSideBySide = !!selected && viewMode === ViewMode.Panes;
+  const isStackedAbove = !!selected && viewMode === ViewMode.Stacked;
 
   const {
     resizingField,
@@ -185,19 +190,14 @@ const RequestList = ({ className }: IComponentProps) => {
     `.${ styles.requestsHeaderWrapper }`
   );
 
-  useEffect(() => {
-    resizableRef.current.updateSize({
-      width: isSideBySide ? requestListSectionWidth : '100%',
-      height: '100%'
-    });
-  }, [isSideBySide]);
+  const listSize = {
+    width: isSideBySide ? requestListSectionWidth : '100%',
+    height: isStackedAbove ? stackedListHeight : '100%'
+  };
 
   useEffect(() => {
-    resizableRef.current.updateSize({
-      width: isSideBySide ? requestListSectionWidth : '100%',
-      height: '100%'
-    });
-  }, [isSideBySide]);
+    resizableRef.current.updateSize(listSize);
+  }, [isSideBySide, isStackedAbove]);
 
   const groupStates = new Map(
     rows.flatMap((row) => (row.kind === 'group' ? [[row.group.id, row.group.isExpanded] as const] : []))
@@ -251,6 +251,12 @@ const RequestList = ({ className }: IComponentProps) => {
   }, [requests, now]);
 
   const handleResize = () => {
+    if (isStackedAbove) {
+      updateStackedListHeight(resizableRef.current.size.height);
+
+      return;
+    }
+
     updateRequestListSectionWidth(resizableRef.current.size.width);
   };
 
@@ -264,7 +270,7 @@ const RequestList = ({ className }: IComponentProps) => {
       enable={ {
         top: false,
         right: isSideBySide,
-        bottom: false,
+        bottom: isStackedAbove,
         left: false,
         topRight: false,
         bottomRight: false,
@@ -274,13 +280,13 @@ const RequestList = ({ className }: IComponentProps) => {
       className={ className }
       minWidth={ isSideBySide ? minLeftSideWidth : undefined }
       maxWidth={ isSideBySide ? '80%' : '100%' }
-      defaultSize={ {
-        width: isSideBySide ? requestListSectionWidth : '100%',
-        height: '100%'
-      } }
+      minHeight={ isStackedAbove ? minStackedListHeight : undefined }
+      maxHeight={ isStackedAbove ? '85%' : '100%' }
+      defaultSize={ listSize }
       onResizeStop={ handleResize }
       handleClasses={ {
-        right: styles.paneResizeHandle
+        right: styles.paneResizeHandle,
+        bottom: styles.stackedResizeHandle
       } }
     >
       <div
@@ -371,14 +377,7 @@ const RequestList = ({ className }: IComponentProps) => {
                       bottom: styles.accordionResizeHandle
                     } }
                   >
-                    { row.request.isWebSocket ? (
-                      <MessageInfo />
-                    ) : (
-                      <>
-                        <RequestInfo />
-                        <ResponseInfo />
-                      </>
-                    ) }
+                    <RequestDetail />
                   </Resizable>
                 ) }
               </React.Fragment>
@@ -386,6 +385,7 @@ const RequestList = ({ className }: IComponentProps) => {
           }
         </div>
       </div>
+      <ListSummary requests={ requests } timelineSpan={ timelineEnd - timelineStart } />
     </Resizable>
   );
 };

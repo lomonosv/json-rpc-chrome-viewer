@@ -12,11 +12,15 @@ import {
 const defaultRequestSectionHeight = 115;
 const defaultRequestListSectionWidth = 200;
 const defaultAccordionSectionHeight = 320;
+const defaultStackedListHeight = 240;
+const defaultDrawerWidth = 480;
 
 const useCache = () => {
   const [requestSectionHeight, setRequestSectionHeight] = useState<number>(defaultRequestSectionHeight);
   const [requestListSectionWidth, setRequestListSectionWidth] = useState<number>(defaultRequestListSectionWidth);
   const [accordionSectionHeight, setAccordionSectionHeight] = useState<number>(defaultAccordionSectionHeight);
+  const [stackedListHeight, setStackedListHeight] = useState<number>(defaultStackedListHeight);
+  const [drawerWidth, setDrawerWidth] = useState<number>(defaultDrawerWidth);
   const [columnWidths, setColumnWidths] = useState<Record<ResizableColumn, number>>(defaultColumnWidths);
   const columnWidthsRef = useRef<Record<ResizableColumn, number>>(defaultColumnWidths);
   const [columnOrder, setColumnOrder] = useState<ResizableColumn[]>(defaultColumnOrder);
@@ -26,6 +30,8 @@ const useCache = () => {
     getConfig('requestSectionHeight', defaultRequestSectionHeight).then(setRequestSectionHeight);
     getConfig('requestListSectionWidth', defaultRequestListSectionWidth).then(setRequestListSectionWidth);
     getConfig('accordionSectionHeight', defaultAccordionSectionHeight).then(setAccordionSectionHeight);
+    getConfig('stackedListHeight', defaultStackedListHeight).then(setStackedListHeight);
+    getConfig('drawerWidth', defaultDrawerWidth).then(setDrawerWidth);
     getConfig('columnWidths', defaultColumnWidths).then((stored) => {
       const merged = { ...defaultColumnWidths, ...(stored as Record<ResizableColumn, number>) };
 
@@ -59,6 +65,16 @@ const useCache = () => {
     setConfig({ accordionSectionHeight });
   };
 
+  const updateStackedListHeight = (stackedListHeight) => {
+    setStackedListHeight(stackedListHeight);
+    setConfig({ stackedListHeight });
+  };
+
+  const updateDrawerWidth = (drawerWidth) => {
+    setDrawerWidth(drawerWidth);
+    setConfig({ drawerWidth });
+  };
+
   const getColumnWidth = (field: ResizableColumn) => columnWidthsRef.current[field];
 
   const setColumnWidth = (field: ResizableColumn, width: number) => {
@@ -85,6 +101,10 @@ const useCache = () => {
     updateRequestListSectionWidth,
     accordionSectionHeight,
     updateAccordionSectionHeight,
+    stackedListHeight,
+    updateStackedListHeight,
+    drawerWidth,
+    updateDrawerWidth,
     columnWidths,
     getColumnWidth,
     setColumnWidth,

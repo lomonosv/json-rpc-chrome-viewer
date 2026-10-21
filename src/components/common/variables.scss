@@ -67,16 +67,27 @@ $error: #ee442e;
 $warning: #b8a679;
 $darkSuccess: #81c995;
 
+$slowCall: #a86400;
+$verySlowCall: #c24e00;
+$darkSlowCall: #e8c36a;
+$darkVerySlowCall: #ffa060;
+
 $interceptorAccent: #e37400;
 $darkInterceptorAccent: #f29900;
 
-$serverAccent: #7e57c2;
-$darkServerAccent: #9575cd;
+$serverAccent: #1a73e8;
+$darkServerAccent: #8ab4f8;
+// The dark edge is too light to carry white badge text.
+$darkServerBadge: #3f6fb5;
 
-$serverGroupBackground: #f1f3f4;
-$darkServerGroupBackground: #292a2d;
-$serverGroupHoverBackground: #e8eaed;
-$darkServerGroupHoverBackground: #35363a;
+$serverGroupBackground: #e8f0fe;
+$darkServerGroupBackground: #1f2a3b;
+$serverGroupHoverBackground: #dce7fc;
+$darkServerGroupHoverBackground: #263449;
+$serverRowBackground: #f6f9fe;
+$serverRowAltBackground: #eef3fd;
+$darkServerRowBackground: #1c2129;
+$darkServerRowAltBackground: #20262f;
 
 $phaseIdle: #bfc3c9;
 $phaseSend: #85b0ef;

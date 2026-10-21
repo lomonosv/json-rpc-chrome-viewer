@@ -17,9 +17,14 @@
 }
 
 .layoutContainer {
+  position: relative;
   display: flex;
   height: calc(100% - 28px);
   flex-grow: 1;
+
+  &.isStacked {
+    flex-direction: column;
+  }
 }
 
 .leftSideContainer {
@@ -28,7 +33,7 @@
   flex-direction: column;
 }
 
-.leftSideContainer:not(:last-child) {
+.leftSideContainer.isBesideDetail {
   border-right: 1px solid variables.$borderColor;
 
   :global(.isDark) & {
@@ -41,4 +46,112 @@
   display: flex;
   flex-direction: column;
   flex-grow: 1;
+}
+
+.bottomContainer {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  min-height: 0;
+  border-top: 1px solid variables.$borderColor;
+
+  :global(.isDark) & {
+    border-top-color: variables.$darkBorderColor;
+  }
+}
+
+.drawer {
+  position: absolute !important;
+  top: 0;
+  right: 0;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  max-height: 100%;
+  border-left: 1px solid variables.$borderColor;
+  background: variables.$background;
+  box-shadow: -4px 0 12px rgb(0 0 0 / 12%);
+
+  :global(.isDark) & {
+    border-left-color: variables.$darkBorderColor;
+    background: variables.$darkBackground;
+    box-shadow: -4px 0 12px rgb(0 0 0 / 45%);
+  }
+}
+
+.drawerResizeHandle {
+  cursor: col-resize;
+}
+
+.drawerResizeHandle::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 2px;
+  transform: translateX(-50%);
+}
+
+.drawerResizeHandle:hover::after,
+.drawerResizeHandle:active::after {
+  background: variables.$resizeHandleColor;
+
+  :global(.isDark) & {
+    background: variables.$darkResizeHandleColor;
+  }
+}
+
+// Covers the list rather than unmounting it, which would lose its scroll position.
+.drillDown {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  background: variables.$background;
+
+  :global(.isDark) & {
+    background: variables.$darkBackground;
+  }
+}
+
+.drillDownNav {
+  gap: 6px;
+  padding: 0 4px;
+}
+
+.navButton {
+  flex-shrink: 0;
+  padding: 2px 6px;
+  border: none;
+  border-radius: 2px;
+  background: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+
+  &:hover {
+    background: variables.$selectedBackground;
+    color: variables.$highLightedColor;
+
+    :global(.isDark) & {
+      background: variables.$darkSelectedBackground;
+      color: variables.$darkHighLightedColor;
+    }
+  }
+}
+
+.navLabel {
+  flex-grow: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-family: monospace;
+}
+
+.navPosition {
+  flex-shrink: 0;
+  opacity: 0.7;
 }

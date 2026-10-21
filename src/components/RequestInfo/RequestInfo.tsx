@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import cn from 'classnames';
 import { Resizable } from 're-resizable';
 import { useRequestContext } from '~/logic/HTTPArchive/HttpArchiveContext';
 import { useCacheContext } from '~/logic/CacheContext/CacheContext';
@@ -15,7 +16,13 @@ import { ExpandTreeState } from '~/components/common/JsonViewer/ExpandTreeState'
 import { expandAllLevels } from '~/components/common/JsonViewer/ExpandLevel';
 import styles from './requestInfo.scss';
 
-const RequestInfo = () => {
+interface IComponentProps {
+  label?: React.ReactNode,
+  isFill?: boolean,
+  isClosable?: boolean,
+}
+
+const RequestInfo = ({ label = 'Request', isFill = false, isClosable = true }: IComponentProps) => {
   const resizableRef = useRef<Resizable>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const { selected, clearSelection, filter } = useRequestContext();
@@ -44,6 +51,49 @@ const RequestInfo = () => {
     updateRequestSectionHeight(resizableRef.current.size.height);
   };
 
+  const content = (
+    <>
+      <Header className={ styles.requestInfoHeader }>
+        <div className={ styles.requestInfoHeaderLeftSide }>
+          { isClosable && (
+            <Button
+              onClick={ clearSelection }
+              className={ styles.closeButton }
+              title="Close"
+            >
+              <Icon type={ IconType.Close } />
+            </Button>
+          ) }
+          <ExpandButton
+            className={ styles.expandButton }
+            expandedState={ expandTreeStateValue }
+            onChangeState={ handleExpandTreeStateChange }
+          />
+          <span>{ label }</span>
+        </div>
+        <CopyButton text={ JSON.stringify(json, null, 2) } />
+      </Header>
+      <div
+        ref={ containerRef }
+        className={ styles.requestInfoContainer }
+      >
+        <JsonViewer
+          src={ json }
+          expandTreeState={ expandTreeStateValue }
+          expandLevel={ expandLevelValue }
+        />
+      </div>
+    </>
+  );
+
+  if (isFill) {
+    return (
+      <div className={ cn(styles.requestInfoWrapper, styles.isFill) }>
+        { content }
+      </div>
+    );
+  }
+
   return (
     <Resizable
       ref={ resizableRef }
@@ -68,34 +118,7 @@ const RequestInfo = () => {
         bottom: styles.resizableBottomHandlerWrapper
       } }
     >
-      <Header className={ styles.requestInfoHeader }>
-        <div className={ styles.requestInfoHeaderLeftSide }>
-          <Button
-            onClick={ clearSelection }
-            className={ styles.closeButton }
-            title="Close"
-          >
-            <Icon type={ IconType.Close } />
-          </Button>
-          <ExpandButton
-            className={ styles.expandButton }
-            expandedState={ expandTreeStateValue }
-            onChangeState={ handleExpandTreeStateChange }
-          />
-          <span>Request</span>
-        </div>
-        <CopyButton text={ JSON.stringify(json, null, 2) } />
-      </Header>
-      <div
-        ref={ containerRef }
-        className={ styles.requestInfoContainer }
-      >
-        <JsonViewer
-          src={ json }
-          expandTreeState={ expandTreeStateValue }
-          expandLevel={ expandLevelValue }
-        />
-      </div>
+      { content }
     </Resizable>
   );
 };
