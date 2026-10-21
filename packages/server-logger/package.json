@@ -69,6 +69,6 @@
     }
   },
   "devDependencies": {
-    "next": "^16.4.0"
+    "next": "^16.4.2"
   }
 }
