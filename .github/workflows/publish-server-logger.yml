@@ -29,14 +29,22 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 24.x
-          cache: 'npm'
           registry-url: 'https://registry.npmjs.org'
 
-      - run: npm ci --force
+      # pnpm comes from corepack, which verifies the release against npm's
+      # signing keys - no third-party setup action. Corepack only reads
+      # `packageManager`, so the version is taken from the single pin in
+      # devEngines.packageManager instead.
+      - name: Install pnpm
+        run: |
+          corepack enable pnpm
+          corepack install -g "pnpm@$(node -p "require('./package.json').devEngines.packageManager.version")"
 
-      - run: npm run lint
+      - run: pnpm install --frozen-lockfile
 
-      - run: npm run typecheck:logger
+      - run: pnpm run lint
+
+      - run: pnpm run typecheck:logger
 
       - name: Verify the tag matches the package version
         if: github.event_name == 'push'
@@ -48,8 +56,12 @@ jobs:
             exit 1
           fi
 
+      # Pack and publish stay on npm: it is the client npm trusted publishing
+      # (OIDC) is configured and proven against, and the package has no
+      # `workspace:` dependencies for pnpm to rewrite, so the tarball is the same.
       - name: Pack
-        run: npm pack --workspace @json-rpc-chrome-viewer/server-logger
+        working-directory: packages/server-logger
+        run: npm pack
 
       # A prerelease must never become what `npm install` resolves to, so the
       # dist-tag is derived from the version rather than defaulted: anything
@@ -78,7 +90,7 @@ jobs:
       #   publish-server-logger.yml. Provenance is generated automatically.
       - name: Publish
         if: github.event_name == 'push' || inputs.dryRun == false
+        working-directory: packages/server-logger
         run: >-
           npm publish --provenance
           --tag ${{ steps.distTag.outputs.tag }}
-          --workspace @json-rpc-chrome-viewer/server-logger

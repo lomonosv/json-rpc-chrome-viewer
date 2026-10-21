@@ -56,9 +56,9 @@
   },
   "scripts": {
     "clean": "rm -rf dist",
-    "build": "npm run clean && tsc -p tsconfig.esm.json && tsc -p tsconfig.cjs.json && node scripts/postbuild.cjs",
+    "build": "pnpm run clean && tsc -p tsconfig.esm.json && tsc -p tsconfig.cjs.json && node scripts/postbuild.cjs",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "pnpm run build"
   },
   "peerDependencies": {
     "next": ">=16"
@@ -69,6 +69,6 @@
     }
   },
   "devDependencies": {
-    "next": "^16.4.2"
+    "next": "^16.4.0"
   }
 }

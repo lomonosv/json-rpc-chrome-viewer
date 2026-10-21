@@ -73,8 +73,10 @@ Search for **JSON-RPC Chrome Viewer** in the Chrome Web Store and click Add to C
 ```bash
 git clone https://github.com/lomonosv/json-rpc-chrome-viewer.git
 cd json-rpc-chrome-viewer
-npm ci
-npm run build
+corepack enable pnpm
+corepack install -g pnpm@12.13.0
+pnpm install
+pnpm run build
 ```
 
 Then open `chrome://extensions`, enable **Developer mode**, choose **Load unpacked**, and select the generated `build/` directory.
@@ -125,18 +127,31 @@ Captured traffic stays local - it is held in memory in the DevTools panel and is
 
 ## Development
 
-Requires **Node 24+** (CI runs 24.x).
+Requires **Node 24+** and **pnpm 12.13.0**, pinned in `package.json`'s `devEngines.packageManager` (`corepack enable pnpm && corepack install -g pnpm@12.13.0` gets it). pnpm then downloads the Node version pinned in `devEngines.runtime` (24.21.0) and runs every script on it.
 
 ```bash
-npm ci
-npm run build      # clean → lint → typecheck → bundle → env substitution
-npm run lint       # eslint + stylelint
-npm run eslint
-npm run stylelint
-npm run clean
+pnpm install
+pnpm run build      # clean → lint → typecheck → bundle → env substitution
+pnpm run lint       # eslint + stylelint
+pnpm run eslint
+pnpm run stylelint
+pnpm run clean
 ```
 
-`npm run build` writes the unpacked extension to `build/`. Reload it from `chrome://extensions` after each build to pick up changes.
+Plain `npm` refuses to run in the repo root unless your shell's Node is exactly 24.21.0, because npm enforces `devEngines.runtime` itself. Run everything through `pnpm`.
+
+#### Supply-chain policy
+
+`pnpm-workspace.yaml` hardens installs, and pnpm 12 rejects unknown keys there, so a typo cannot silently disable a policy:
+
+- **`minimumReleaseAge: 10080`** - nothing published in the last 7 days is installed. A dependency bump whose floor is younger than that fails until it matures.
+- **`trustPolicy: no-downgrade`** - a release published with weaker provenance than an earlier one fails the install.
+- **`blockExoticSubdeps`** - transitive dependencies must come from the registry, never from git or a tarball URL.
+- **`strictDepBuilds`** - dependency install scripts do not run unless `allowBuilds` approves them, and an unreviewed one fails the install.
+
+Exceptions (`minimumReleaseAgeExclude`, `trustPolicyExclude`) name an exact `pkg@version`, never a bare package name, with a comment explaining why.
+
+`pnpm run build` writes the unpacked extension to `build/`. Reload it from `chrome://extensions` after each build to pick up changes.
 
 There is no test suite; verification is lint, `tsc -noEmit`, and a build. Lint is expected to report zero problems.
 
@@ -149,9 +164,9 @@ SENTRY_DSN=<your sentry dsn>
 ENVIRONMENT=development
 ```
 
-`scripts/envSubstitute.js` inlines these into the bundle after esbuild runs, so they only take effect via the full `npm run build` - not a bare `node scripts/build.js`. The build exits non-zero if `.env` is missing.
+`scripts/envSubstitute.js` inlines these into the bundle after esbuild runs, so they only take effect via the full `pnpm run build` - not a bare `node scripts/build.js`. The build exits non-zero if `.env` is missing.
 
-`SENTRY_AUTH_TOKEN` is optional and only used to upload source maps during a release build. If it is set in your shell, a local build will upload to Sentry - unset it (`SENTRY_AUTH_TOKEN= npm run build`) to avoid that.
+`SENTRY_AUTH_TOKEN` is optional and only used to upload source maps during a release build. If it is set in your shell, a local build will upload to Sentry - unset it (`SENTRY_AUTH_TOKEN= pnpm run build`) to avoid that.
 
 ### Project layout
 
@@ -169,7 +184,7 @@ The panel UI, the DevTools page, the content script and the page-level WebSocket
 ### Release
 
 ```bash
-npm run release
+pnpm run release
 ```
 
 Runs `release-it`: lints, typechecks, builds, bumps the version in both `package.json` and `static/manifest.json`, tags, and creates a GitHub release. The packaged `build/` directory is then uploaded to the Chrome Web Store manually.
