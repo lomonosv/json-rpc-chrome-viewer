@@ -1,8 +1,8 @@
 module.exports = {
   'hooks': {
     'after:init': [
-      'npm run lint',
-      'tsc -noEmit',
+      'pnpm run lint',
+      'pnpm exec tsc -noEmit',
       'node scripts/build.js'
     ]
   },

@@ -9,22 +9,33 @@ Manifest V3 Chrome extension that adds a **JSON-RPC Chrome Viewer** panel to Dev
 ## Commands
 
 ```bash
-npm run build      # clean → lint → tsc -noEmit → esbuild → env substitution
-npm run lint       # eslint + stylelint
-npm run eslint     # eslint only (cached in .cache/eslint)
-npm run stylelint  # stylelint only (src/**/*.scss)
-npm run clean      # rm -rf build
-npm run release    # release-it (tags, GitHub release, bumps manifest version)
+pnpm run build      # clean → lint → tsc -noEmit → esbuild → env substitution
+pnpm run lint       # eslint + stylelint
+pnpm run eslint     # eslint only (cached in .cache/eslint)
+pnpm run stylelint  # stylelint only (src/**/*.scss)
+pnpm run clean      # rm -rf build
+pnpm run release    # release-it (tags, GitHub release, bumps manifest version)
 ```
 
-There is **no test suite** — no test runner is configured. Verification means `npm run lint`, `npx tsc -noEmit`, and a build.
+There is **no test suite** — no test runner is configured. Verification means `pnpm run lint`, `pnpm exec tsc -noEmit`, and a build.
+
+### Package manager: pnpm, with supply-chain policies
+
+The repo uses **pnpm 12.13.0**, pinned **once**, in `devEngines.packageManager` (recorded in `pnpm-lock.yaml` under `packageManagerDependencies`). There is deliberately no top-level `packageManager` field — it would duplicate the pin. Corepack reads only that field, so CI does not rely on it: it runs `corepack enable pnpm` and then `corepack install -g pnpm@<version read from devEngines>`, which keeps corepack's npm-signature check without a third-party setup action. `devEngines.runtime` pins Node **24.21.0** with `onFail: download`, so pnpm fetches that Node (locked in `pnpm-lock.yaml` with its integrity) and runs every script on it.
+
+- **Plain `npm` fails in the repo root** with `EBADDEVENGINES` unless the shell's Node is exactly 24.21.0 — npm enforces `devEngines.runtime` itself. Under `pnpm run` it works, because the pinned Node is first on PATH; that is why `release-it` (which shells out to `npm version` for the bump) must be started as `pnpm run release`, never `npx release-it`. `packages/server-logger` has no `devEngines`, so CI's `npm pack` / `npm publish` there are unaffected — they stay on npm because that is the client npm trusted publishing (OIDC) was proven with.
+- **`pnpm-workspace.yaml` holds the policies, and pnpm 12 fails on an unknown key**, so a misspelling is caught rather than silently dropping a policy: `minimumReleaseAge: 10080` (7 days, strict), `trustPolicy: no-downgrade`, `blockExoticSubdeps`, `strictDepBuilds` with an explicit `allowBuilds` map, `verifyStoreIntegrity`, `engineStrict`.
+- **Exceptions name an exact version, never a bare package** — a bare name exempts every future release, malicious ones included. The only one is `trustPolicyExclude: semver@6.3.1`, the maintainers' 6.x ReDoS backport published after 7.x moved to provenance.
+- **A dependency bump can fail on age, not on a bug.** If a declared floor (`^x.y.z`) is younger than 7 days there is nothing installable in range; lower the floor to the newest mature release rather than excluding it, and raise it once it has aged.
+- **Every `allowBuilds` entry is currently `false`.** esbuild, `@parcel/watcher`, `@sentry/cli` and `unrs-resolver` all ship their binary as a per-platform optionalDependency and the script is only a fallback downloader/compiler. A new dependency with an install script fails the install until it gets an entry — decide it, do not flip `dangerouslyAllowAllBuilds`.
+- **Don't reach for `npx`/`pnpm dlx` in CI.** The Chrome Web Store uploader is a pinned devDependency (`pnpm exec chrome-webstore-upload`) so the step holding the store credentials goes through the lockfile and policies like everything else.
 
 ### Build gotchas
 
 - **`node scripts/build.js` uploads source maps to Sentry** whenever `SENTRY_AUTH_TOKEN` is in the environment, creating a real release in the `json-rpc-chrome-viewer` Sentry org. For local verification use `SENTRY_AUTH_TOKEN= node scripts/build.js` to suppress the upload.
-- `npm run build` requires a `.env` file — `scripts/envSubstitute.js` calls `process.exit(1)` if dotenv parses nothing.
+- `pnpm run build` requires a `.env` file — `scripts/envSubstitute.js` calls `process.exit(1)` if dotenv parses nothing.
 - `build/` is the unpacked extension root — load it via `chrome://extensions` → Load unpacked.
-- The version lives in **both** `package.json` and `static/manifest.json`; `@release-it/bumper` keeps them in sync during `npm run release`. Don't hand-edit one alone.
+- The version lives in **both** `package.json` and `static/manifest.json`; `@release-it/bumper` keeps them in sync during `pnpm run release`. Don't hand-edit one alone.
 
 ## Architecture
 
@@ -421,7 +432,7 @@ Consequence: **only React render/lifecycle errors reaching `ErrorBoundary.compon
 
 ### Server-side capture (`packages/server-logger`)
 
-The repo is an **npm workspace** (`packages/*`). `@json-rpc-chrome-viewer/server-logger`
+The repo is a **pnpm workspace** (`packages/*`, declared in `pnpm-workspace.yaml`). `@json-rpc-chrome-viewer/server-logger`
 is a separately versioned, separately published package that reports JSON-RPC
 calls a *server* makes — SSR renders, BFF handlers — which no browser-side
 mechanism can see, because they never cross the network boundary the panel
@@ -687,8 +698,8 @@ unsegmented bar from the server-measured duration, like intercepted rows, and
 their `startTime` is on the *server's* clock, so a remote server with skew
 shifts them along the waterfall.
 
-Verification is `npm run typecheck:logger` and `npm run build:logger` from the
-repo root; `npm run lint` covers the package source through the root flat config.
+Verification is `pnpm run typecheck:logger` and `pnpm run build:logger` from the
+repo root; `pnpm run lint` covers the package source through the root flat config.
 
 ## Build pipeline
 
@@ -697,7 +708,7 @@ repo root; `npm run lint` covers the package source through the root flat config
 - **SCSS** goes through `esbuild-sass-plugin` with `postcssModules`, so `import styles from './x.scss'` yields hashed class names. Use `:global(...)` to opt out of scoping (see `src/index.scss`). Shared theme variables live in `src/components/common/variables.scss` and are pulled in with namespaced `@use` — `@use "../variables";` then `variables.$color`, not a bare `@import`.
 - **SVGs** load as `text` (`loader: { '.svg': 'text' }`) and are injected via `dangerouslySetInnerHTML` in `Icon.tsx`.
 - Dark theme is a `body.isDark` class toggled in `Layout.tsx`, so theme overrides are written as nested `:global(.isDark) & { … }`, never a media query.
-- **`process.env.X` is not substituted by esbuild.** `scripts/envSubstitute.js` rewrites those tokens textually across `build/` after bundling, using `.env`. Env values therefore only exist after a full `npm run build`, never after a bare `node scripts/build.js`.
+- **`process.env.X` is not substituted by esbuild.** `scripts/envSubstitute.js` rewrites those tokens textually across `build/` after bundling, using `.env`. Env values therefore only exist after a full `pnpm run build`, never after a bare `node scripts/build.js`.
 - Path aliases `~/logic/*` and `~/components/*` come from `tsconfig.json` and are resolved by esbuild from there.
 - **Content-script bundles are content-hashed after bundling.** `hashContentScripts()` renames every `build/content/*.js` (and its map) to `<name>.<md5-8>.js`, then rewrites the references that point at them: the `content/websockets.js` / `content/interceptor.js` string literals inside the built `background.js`, and the `content_scripts` entry in `build/manifest.json`. **`background.js` itself is deliberately excluded from hashing** — it is only rewritten in place, so the manifest's `service_worker` path stays `content/background.js`. Hashing it would mean the manifest key and the file name have to be updated together on every build for no gain: the worker is loaded by the manifest, never cached under a stale url the way a page-injected script is. Source files keep the plain names; only `build/` is rewritten. Stale hashed files from a previous no-clean build are deleted first, and the hash is deterministic, so unchanged sources keep their names.
 
@@ -723,9 +734,9 @@ The MOCK badge repeats its own `:global(.isDark)` override inside `&.isIntercept
 These are pinned deliberately — verify before "upgrading" past them:
 
 - **ESLint 9 with flat config** (`eslint.config.mjs`, built on `eslint-config-airbnb-extended`). ESLint 10 is blocked by `eslint-plugin-react@7.37.5` alone — `typescript-eslint` has accepted `eslint@^10` since 8.71.0. The plugin uses at least two APIs v10 removed: `context.getFilename()` (via `version: 'detect'`) and `context.getSourceCode()` (in rule bodies such as `react/forward-ref-uses-ref`), so pinning the React version works around only the first crash and the next one lands immediately. `eslint-config-airbnb-extended@3.2.0` also still peers `eslint@^9.0.0`. Recheck when that plugin ships v10 support.
-- **TypeScript is capped at 6.0.x** — `typescript-eslint` peers `typescript <6.1.0`, and this repo uses type-aware linting. This is a hard block, not a peer warning: on TS 7 `typescript-eslint` throws `typescript-eslint does not support TS 7.0` at import time, so `npm run eslint` cannot start at all. (`tsc -noEmit` itself passes clean under 7.0.2 — typechecking is not what holds this back.) Tracked upstream at typescript-eslint#10940.
+- **TypeScript is capped at 6.0.x** — `typescript-eslint` peers `typescript <6.1.0`, and this repo uses type-aware linting. This is a hard block, not a peer warning: on TS 7 `typescript-eslint` throws `typescript-eslint does not support TS 7.0` at import time, so `pnpm run eslint` cannot start at all. (`tsc -noEmit` itself passes clean under 7.0.2 — typechecking is not what holds this back.) Tracked upstream at typescript-eslint#10940.
 - `tsconfig.json` pins `"strict": false` and an explicit `"types": ["chrome", "node"]` because TS 6 flipped both defaults. The `strict` pin preserves existing behaviour; turning it on surfaces ~50 real null-safety errors.
 - **Node 24 in CI.** Older Node fails outright: `eslint-plugin-n` and `stylelint` use `with { type: "json" }` import attributes, and release-it 21 requires `^22.21 || >=24`.
 - Rules conflicting with this codebase's conventions (arrow-function components, TS optional props in place of `defaultProps`, JSX formatting) are disabled in `eslint.config.mjs`, as are `react-hooks/exhaustive-deps`, `react-hooks/set-state-in-effect` and the triggering `jsx-a11y` rules.
-- **`npm run lint` is expected to report zero problems — no errors and no warnings.** Any output is something you introduced; fix it rather than adding to the baseline.
+- **`pnpm run lint` is expected to report zero problems — no errors and no warnings.** Any output is something you introduced; fix it rather than adding to the baseline.
 - `@stylistic/member-delimiter-style` is configured `delimiter: 'comma'` with `requireLast: true` for multiline. Interface and type members use commas **including a trailing one** on the last member; single-line members omit it.

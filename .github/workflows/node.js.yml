@@ -25,11 +25,15 @@ jobs:
       uses: actions/setup-node@v3
       with:
         node-version: ${{ matrix.node-version }}
-        cache: 'npm'
-    - run: npm ci --force
-    - run: npm run lint
-    - run: npm run stylelint
-    - run: tsc -noEmit
+    # Signature-verified pnpm via corepack, at the devEngines.packageManager pin.
+    - name: Install pnpm
+      run: |
+        corepack enable pnpm
+        corepack install -g "pnpm@$(node -p "require('./package.json').devEngines.packageManager.version")"
+    - run: pnpm install --frozen-lockfile
+    - run: pnpm run lint
+    - run: pnpm run stylelint
+    - run: pnpm exec tsc -noEmit
     - run: node scripts/build.js
-    - run: npm run typecheck:logger
-    - run: npm run build:logger
+    - run: pnpm run typecheck:logger
+    - run: pnpm run build:logger

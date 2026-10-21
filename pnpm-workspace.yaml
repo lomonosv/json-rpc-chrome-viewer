@@ -1,0 +1,51 @@
+packages:
+  - packages/*
+
+# --- Supply-chain hardening -------------------------------------------------
+# pnpm 12 refuses unknown keys here (ERR_PNPM_UNRECOGNIZED_WORKSPACE_SETTINGS),
+# so a typo cannot silently drop one of these policies.
+
+# Only resolve versions that have been on the registry for at least 7 days
+# (in minutes). Most malicious releases are caught and unpublished well inside
+# that window. Setting it explicitly also makes it strict: a too-new version
+# fails the install instead of being added to an exclude list behind your back.
+minimumReleaseAge: 10080
+minimumReleaseAgeStrict: true
+# Exceptions must name an exact version (`pkg@1.2.3`), never a bare package
+# name - a bare name would exempt every future release of it, malicious ones
+# included.
+minimumReleaseAgeExclude: []
+
+# Fail when a version is published with weaker provenance than an earlier one
+# (e.g. trusted publishing / provenance before, a plain token now) - the
+# signature of a hijacked maintainer account.
+trustPolicy: no-downgrade
+# Same rule as above: exact versions only, each one reviewed by hand.
+trustPolicyExclude:
+  # 6.3.1 is the maintainers' 2023 ReDoS backport (CVE-2022-25883) to the 6.x
+  # line, published after 7.x had moved to provenance. Legitimate, and still
+  # required by eslint-plugin-react and the babel toolchain.
+  - semver@6.3.1
+
+# Transitive dependencies may only come from the registry. A git, tarball-URL
+# or file: dependency deep in the tree bypasses both checks above.
+blockExoticSubdeps: true
+
+# Dependency lifecycle scripts (preinstall/install/postinstall) do not run
+# unless allow-listed below, and an unreviewed one fails the install rather
+# than being skipped with a warning. Each entry is an explicit decision.
+strictDepBuilds: true
+dangerouslyAllowAllBuilds: false
+allowBuilds:
+  # All four ship their native binary as a per-platform optionalDependency;
+  # the script is only a fallback that downloads or compiles one when that
+  # package is missing. Denied, so nothing is fetched outside the lockfile.
+  '@parcel/watcher': false
+  '@sentry/cli': false
+  esbuild: false
+  unrs-resolver: false
+
+# Verify every package in the store against its lockfile integrity hash.
+verifyStoreIntegrity: true
+# Refuse packages whose `engines` the current Node does not satisfy.
+engineStrict: true

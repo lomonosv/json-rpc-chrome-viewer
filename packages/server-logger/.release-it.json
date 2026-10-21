@@ -1,9 +1,9 @@
 {
   "hooks": {
     "after:init": [
-      "npm --prefix ../.. run lint",
-      "npm run typecheck",
-      "npm run build"
+      "pnpm --dir ../.. run lint",
+      "pnpm run typecheck",
+      "pnpm run build"
     ]
   },
   "git": {
