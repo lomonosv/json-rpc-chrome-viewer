@@ -79,14 +79,27 @@ jobs:
       # A locked devDependency, not `npx`: this step holds the store
       # credentials, so the uploader goes through the same lockfile and
       # supply-chain policies as everything else.
+      #
+      # v4 has no --auto-publish flag, and silently ignores it if passed - a
+      # release would upload as a draft and the job would still go green.
+      # Instead the command decides: none = upload + publish, `upload` = draft.
       - name: Upload to Chrome Web Store
         if: steps.creds.outputs.present == 'true'
         run: |
-          pnpm exec chrome-webstore-upload upload \
-            --source extension.zip \
-            ${{ (github.event_name == 'release' || inputs.publish) && '--auto-publish' || '' }}
+          if [ -z "$PUBLISHER_ID" ]; then
+            echo "::error::CWS_PUBLISHER_ID secret is not set - chrome-webstore-upload v4 requires it."
+            exit 1
+          fi
+          if [ "$PUBLISH" = "true" ]; then
+            pnpm exec chrome-webstore-upload --source extension.zip
+          else
+            pnpm exec chrome-webstore-upload upload --source extension.zip
+          fi
         env:
+          PUBLISH: ${{ github.event_name == 'release' || inputs.publish }}
           EXTENSION_ID: ${{ secrets.CWS_EXTENSION_ID }}
+          # v4 talks to the Chrome Web Store API v2, which needs the publisher id.
+          PUBLISHER_ID: ${{ secrets.CWS_PUBLISHER_ID }}
           CLIENT_ID: ${{ secrets.CWS_CLIENT_ID }}
           CLIENT_SECRET: ${{ secrets.CWS_CLIENT_SECRET }}
           REFRESH_TOKEN: ${{ secrets.CWS_REFRESH_TOKEN }}
