@@ -51,8 +51,15 @@ docker run --rm -p 3000:3000 jrcv-site
 
 1. Create an **Application** with the **GitHub** (or Git) provider on this
    repository, branch `main`, and **turn auto-deploy off** — tags deploy it.
-2. Build Type **Dockerfile**: Docker File `packages/site/Dockerfile`,
-   Docker Context Path `.` (the repo root).
+2. Build Type **Dockerfile**, with every path pointing at the **repo root**:
+   - *Build Path* (Provider section): `/` — not `/packages/site`
+   - *Docker File*: `packages/site/Dockerfile`
+   - *Docker Context Path*: `.`
+
+   The build needs the whole repository: it builds the extension's panel from
+   `src/` and installs the pnpm workspace. If the log shows
+   `"/pnpm-workspace.yaml": not found` and a context of roughly 245 kB, the
+   context is `packages/site` instead of the root.
 3. Build args: `NEXT_PUBLIC_SITE_URL=https://<your domain>` and `NEXT_PUBLIC_GA_ID=G-…`.
 4. Domains: attach your domain, container port **3000** (Dokploy handles TLS).
 5. Dokploy → *Settings → Profile*: generate an **API key**.

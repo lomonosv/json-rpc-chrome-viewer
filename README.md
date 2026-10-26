@@ -127,7 +127,7 @@ Captured traffic stays local - it is held in memory in the DevTools panel and is
 
 ## Development
 
-Requires **Node 24+** and **pnpm 12.13.0**, pinned in `package.json`'s `devEngines.packageManager` (`corepack enable pnpm && corepack install -g pnpm@12.13.0` gets it). pnpm then downloads the Node version pinned in `devEngines.runtime` (24.21.0) and runs every script on it.
+Requires **Node 24+** and **pnpm 12.13.0**, pinned in `package.json`'s `devEngines.packageManager` (`corepack enable pnpm && corepack install -g pnpm@12.13.0` gets it). pnpm then downloads the Node version pinned in `devEngines.runtime` (24.22.1) and runs every script on it.
 
 ```bash
 pnpm install
@@ -138,7 +138,7 @@ pnpm run stylelint
 pnpm run clean
 ```
 
-Plain `npm` refuses to run in the repo root unless your shell's Node is exactly 24.21.0, because npm enforces `devEngines.runtime` itself. Run everything through `pnpm`.
+Plain `npm` refuses to run in the repo root unless your shell's Node is exactly 24.22.1, because npm enforces `devEngines.runtime` itself. Run everything through `pnpm`.
 
 #### Supply-chain policy
 

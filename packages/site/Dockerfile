@@ -11,7 +11,7 @@
 # Node is pinned to the exact devEngines.runtime version; any other version
 # makes pnpm download that Node inside the build.
 
-FROM node:24.21.0-alpine AS deps
+FROM node:24.22.1-alpine AS deps
 WORKDIR /app
 # Workspace manifests only, so this layer is reused until a dependency changes.
 # pnpm-workspace.yaml carries the supply-chain policies (release age, trust
@@ -37,7 +37,7 @@ COPY . .
 # Builds the extension's panel bundle (without a Sentry release), then the site.
 RUN pnpm run build:site
 
-FROM node:24.21.0-alpine AS runner
+FROM node:24.22.1-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1
 RUN addgroup -S nodejs && adduser -S nextjs -G nodejs
