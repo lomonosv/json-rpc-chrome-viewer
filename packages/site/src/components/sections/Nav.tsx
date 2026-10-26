@@ -5,9 +5,7 @@ import styles from './nav.module.css';
 
 const links = [
   { href: '#features', label: 'Features' },
-  { href: '#interceptor', label: 'Interceptor' },
-  { href: '#server', label: 'Server calls' },
-  { href: '#privacy', label: 'Privacy' }
+  { href: '#start', label: 'Get started' }
 ];
 
 export default function Nav() {

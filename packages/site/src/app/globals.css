@@ -43,15 +43,6 @@ html {
   html {
     scroll-behavior: auto;
   }
-
-  /* Reveal's starting state is inline style from motion; reduced motion skips
-     straight to the end. CSS rather than useReducedMotion(), which is null in
-     the prerender and would make the markup differ on hydration. */
-  .reveal {
-    filter: none !important;
-    opacity: 1 !important;
-    transform: none !important;
-  }
 }
 
 body {
