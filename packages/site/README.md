@@ -1,7 +1,7 @@
 # @json-rpc-chrome-viewer/site
 
 The landing site for the JSON-RPC Chrome Viewer extension. Next.js 16 (App
-Router) served from its standalone build, deployed to Dokploy on a `site-v*` tag.
+Router).
 
 ## Develop
 
@@ -28,46 +28,7 @@ and not rendered — see its README.
 | `NEXT_PUBLIC_SITE_URL` | Absolute base for Open Graph urls (defaults to `http://localhost:3000`) |
 | `NEXT_PUBLIC_GA_ID` | Google Analytics measurement id (`G-…`); unset loads no analytics |
 
-Both are inlined at build time — in Docker they are build args.
-
-## Release and deploy
-
-```bash
-pnpm run release:site    # bumps packages/site/package.json, tags site-v<version>, pushes
-```
-
-The tag runs `.github/workflows/deploy-site.yml`: it checks the tag matches the
-version and is the head of `main`, lints, typechecks and builds, then asks
-Dokploy to deploy. Dokploy builds the image itself from the Dockerfile.
-
-To try the image locally (build context is the repo root):
-
-```bash
-docker build -f packages/site/Dockerfile --build-arg NEXT_PUBLIC_SITE_URL=http://localhost:3000 -t jrcv-site .
-docker run --rm -p 3000:3000 jrcv-site
-```
-
-### One-time Dokploy setup
-
-1. Create an **Application** with the **GitHub** (or Git) provider on this
-   repository, branch `main`, and **turn auto-deploy off** — tags deploy it.
-2. Build Type **Dockerfile**, with every path pointing at the **repo root**:
-   - *Build Path* (Provider section): `/` — not `/packages/site`
-   - *Docker File*: `packages/site/Dockerfile`
-   - *Docker Context Path*: `.`
-
-   The build needs the whole repository: it builds the extension's panel from
-   `src/` and installs the pnpm workspace. If the log shows
-   `"/pnpm-workspace.yaml": not found` and a context of roughly 245 kB, the
-   context is `packages/site` instead of the root.
-3. Build args: `NEXT_PUBLIC_SITE_URL=https://<your domain>` and `NEXT_PUBLIC_GA_ID=G-…`.
-4. Domains: attach your domain, container port **3000** (Dokploy handles TLS).
-5. Dokploy → *Settings → Profile*: generate an **API key**.
-6. GitHub repository secrets: `DOKPLOY_URL` (e.g. `https://dokploy.example.com`),
-   `DOKPLOY_API_KEY`, `DOKPLOY_APPLICATION_ID` (the id in the application's url).
-
-Without the `DOKPLOY_*` secrets the workflow still verifies the release and
-leaves a notice instead of deploying.
+Both are inlined at build time.
 
 ## React Bits
 

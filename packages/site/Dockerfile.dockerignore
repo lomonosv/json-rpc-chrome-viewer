@@ -9,9 +9,12 @@ build
 .cache
 .idea
 **/.DS_Store
-# Secrets must never reach a build context.
-.env
-.env.*
+# Secrets must never reach a build context. `**/` because ignore patterns are
+# anchored at the context root, and Dokploy writes its .env next to the
+# Dockerfile, in packages/site/ - where Next's standalone output would also
+# copy it into the image.
+**/.env
+**/.env.*
 **/id_rsa*
 **/id_ed25519*
 **/*.pem
