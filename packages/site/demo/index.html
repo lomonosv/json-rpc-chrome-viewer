@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex">
+    <title>JSON-RPC Chrome Viewer — live demo</title>
+    <!--
+      Chrome inserts this into every chrome-extension:// document
+      (extensions/renderer/resources/extension_fonts.css, filled from
+      IDS_WEB_FONT_FAMILY / IDS_WEB_FONT_SIZE). The panel's own CSS never sets a
+      base font and relies on it, so without it a web page falls back to 16px
+      serif and every row grows. Placed before the bundle's styles, as Chrome's is.
+    -->
+    <style>
+      body {
+        font-family: system-ui, sans-serif;
+        font-size: 75%;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="application"></div>
+    <div id="portal"></div>
+    <!-- Order matters: the stub has to define `chrome` before the panel bundle runs. -->
+    <script src="./stub.js"></script>
+    <script src="./application.js"></script>
+  </body>
+</html>

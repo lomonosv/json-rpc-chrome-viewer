@@ -37,3 +37,7 @@ jobs:
     - run: node scripts/build.js
     - run: pnpm run typecheck:logger
     - run: pnpm run build:logger
+    - run: pnpm run typecheck:site
+    - run: pnpm run build:site
+      env:
+        NEXT_TELEMETRY_DISABLED: 1

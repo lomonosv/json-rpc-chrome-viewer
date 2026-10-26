@@ -1,0 +1,116 @@
+.section {
+  padding: 120px 0;
+}
+
+.section code {
+  padding: 1px 6px;
+  border-radius: 5px;
+  background: var(--surface-raised);
+  color: var(--text);
+  font-size: 0.9em;
+}
+
+.compare {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 24px;
+}
+
+.card {
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.cardGood {
+  border-color: rgb(79 140 255 / 35%);
+  box-shadow: 0 30px 80px -40px rgb(79 140 255 / 55%);
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+}
+
+.label {
+  font-weight: 600;
+}
+
+.muted {
+  color: var(--text-dim);
+  font-style: italic;
+}
+
+.good {
+  color: var(--green);
+}
+
+.list {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-mono), monospace;
+  font-size: 13px;
+  list-style: none;
+}
+
+.list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 18px;
+  border-bottom: 1px solid var(--border);
+}
+
+.list li:last-child {
+  border-bottom: 0;
+}
+
+.dull {
+  color: var(--text-dim);
+}
+
+.method {
+  color: var(--text);
+}
+
+.encrypted {
+  color: var(--accent);
+}
+
+.ok {
+  color: var(--text-dim);
+}
+
+.error .method,
+.errorCode {
+  color: var(--red);
+}
+
+.error {
+  background: rgb(255 92 108 / 7%);
+}
+
+.arrow {
+  color: var(--text-dim);
+  font-size: 28px;
+}
+
+@media (width <= 760px) {
+  .section {
+    padding: 80px 0;
+  }
+
+  .compare {
+    grid-template-columns: 1fr;
+  }
+
+  .arrow {
+    justify-self: center;
+    transform: rotate(90deg);
+  }
+}

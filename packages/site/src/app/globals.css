@@ -1,0 +1,101 @@
+:root {
+  --background: #05060a;
+  --surface: #0c0e15;
+  --surface-raised: #121520;
+  --border: rgb(255 255 255 / 8%);
+  --border-strong: rgb(255 255 255 / 14%);
+  --text: #eef0f6;
+  --text-muted: #9aa1b4;
+  --text-dim: #626a80;
+
+  /* The extension's own meanings, kept on the site: blue is server/selection,
+     amber is MOCK, red is error. */
+  --accent: #4f8cff;
+  --accent-soft: rgb(79 140 255 / 16%);
+  --cyan: #22d3ee;
+  --amber: #ffb020;
+  --red: #ff5c6c;
+  --green: #3ddc97;
+  --violet: #8b7bff;
+
+  --phase-idle: #8a93a8;
+  --phase-send: #3ddc97;
+  --phase-wait: #4f8cff;
+  --phase-download: #22d3ee;
+
+  --radius: 16px;
+  --content-width: 1180px;
+  --gutter: clamp(16px, 4vw, 32px);
+
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 80px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  /* Reveal's starting state is inline style from motion; reduced motion skips
+     straight to the end. CSS rather than useReducedMotion(), which is null in
+     the prerender and would make the markup differ on hydration. */
+  .reveal {
+    filter: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--text);
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+a {
+  color: inherit;
+}
+
+code,
+pre,
+kbd {
+  font-family: var(--font-mono), ui-monospace, monospace;
+}
+
+::selection {
+  background: rgb(79 140 255 / 35%);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.container {
+  width: 100%;
+  max-width: calc(var(--content-width) + var(--gutter) * 2);
+  margin: 0 auto;
+  padding: 0 var(--gutter);
+}
+
+/* JSON / code token colours, shared by every code block and the panel mock. */
+.tok-key { color: #9ecbff; }
+.tok-string { color: #a5e6a1; }
+.tok-number { color: #ffb38a; }
+.tok-literal { color: #c8a6ff; }
+.tok-punct { color: #6f7891; }
+.tok-keyword { color: #ff8fb1; }
+.tok-comment { color: #5d6680; font-style: italic; }

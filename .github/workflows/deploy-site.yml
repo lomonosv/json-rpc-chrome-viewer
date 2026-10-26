@@ -1,0 +1,95 @@
+name: Deploy site
+
+# Tagged separately from the extension (`v*`) and the server logger
+# (`server-logger-v*`): a `site-v*` tag is what ships the site, so neither of
+# the other release lines can deploy it by accident.
+#
+# Dokploy builds the image itself from packages/site/Dockerfile (context: repo
+# root), the same way lomonos-com-ua is deployed. This job only gates the
+# release and then tells Dokploy to deploy. Turn Dokploy's own auto-deploy on
+# push OFF for this application, so a tag is the only thing that ships.
+on:
+  push:
+    tags:
+      - 'site-v*'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify the tag matches the package version
+        if: github.event_name == 'push'
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#site-v}"
+          PKG_VERSION="$(node -p "require('./packages/site/package.json').version")"
+          if [ "$TAG_VERSION" != "$PKG_VERSION" ]; then
+            echo "Tag $GITHUB_REF_NAME does not match package version $PKG_VERSION" >&2
+            exit 1
+          fi
+
+      # Dokploy deploys the head of the branch it tracks (main), not the tag.
+      # `pnpm run release:site` tags main's head and pushes both, so they agree;
+      # this stops an older tag, or main having moved on, from shipping
+      # something other than what the tag names.
+      - name: Verify the tag is the head of main
+        if: github.event_name == 'push'
+        run: |
+          git fetch --depth=1 origin main
+          if [ "$(git rev-parse FETCH_HEAD)" != "$GITHUB_SHA" ]; then
+            echo "$GITHUB_REF_NAME is not the head of main, which is what Dokploy builds." >&2
+            exit 1
+          fi
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.x
+
+      # pnpm comes from corepack, which verifies the release against npm's
+      # signing keys - no third-party setup action. Corepack only reads
+      # `packageManager`, so the version is taken from the single pin in
+      # devEngines.packageManager instead.
+      - name: Install pnpm
+        run: |
+          corepack enable pnpm
+          corepack install -g "pnpm@$(node -p "require('./package.json').devEngines.packageManager.version")"
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm run lint
+
+      - run: pnpm run typecheck:site
+
+      # The same build the Dockerfile runs, so a broken site fails here, in
+      # the open, rather than inside Dokploy's build log.
+      - run: pnpm run build:site
+        env:
+          NEXT_TELEMETRY_DISABLED: '1'
+
+      - name: Check for Dokploy credentials
+        id: creds
+        run: |
+          if [ -n "${{ secrets.DOKPLOY_API_KEY }}" ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::No DOKPLOY_* secrets set - the release was verified but not deployed."
+          fi
+
+      - name: Deploy on Dokploy
+        if: steps.creds.outputs.present == 'true'
+        run: |
+          curl --fail-with-body --silent --show-error \
+            -X POST "${DOKPLOY_URL%/}/api/application.deploy" \
+            -H "x-api-key: $DOKPLOY_API_KEY" \
+            -H 'Content-Type: application/json' \
+            -d "{\"applicationId\":\"$DOKPLOY_APPLICATION_ID\"}"
+        env:
+          DOKPLOY_URL: ${{ secrets.DOKPLOY_URL }}
+          DOKPLOY_API_KEY: ${{ secrets.DOKPLOY_API_KEY }}
+          DOKPLOY_APPLICATION_ID: ${{ secrets.DOKPLOY_APPLICATION_ID }}

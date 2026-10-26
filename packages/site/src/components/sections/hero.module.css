@@ -1,0 +1,142 @@
+.hero {
+  position: relative;
+  overflow: hidden;
+  padding: 72px 0 96px;
+}
+
+.grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgb(255 255 255 / 3.5%) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(255 255 255 / 3.5%) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(ellipse 70% 55% at 50% 30%, #000 20%, transparent 75%);
+  pointer-events: none;
+}
+
+.inner {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 32px;
+  padding: 5px 14px 5px 5px;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  background: rgb(12 14 21 / 70%);
+  backdrop-filter: blur(8px);
+  color: var(--text-muted);
+  font-size: 14px;
+  text-decoration: none;
+  transition: border-color 0.2s;
+}
+
+.pill:hover {
+  border-color: rgb(79 140 255 / 60%);
+}
+
+.pillTag {
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.title {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0;
+  font-size: clamp(42px, 8.4vw, 92px);
+  font-weight: 650;
+  letter-spacing: -0.05em;
+  line-height: 1.02;
+}
+
+.title p {
+  justify-content: center;
+  margin: 0;
+}
+
+.titleSecond {
+  display: block;
+  margin-top: 4px;
+}
+
+.lead {
+  max-width: 680px;
+  text-shadow: 0 1px 14px rgb(5 6 10 / 95%), 0 0 4px rgb(5 6 10 / 80%);
+  margin: 28px auto 0;
+  color: var(--text-muted);
+  font-size: clamp(17px, 2.1vw, 20px);
+  line-height: 1.55;
+  text-wrap: pretty;
+}
+
+.ctas {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 40px;
+}
+
+.primary {
+  font-weight: 600;
+}
+
+.secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0.875rem 1.5rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  background: rgb(255 255 255 / 3%);
+  font-weight: 500;
+  line-height: 1.25;
+  text-decoration: none;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.secondary:hover {
+  border-color: rgb(255 255 255 / 30%);
+  background: rgb(255 255 255 / 7%);
+}
+
+.meta {
+  margin: 20px 0 0;
+  color: var(--text-dim);
+  font-size: 13px;
+}
+
+.panel {
+  width: 100%;
+  max-width: 1120px;
+  margin-top: 72px;
+  perspective: 1600px;
+}
+
+.hint {
+  margin: 18px 0 0;
+  color: var(--text-dim);
+  font-size: 13px;
+}
+
+.hint kbd {
+  padding: 1px 6px;
+  border: 1px solid var(--border-strong);
+  border-radius: 4px;
+  background: var(--surface);
+  font-size: 11px;
+}

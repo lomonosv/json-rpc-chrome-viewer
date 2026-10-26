@@ -1,0 +1,22 @@
+{
+  "hooks": {
+    "after:init": [
+      "pnpm --dir ../.. run lint",
+      "pnpm run typecheck",
+      "pnpm run build"
+    ]
+  },
+  "git": {
+    "requireCleanWorkingDir": true,
+    "commitMessage": "Release site v${version}",
+    "tagName": "site-v${version}",
+    "tagAnnotation": "site v${version}",
+    "push": true
+  },
+  "github": {
+    "release": false
+  },
+  "npm": {
+    "publish": false
+  }
+}

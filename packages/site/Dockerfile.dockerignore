@@ -1,0 +1,18 @@
+# Read by BuildKit for packages/site/Dockerfile, whose context is the repo root -
+# a Dockerfile-specific ignore file, so the repo root needs no .dockerignore.
+**/node_modules
+**/.next
+**/out
+build
+.git
+.github
+.cache
+.idea
+**/.DS_Store
+# Secrets must never reach a build context.
+.env
+.env.*
+**/id_rsa*
+**/id_ed25519*
+**/*.pem
+packages/site/public/demo

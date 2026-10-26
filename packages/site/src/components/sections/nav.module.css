@@ -1,0 +1,102 @@
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  border-bottom: 1px solid var(--border);
+  background: rgb(5 6 10 / 62%);
+  backdrop-filter: blur(16px) saturate(160%);
+}
+
+.inner {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  height: 64px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.logo {
+  border-radius: 7px;
+  background: #fff;
+  padding: 2px;
+}
+
+.brandDim {
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.links {
+  display: flex;
+  gap: 28px;
+  margin-left: auto;
+  font-size: 14px;
+}
+
+.links a {
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.links a:hover {
+  color: var(--text);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.iconLink {
+  display: flex;
+  color: var(--text-muted);
+  transition: color 0.2s;
+}
+
+.iconLink:hover {
+  color: var(--text);
+}
+
+.install {
+  padding: 7px 14px;
+  border-radius: 999px;
+  background: var(--text);
+  color: var(--background);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.install:hover {
+  box-shadow: 0 0 24px rgb(255 255 255 / 25%);
+  transform: translateY(-1px);
+}
+
+@media (width <= 860px) {
+  .links {
+    display: none;
+  }
+
+  .actions {
+    margin-left: auto;
+  }
+}
+
+@media (width <= 420px) {
+  .brandDim {
+    display: none;
+  }
+}

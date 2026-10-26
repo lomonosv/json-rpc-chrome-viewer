@@ -15,7 +15,15 @@ export default [
       'scripts/**',
       'node_modules/**',
       'packages/*/dist/**',
-      'packages/*/scripts/**'
+      'packages/*/scripts/**',
+      'packages/site/.next/**',
+      'packages/site/out/**',
+      'packages/site/next-env.d.ts',
+      // Plain JS that runs the extension's panel bundle on the site, like static/.
+      'packages/site/demo/**',
+      'packages/site/public/demo/**',
+      // Vendored React Bits sources, kept verbatim so an update is a re-copy.
+      'packages/site/src/components/reactbits/**'
     ]
   },
   ...configs.base.recommended,
@@ -91,6 +99,16 @@ export default [
     rules: {
       '@stylistic/quote-props': 'off',
       'no-template-curly-in-string': 'off'
+    }
+  },
+  {
+    // The site compiles JSX with the automatic runtime (`jsx: react-jsx`), so
+    // React does not have to be in scope the way the extension's classic
+    // runtime needs it.
+    files: ['packages/site/**/*.{ts,tsx}'],
+    rules: {
+      'react/react-in-jsx-scope': 'off',
+      'react/jsx-uses-react': 'off'
     }
   }
 ];

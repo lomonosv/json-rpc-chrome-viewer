@@ -24,7 +24,12 @@
     "release": "release-it",
     "build:logger": "pnpm --filter @json-rpc-chrome-viewer/server-logger run build",
     "typecheck:logger": "pnpm --filter @json-rpc-chrome-viewer/server-logger run typecheck",
-    "release:logger": "cd packages/server-logger && release-it"
+    "release:logger": "cd packages/server-logger && release-it",
+    "dev:site": "pnpm run build:demo && pnpm --filter @json-rpc-chrome-viewer/site run dev",
+    "build:site": "pnpm run build:demo && pnpm --filter @json-rpc-chrome-viewer/site run build",
+    "typecheck:site": "pnpm --filter @json-rpc-chrome-viewer/site run typecheck",
+    "release:site": "cd packages/site && release-it",
+    "build:demo": "SENTRY_AUTH_TOKEN= node scripts/build.js"
   },
   "repository": {
     "type": "git",
