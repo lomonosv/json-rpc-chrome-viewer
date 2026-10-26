@@ -1,6 +1,6 @@
 {
   "name": "@json-rpc-chrome-viewer/site",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "private": true,
   "description": "Landing site for the JSON-RPC Chrome Viewer DevTools extension",
   "license": "MIT",
