@@ -31,6 +31,14 @@ ENV NEXT_TELEMETRY_DISABLED=1
 # Each must be declared here, or Docker drops the value Dokploy passes.
 ARG NEXT_PUBLIC_SITE_URL
 ENV NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL
+# Required here, unlike in dev and CI: it is the canonical url, og:url and the
+# sitemap's base, and without it the site falls back to http://localhost:3000 -
+# a canonical that tells search engines the real page is on localhost. That
+# shipped once; an image is never built without it again.
+RUN case "$NEXT_PUBLIC_SITE_URL" in \
+      https://*) ;; \
+      *) echo "NEXT_PUBLIC_SITE_URL must be set to the site's https:// origin (got: '$NEXT_PUBLIC_SITE_URL'). Add it as a build arg." >&2; exit 1 ;; \
+    esac
 ARG NEXT_PUBLIC_GA_ID
 ENV NEXT_PUBLIC_GA_ID=$NEXT_PUBLIC_GA_ID
 COPY . .

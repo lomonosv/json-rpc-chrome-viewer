@@ -10,4 +10,4 @@ export const chromeWebStoreUrl =
 export const newTabProps = { target: '_blank', rel: 'noopener noreferrer' } as const;
 
 // Absolute base for Open Graph urls; set NEXT_PUBLIC_SITE_URL to the deployed origin.
-export const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+export const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000').replace(/\/+$/, '');
