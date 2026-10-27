@@ -1,5 +1,13 @@
-@use "sass:color";
 @use "../../common/variables";
+
+// Every row state is the same three inset shadows (edge, glow, separator), so
+// states transition and no state changes the row's geometry.
+$separator: inset 0 -1px 0 0 variables.$borderColor;
+$noEdge: inset 0 0 0 0 transparent;
+$noGlow: inset 0 0 0 0 transparent;
+
+// Glow: `inset 160px 0 110px -110px <colour>`, written out because stylelint
+// rejects a Sass @function.
 
 .requestWrapper {
   display: flex;
@@ -8,44 +16,39 @@
   white-space: nowrap;
   padding: 0 7px;
   scroll-margin-top: 28px;
+  color: variables.$color;
+  background-color: transparent;
+  box-shadow: $noEdge, $noGlow, $separator;
 
-  &:nth-child(2n) {
-    background: variables.$evenRowBackground;
-
-    :global(.isDark) & {
-      background: variables.$darkEvenRowBackground;
-    }
-  }
+  // Not the fill: it follows row parity, and an inserted row flips it below.
+  transition: box-shadow 0.28s variables.$easeOut;
 
   &:nth-child(2n + 1) {
-    background: variables.$oddRowBackground;
-
-    :global(.isDark) & {
-      background: variables.$darkOddRowBackground;
-    }
+    background-color: variables.$rowAltBackground;
   }
 
   // Before the hover rule, which ties on specificity and has to win.
   &.isServerRow:nth-child(2n) {
-    background: variables.$serverRowBackground;
-
-    :global(.isDark) & {
-      background: variables.$darkServerRowBackground;
-    }
+    background-color: variables.$serverRowBackground;
   }
 
   &.isServerRow:nth-child(2n + 1) {
-    background: variables.$serverRowAltBackground;
+    background-color: variables.$serverRowAltBackground;
+  }
 
-    :global(.isDark) & {
-      background: variables.$darkServerRowAltBackground;
-    }
+  &.error:nth-child(n) {
+    background-color: variables.$redRow;
+  }
+
+  @include variables.motion {
+    animation: row-in 0.2s ease-out both;
   }
 
   .meta {
     display: flex;
     align-items: stretch;
     flex-shrink: 0;
+    font-variant-numeric: tabular-nums;
 
     > div {
       box-sizing: border-box;
@@ -53,10 +56,7 @@
       align-items: center;
       justify-content: center;
       border-left: 1px solid variables.$borderColor;
-
-      :global(.isDark) & {
-        border-left-color: variables.$darkBorderColor;
-      }
+      color: variables.$mutedColor;
     }
 
     > .waterfallCell {
@@ -65,24 +65,13 @@
 
     > .isSlow {
       color: variables.$slowCall;
-
-      :global(.isDark) & {
-        color: variables.$darkSlowCall;
-      }
     }
 
     > .isVerySlow {
-      font-weight: 600;
+      font-weight: 700;
       color: variables.$verySlowCall;
-
-      :global(.isDark) & {
-        color: variables.$darkVerySlowCall;
-      }
+      text-shadow: 0 0 10px variables.$amberGlow;
     }
-  }
-
-  :global(.isDark) & {
-    color: #bdc4cc;
   }
 
   &.error .method {
@@ -90,16 +79,12 @@
   }
 
   &.responseNotParsed .method,
-  &.responseNotParsed .meta {
+  &.responseNotParsed .meta > div {
     color: variables.$warning;
   }
 
   &:not(.isSelected):hover {
-    background: variables.$hoverBackground;
-
-    :global(.isDark) & {
-      background: variables.$darkHoverBackground;
-    }
+    background-color: variables.$hoverBackground;
   }
 
   &:hover .rowActions {
@@ -107,43 +92,36 @@
   }
 }
 
-.isSelected {
-  background: variables.$selectedBackground !important;
-
-  :global(.isDark) & {
-    background: variables.$darkSelectedBackground !important;
-  }
-}
-
-.isAccordionSelected {
-  box-shadow: inset 3px 0 0 0 variables.$resizeHandleColor;
-
-  :global(.isDark) & {
-    box-shadow: inset 3px 0 0 0 variables.$darkResizeHandleColor;
-  }
-}
-
 .isServerRow {
-  padding-left: 4px;
-  border-left: 3px solid variables.$serverAccent;
+  box-shadow: inset 3px 0 0 0 variables.$serverEdge, $noGlow, $separator;
+}
 
-  :global(.isDark) & {
-    border-left-color: variables.$darkServerAccent;
-  }
+.isMockRow {
+  box-shadow: inset 3px 0 0 0 var(--jr-mock-bg), inset 160px 0 110px -110px variables.$amberSoft, $separator;
+}
 
-  &.isAccordionSelected {
-    padding-left: 7px;
-    border-left: none;
-  }
+.error {
+  box-shadow: inset 3px 0 0 0 variables.$error, inset 160px 0 110px -110px variables.$redRow, $separator;
+}
+
+.isSelected,
+.isSelected.isServerRow,
+.isSelected.isMockRow,
+.isSelected.error {
+  background-color: variables.$selectedBackground !important;
+  box-shadow: inset 2px 0 0 0 variables.$accent, inset 160px 0 110px -110px variables.$selectGlow, $separator;
+}
+
+.isAccordionSelected,
+.isAccordionSelected.isServerRow,
+.isAccordionSelected.isMockRow,
+.isAccordionSelected.error {
+  box-shadow: inset 3px 0 0 0 variables.$accent, inset 160px 0 110px -110px variables.$selectGlow, $separator;
 }
 
 .isDimmed {
-  opacity: 0.3;
+  opacity: 0.35;
   transition: opacity 0.12s ease-in-out;
-
-  :global(.isDark) & {
-    opacity: 0.2;
-  }
 
   &:hover {
     opacity: 1;
@@ -152,7 +130,7 @@
 
 .methodWrapper {
   min-width: 300px;
-  padding: 7px 0;
+  padding: 6px 0;
   flex: 1 1 auto;
   width: 0;
   overflow: hidden;
@@ -165,15 +143,17 @@
 .method {
   display: flex;
   align-items: center;
-  font-family: monospace;
+  font-family: variables.$fontMono;
   font-size: 12px;
+  font-weight: var(--jr-method-weight);
+  color: variables.$highLightedColor;
   padding-right: 5px;
   overflow: hidden;
   position: relative;
 }
 
 .isCompact .methodWrapper {
-  padding: 3px 0;
+  padding: 4px 0;
 }
 
 .isCompact .errorLine {
@@ -202,87 +182,53 @@
 
 .isRuleAdded.isRuleAdded {
   fill: variables.$success;
-
-  :global(.isDark) & {
-    fill: variables.$darkSuccess;
-  }
 }
 
+// Badges are ::before at (0,2,1), so source order does not decide them.
 .badge {
   display: inline-flex;
+  flex-shrink: 0;
 
   &::before {
-    opacity: 0.4;
-    background: variables.$headerBackground;
-    border: 1px solid variables.$borderColor;
-    color: variables.$color;
-    padding: 1px 5px;
-    margin-right: 5px;
-    border-radius: 2px;
-    font-size: 9px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-
-    :global(.isDark) & {
-      background: variables.$darkHeaderBackground;
-      border: 1px solid variables.$darkBorderColor;
-      color: variables.$darkColor;
-    }
+    margin-right: 6px;
+    padding: 0 5px;
+    border-radius: 3px;
+    font-family: variables.$fontMono;
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    line-height: 15px;
   }
 
   &.isCors::before {
     content: "CORS";
+    box-shadow: inset 0 0 0 1px variables.$borderStrongColor;
+    color: variables.$dimColor;
+    font-weight: 600;
   }
 
   &.isWebsocket::before {
-    content: "WEBSOCKET";
-    background: variables.$greenHeaderBackground;
-
-    :global(.isDark) & {
-      background: variables.$greenHeaderBackground;
-    }
+    content: "WS";
+    background: variables.$successSoft;
+    color: variables.$success;
   }
 
-  &.isIntercepted {
-    flex-shrink: 0;
-
-    &::before {
-      content: "MOCK";
-      opacity: 1;
-      background: variables.$interceptorAccent;
-      border-color: variables.$interceptorAccent;
-      color: #fff;
-
-      :global(.isDark) & {
-        background: variables.$darkInterceptorAccent;
-        border-color: variables.$darkInterceptorAccent;
-        color: #fff;
-      }
-    }
+  &.isIntercepted::before {
+    content: "MOCK";
+    background: variables.$mockBadge;
+    box-shadow: 0 0 12px variables.$amberGlow;
+    color: variables.$mockBadgeText;
   }
 
-  // Repeats its own dark override for the same reason MOCK does: this rule and
-  // `.isDark .badge::before` tie at (0,2,1), so without it the theme colour
-  // would be decided by source order rather than by intent.
-  &.isServerSide {
-    flex-shrink: 0;
-
-    &::before {
-      content: "SERVER";
-      opacity: 1;
-      background: variables.$serverAccent;
-      border-color: variables.$serverAccent;
-      color: #fff;
-
-      :global(.isDark) & {
-        background: variables.$darkServerBadge;
-        border-color: variables.$darkServerBadge;
-        color: #fff;
-      }
-    }
+  &.isServerSide::before {
+    content: "SERVER";
+    background: linear-gradient(135deg, variables.$accent, variables.$cyan);
+    box-shadow: 0 0 12px variables.$accentGlow;
+    color: #fff;
   }
-
 }
 
 .isPendingRow {
@@ -292,19 +238,54 @@
   }
 }
 
-.isRevealing {
-  animation: row-reveal 0.18s ease-out backwards;
+// Stagger comes from an inline animation-delay. No animation of its own: the
+// class is removed later, and changing animation-name restarts the fade.
+
+// HTTP status only: a JSON-RPC error rides a 200.
+.statusPill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 18px;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, currentcolor 22%, transparent);
+
+  &.success {
+    background: variables.$successSoft;
+    color: variables.$success;
+  }
+
+  &.redirect {
+    background: variables.$accentSoft;
+    color: variables.$accentText;
+  }
+
+  &.clientError {
+    background: variables.$amberSoft;
+    color: variables.$slowCall;
+  }
+
+  &.serverError {
+    background: variables.$errorSoft;
+    color: variables.$error;
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, currentcolor 22%, transparent), 0 0 10px variables.$redGlow;
+  }
+
+  &.isPending {
+    background: variables.$accentSoft;
+    color: variables.$accentText;
+  }
 }
 
-@keyframes row-reveal {
+@keyframes row-in {
   from {
     opacity: 0;
-    transform: translateY(-4px);
   }
 
   to {
     opacity: 1;
-    transform: none;
   }
 }
 
@@ -322,18 +303,18 @@
   display: inline-flex;
   width: 0;
   height: 0;
-  margin-right: 5px;
+  margin-right: 6px;
 
   &.income {
-    border-left: 5px solid transparent;
-    border-right: 5px solid transparent;
-    border-top: 7px solid variables.$error;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 6px solid variables.$success;
   }
 
   &.outcome {
-    border-left: 5px solid transparent;
-    border-right: 5px solid transparent;
-    border-bottom: 7px solid variables.$greenHeaderBackground;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-bottom: 6px solid variables.$success;
   }
 }
 
@@ -341,7 +322,7 @@
   display: flex;
   align-items: center;
   min-width: 0;
-  margin-top: 3px;
+  margin-top: 2px;
 }
 
 .url {
@@ -351,12 +332,13 @@
   flex: 1 1 auto;
   width: 0;
   min-width: 0;
+  font-size: 11px;
 
   > span {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    opacity: 0.5;
+    color: variables.$dimColor;
   }
 }
 
@@ -368,7 +350,7 @@
   flex: 1 1 auto;
   width: 0;
   min-width: 0;
-  font-family: monospace;
+  font-family: variables.$fontMono;
   font-size: 11px;
   color: variables.$error;
 }
@@ -376,18 +358,14 @@
 .errorCode {
   flex-shrink: 0;
   padding: 0 4px;
-  border-radius: 2px;
+  border-radius: 3px;
   line-height: 14px;
-  background: color.change(variables.$error, $alpha: 0.12);
-
-  :global(.isDark) & {
-    background: color.change(variables.$error, $alpha: 0.22);
-  }
+  background: variables.$errorSoft;
 }
 
 .errorMessage {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  opacity: 0.8;
+  opacity: 0.85;
 }

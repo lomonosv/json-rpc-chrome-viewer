@@ -21,19 +21,16 @@
   background: none;
   font: inherit;
   color: inherit;
-  opacity: 0.7;
+  color: variables.$dimColor;
+  font-weight: 500;
   cursor: pointer;
 
   &:hover {
-    opacity: 1;
+    color: variables.$highLightedColor;
   }
 
   &.isActive {
-    border-bottom-color: variables.$resizeHandleColor;
-    opacity: 1;
-
-    :global(.isDark) & {
-      border-bottom-color: variables.$darkResizeHandleColor;
-    }
+    border-bottom-color: variables.$accent;
+    color: variables.$highLightedColor;
   }
 }

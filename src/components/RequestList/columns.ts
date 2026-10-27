@@ -17,7 +17,7 @@ export const defaultColumnOrder: ResizableColumn[] = [
 export const columnLabels: Record<ResizableColumn, string> = {
   [SortField.Waterfall]: 'Waterfall',
   [SortField.Status]: 'Status',
-  [SortField.Size]: 'Size (B)',
+  [SortField.Size]: 'Size',
   [SortField.Time]: 'Time (ms)'
 };
 

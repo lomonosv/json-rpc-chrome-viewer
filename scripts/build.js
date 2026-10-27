@@ -9,7 +9,7 @@ const shared = {
   minify: true,
   outdir: 'build',
   entryNames: '[dir]/[name]',
-  loader: { '.svg': 'text' },
+  loader: { '.svg': 'text', '.woff2': 'dataurl' },
   sourcemap: true
 };
 

@@ -1,32 +1,30 @@
 @use "../../../common/variables";
 
+// Taller than the bar so its glow has room.
 .waterfall {
   position: relative;
   flex: 1;
-  height: 9px;
+  height: 14px;
   overflow: hidden;
 }
 
 .bar {
   position: absolute;
-  top: 0;
-  height: 100%;
-  min-width: 1px;
-  border-radius: 2px;
-  background: variables.$waterfallBar;
-
-  :global(.isDark) & {
-    background: variables.$darkWaterfallBar;
+  top: 3px;
+  height: 8px;
+  min-width: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, variables.$accent, variables.$cyan);
+  box-shadow: 0 0 8px variables.$accentGlow;
+  // Linear and one clock tick long (RequestList), so in-flight growth is steady.
+  @include variables.motion {
+    transition: left 0.1s linear, width 0.1s linear;
   }
 }
 
 .isSegmented {
   overflow: hidden;
   background: none;
-
-  :global(.isDark) & {
-    background: none;
-  }
 }
 
 .segment {
@@ -38,32 +36,42 @@
 @include variables.phaseTones;
 
 .isDimmed {
-  opacity: 0.35;
+  opacity: 0.3;
 }
 
 .isHighlighted {
   outline: 1px solid variables.$highLightedColor;
   outline-offset: -1px;
-
-  :global(.isDark) & {
-    outline-color: variables.$darkHighLightedColor;
-  }
 }
 
+// Declared after .bar, which it is applied together with.
 .tick {
+  top: 1px;
   width: 2px;
+  height: 12px;
   border-radius: 1px;
-  background: variables.$waterfallTick;
-
-  :global(.isDark) & {
-    background: variables.$darkWaterfallTick;
-  }
+  background: variables.$success;
+  box-shadow: 0 0 8px variables.$greenGlow;
 }
 
 .isPending {
-  background: variables.$resizeHandleColor;
+  background-color: variables.$accent;
+  background-image: linear-gradient(90deg, transparent, rgb(255 255 255 / 55%), transparent);
+  background-repeat: no-repeat;
+  background-size: 40% 100%;
+  opacity: 0.85;
 
-  :global(.isDark) & {
-    background: variables.$darkResizeHandleColor;
+  @include variables.motion {
+    animation: pending-sweep 1.1s linear infinite;
+  }
+}
+
+@keyframes pending-sweep {
+  from {
+    background-position: -40% 0;
+  }
+
+  to {
+    background-position: 140% 0;
   }
 }

@@ -2,21 +2,14 @@
 
 .headerContainer {
   z-index: 1;
-  min-height: 27px;
-  height: 27px;
+  min-height: variables.$headerHeight;
+  height: variables.$headerHeight;
   border-bottom: 1px solid variables.$borderColor;
   display: flex;
   align-items: center;
-  padding: 0 9px;
-  background: variables.$headerBackground;
-  color: variables.$color;
+  padding: 0 10px;
+  background: variables.$surface;
+  color: variables.$mutedColor;
+  font-weight: 500;
   user-select: none;
-}
-
-:global(.isDark) {
-  .headerContainer {
-    background: variables.$darkHeaderBackground;
-    color: variables.$darkColor;
-    border-bottom: 1px solid variables.$darkBorderColor;
-  }
 }

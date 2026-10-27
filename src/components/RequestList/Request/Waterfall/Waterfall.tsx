@@ -2,32 +2,42 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import cn from 'classnames';
 import { IRequest } from '~/logic/HTTPArchive/IRequest';
 import { getTimingGroups } from '~/logic/HTTPArchive/timings';
+import { ITimeline, getRequestEnd } from '../../timeline';
 import WaterfallTooltip from './WaterfallTooltip';
 import styles from './waterfall.scss';
-
-const minBarWidthPercent = 0.5;
 
 const closeDelayMs = 120;
 
 interface IComponentProps {
   item: IRequest,
-  timelineStart: number,
-  timelineEnd: number,
+  timeline: ITimeline,
   now: number,
 }
 
-const Waterfall = ({ item, timelineStart, timelineEnd, now }: IComponentProps) => {
+const getGeometry = (item: IRequest, { start, span }: ITimeline, now: number) => {
+  const left = Math.min(Math.max(((item.startTime - start) / span) * 100, 0), 100);
+  const duration = getRequestEnd(item, now) - item.startTime;
+
+  return { left, width: Math.min((duration / span) * 100, 100 - left) };
+};
+
+const getTitle = (item: IRequest, offsetMs: number, now: number) => {
+  if (item.isPending) {
+    return `+${ Math.round(offsetMs) } ms · in flight for ${ Math.round(now - item.startTime) } ms`;
+  }
+
+  return item.isWebSocket
+    ? `+${ Math.round(offsetMs) } ms`
+    : `+${ Math.round(offsetMs) } ms · ${ Math.ceil(item.time) } ms`;
+};
+
+const Waterfall = ({ item, timeline, now }: IComponentProps) => {
   const [anchor, setAnchor] = useState<DOMRect>(null);
   const [highlightedPhase, setHighlightedPhase] = useState<string>(null);
   const closeTimer = useRef<number>(0);
 
-  const timelineDuration = Math.max(timelineEnd - timelineStart, 1);
-  const offsetMs = item.startTime - timelineStart;
-  const offset = Math.min(Math.max((offsetMs / timelineDuration) * 100, 0), 100);
-  const elapsedMs = item.isPending ? now - item.startTime : item.time;
-  const width = item.isPending
-    ? Math.max(((now - item.startTime) / timelineDuration) * 100, minBarWidthPercent)
-    : Math.max((item.time / timelineDuration) * 100, minBarWidthPercent);
+  const offsetMs = item.startTime - timeline.start;
+  const { left, width } = getGeometry(item, timeline, now);
 
   const { groups, total } = useMemo(() => getTimingGroups(item.timings), [item.timings]);
 
@@ -67,17 +77,7 @@ const Waterfall = ({ item, timelineStart, timelineEnd, now }: IComponentProps) =
       className={ styles.waterfall }
       onMouseEnter={ handleMouseEnter }
       onMouseLeave={ scheduleClose }
-      { ...(hasTimings ? {} : {
-        title: (() => {
-          if (item.isPending) {
-            return `+${ Math.round(offsetMs) } ms · pending for ${ Math.round(elapsedMs) } ms`;
-          }
-
-          return item.isWebSocket
-            ? `+${ Math.round(offsetMs) } ms`
-            : `+${ Math.round(offsetMs) } ms · ${ Math.ceil(item.time) } ms`;
-        })()
-      }) }
+      { ...(hasTimings ? {} : { title: getTitle(item, offsetMs, now) }) }
     >
       <div
         className={ cn(styles.bar, {
@@ -85,10 +85,10 @@ const Waterfall = ({ item, timelineStart, timelineEnd, now }: IComponentProps) =
           [styles.isSegmented]: isSegmented,
           [styles.isPending]: item.isPending
         }) }
-        style={ {
-          left: `${ offset }%`,
-          ...(item.isWebSocket ? {} : { width: `${ width }%` })
-        } }
+        style={ item.isWebSocket
+          // Shifted back by its own offset, so the newest frame is not clipped.
+          ? { left: `${ left }%`, translate: `-${ left }% 0` }
+          : { left: `${ left }%`, width: `${ width }%` } }
       >
         { isSegmented && segments.map((phase) => (
           <span

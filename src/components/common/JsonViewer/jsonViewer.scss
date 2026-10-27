@@ -1,24 +1,46 @@
+@use "../variables";
+
 .jsonViewer {
   flex-grow: 1;
   height: 100%;
   width: 100%;
 
   :global(.node-ellipsis[data-json-preview]) {
+    // The one way to out-rank the font size react-json-view sets inline.
     font-size: 0 !important;
 
     &::after {
       content: attr(data-json-preview);
-      font-size: 13px;
+      font-size: 12px;
       font-style: normal;
-      opacity: 0.75;
+      opacity: 0.7;
     }
   }
 
   :global(.react-json-view) {
-    font-size: 13px;
-    padding: 7px;
-    height: calc(100% - 14px);
+    // Beats the viewer's inline font stack.
+    font-family: variables.$fontMono !important;
+    font-size: 12px;
+    line-height: 1.4;
+    padding: 8px 10px;
+    height: calc(100% - 16px);
     max-width: 100%;
     overflow: auto;
+
+    @include variables.motion {
+      animation: pane-in 0.26s variables.$easeOut both;
+    }
+  }
+}
+
+@keyframes pane-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
   }
 }

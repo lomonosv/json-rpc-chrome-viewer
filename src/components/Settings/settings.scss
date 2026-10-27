@@ -8,11 +8,6 @@
   position: fixed;
   inset: 0;
   z-index: 2;
-
-  :global(.isDark) & {
-    background: variables.$darkBackground;
-    color: variables.$darkColor;
-  }
 }
 
 .settingsBody {
@@ -34,10 +29,7 @@
   padding: 12px 8px;
   overflow: auto;
   border-right: 1px solid variables.$borderColor;
-
-  :global(.isDark) & {
-    border-right: 1px solid variables.$darkBorderColor;
-  }
+  background: variables.$surface;
 
   @include variables.narrowLayout {
     flex-direction: row;
@@ -47,11 +39,6 @@
     border-right: none;
     border-bottom: 1px solid variables.$borderColor;
     overflow-x: auto;
-
-    :global(.isDark) & {
-      border-right: none;
-      border-bottom: 1px solid variables.$darkBorderColor;
-    }
   }
 }
 
@@ -60,20 +47,16 @@
   width: 100%;
   padding: 7px 10px;
   border: none;
-  border-radius: 4px;
+  border-radius: variables.$radius;
   background: transparent;
-  color: variables.$color;
-  font-family: system-ui, sans-serif;
+  color: variables.$mutedColor;
   font-size: 12px;
+  font-weight: 500;
   line-height: 1;
   text-align: left;
   white-space: nowrap;
   cursor: pointer;
   user-select: none;
-
-  :global(.isDark) & {
-    color: variables.$darkColor;
-  }
 
   @include variables.narrowLayout {
     width: auto;
@@ -83,35 +66,21 @@
   &:hover {
     background: variables.$hoverBackground;
     color: variables.$highLightedColor;
-
-    :global(.isDark) & {
-      background: variables.$darkHoverBackground;
-      color: variables.$darkHighLightedColor;
-    }
   }
 
   &:focus-visible {
-    outline: 1px solid variables.$focusOutlineColor;
+    outline: 1px solid variables.$accent;
     outline-offset: -1px;
   }
 }
 
 .isActive {
-  background: variables.$selectedBackground;
-  color: variables.$highLightedColor;
-  font-weight: 500;
-
-  :global(.isDark) & {
-    background: variables.$darkSelectedBackground;
-    color: variables.$darkHighLightedColor;
-  }
+  background: variables.$accentSoft;
+  color: variables.$accentText;
 
   &:hover {
-    background: variables.$selectedBackground;
-
-    :global(.isDark) & {
-      background: variables.$darkSelectedBackground;
-    }
+    background: variables.$accentSoft;
+    color: variables.$accentText;
   }
 }
 
@@ -145,14 +114,12 @@
 
 .cardTitle {
   margin: 0 0 8px;
-  padding: 0;
-  color: variables.$highLightedColor;
-  font-size: 12px;
+  padding: 0 2px;
+  color: variables.$dimColor;
+  font-size: 10.5px;
   font-weight: 600;
-
-  :global(.isDark) & {
-    color: variables.$darkHighLightedColor;
-  }
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .cardBody {
@@ -160,17 +127,11 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
-  padding: 12px 14px;
+  padding: 14px 16px;
   border: 1px solid variables.$borderColor;
-  border-radius: 8px;
-  background: variables.$cardBackground;
+  border-radius: 10px;
+  background: variables.$surfaceRaised;
   box-shadow: variables.$cardShadow;
-
-  :global(.isDark) & {
-    border-color: variables.$darkBorderColor;
-    background: variables.$darkCardBackground;
-    box-shadow: variables.$darkCardShadow;
-  }
 
   @include variables.narrowLayout {
     padding: 10px 12px;
@@ -179,7 +140,7 @@
 
 .cardDescription {
   margin: 0 0 2px;
-  opacity: 0.7;
+  color: variables.$mutedColor;
   font-size: 11px;
   line-height: 1.4;
   white-space: normal;
@@ -207,7 +168,7 @@
 }
 
 .fieldLabel {
-  opacity: 0.8;
+  color: variables.$mutedColor;
   font-size: 11px;
   line-height: 1;
 }
@@ -217,19 +178,15 @@
 }
 
 .fieldHint {
-  opacity: 0.65;
+  color: variables.$dimColor;
   font-size: 11px;
   line-height: 1.4;
   white-space: normal;
 
   a {
-    color: variables.$linkColor;
+    color: variables.$accent;
     text-decoration: underline;
     cursor: pointer;
-
-    :global(.isDark) & {
-      color: variables.$darkLinkColor;
-    }
 
     &:hover {
       text-decoration: none;
@@ -239,19 +196,16 @@
 
 .hint {
   margin: 0;
-  opacity: 0.85;
+  color: variables.$mutedColor;
   font-size: 11px;
   line-height: 1.5;
   white-space: normal;
 }
 
-.closeButton {
-  position: absolute;
-  right: 9px;
-  top: 7px;
+.closeButton.closeButton {
+  @include variables.iconButton;
 
-  > i {
-    width: 13px;
-    height: 13px;
-  }
+  position: absolute;
+  top: 1px;
+  right: 6px;
 }

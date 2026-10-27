@@ -38,10 +38,6 @@
   flex-grow: 1;
   border-bottom: 1px solid variables.$borderColor;
   display: flex;
-
-  :global(.isDark) & {
-    border-bottom: 1px solid variables.$darkBorderColor;
-  }
 }
 
 .resizableBottomHandlerWrapper {
@@ -70,13 +66,9 @@
   height: 2px;
 }
 
-.resizableBottomHandlerWrapper:hover::before,,
+.resizableBottomHandlerWrapper:hover::before,
 .resizableBottomHandlerWrapper:hover::after,
 .resizableBottomHandlerWrapper:active::before,
 .resizableBottomHandlerWrapper:active::after {
-  background: variables.$resizeHandleColor;
-
-  :global(.isDark) & {
-    background: variables.$darkResizeHandleColor;
-  }
+  background: variables.$accent;
 }

@@ -48,9 +48,11 @@
   flex: 1 1 auto;
   width: 0;
   min-width: 0;
+  height: 22px;
+  box-sizing: border-box;
   margin-left: 10px;
   margin-right: 10px;
-  padding: 1px 4px;
+  padding: 0 24px 0 8px;
   vertical-align: middle;
 }
 
@@ -63,24 +65,20 @@
 }
 
 .filterClearIconWrapper {
-  background: variables.$borderColor;
-  border-radius: 50%;
   position: absolute;
-  right: 14px;
-  height: 14px;
-  width: 14px;
-  font-size: 14px;
-  fill: #fff;
+  right: 15px;
   display: flex;
   align-items: center;
   justify-content: center;
-
-  :global(.isDark) & {
-    background: variables.$darkBorderColor;
-  }
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: variables.$dimColor;
+  fill: variables.$background;
+  font-size: 14px;
 
   &:hover {
-    background: variables.$darkColor;
+    background: variables.$mutedColor;
   }
 }
 

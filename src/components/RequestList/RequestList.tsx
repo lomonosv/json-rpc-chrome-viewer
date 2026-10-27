@@ -8,6 +8,8 @@ import { useSettingsContext } from '~/logic/SettingsContext/SettingsContext';
 import useEffectiveViewMode from '~/logic/common/useEffectiveViewMode';
 import { ViewMode } from '~/logic/SettingsContext/ViewMode';
 import useSearchHighlight, { HighlightName } from '~/logic/common/useSearchHighlight';
+import useNamespaceHighlight from './useNamespaceHighlight';
+import { getTimeline } from './timeline';
 import Header from '~/components/common/Header';
 import Request from './Request';
 import RequestDetail from '~/components/RequestDetail';
@@ -25,7 +27,7 @@ import styles from './requestList.scss';
 
 const minLeftSideWidth = 200;
 const minStackedListHeight = 80;
-const pendingTickIntervalMs = 250;
+const pendingTickIntervalMs = 100;
 const groupRevealWindowMs = 500;
 
 interface ISortableHeaderProps {
@@ -190,6 +192,8 @@ const RequestList = ({ className }: IComponentProps) => {
     `.${ styles.requestsHeaderWrapper }`
   );
 
+  useNamespaceHighlight(requestsWrapperRef);
+
   const listSize = {
     width: isSideBySide ? requestListSectionWidth : '100%',
     height: isStackedAbove ? stackedListHeight : '100%'
@@ -216,10 +220,16 @@ const RequestList = ({ className }: IComponentProps) => {
     }
 
     if (autoScroll && !selected) {
-      requestsWrapperRef.current.scrollTop = requestsWrapperRef.current.scrollHeight;
+      const isReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+
+      requestsWrapperRef.current.scrollTo({
+        top: requestsWrapperRef.current.scrollHeight,
+        behavior: isReducedMotion ? 'auto' : 'smooth'
+      });
     }
   }, [autoScroll, requests]);
 
+  // Ticks only while a call is in flight: its bar ends now (timeline.ts).
   const [now, setNow] = useState<number>(() => Date.now());
   const hasPending = useMemo(() => requests.some((request) => request.isPending), [requests]);
 
@@ -228,27 +238,13 @@ const RequestList = ({ className }: IComponentProps) => {
       return undefined;
     }
 
+    setNow(Date.now());
     const interval = setInterval(() => setNow(Date.now()), pendingTickIntervalMs);
 
     return () => clearInterval(interval);
   }, [hasPending]);
 
-  const { timelineStart, timelineEnd } = useMemo(() => {
-    if (!requests.length) {
-      return { timelineStart: 0, timelineEnd: 1 };
-    }
-
-    return requests.reduce((acc, request) => {
-      const endTime = request.isPending
-        ? now
-        : request.startTime + (request.isWebSocket ? 0 : request.time);
-
-      return {
-        timelineStart: Math.min(acc.timelineStart, request.startTime),
-        timelineEnd: Math.max(acc.timelineEnd, endTime)
-      };
-    }, { timelineStart: Infinity, timelineEnd: -Infinity });
-  }, [requests, now]);
+  const timeline = useMemo(() => getTimeline(requests, now), [requests, now]);
 
   const handleResize = () => {
     if (isStackedAbove) {
@@ -325,7 +321,7 @@ const RequestList = ({ className }: IComponentProps) => {
             </Header>
           </div>
           {
-            rows.map((row, index) => (row.kind === 'group' ? (
+            rows.map((row) => (row.kind === 'group' ? (
               <button
                 key={ row.group.id }
                 type="button"
@@ -346,11 +342,11 @@ const RequestList = ({ className }: IComponentProps) => {
                 </span>
               </button>
             ) : (
-              <React.Fragment key={ `${ row.request.request.url } - ${ index }` }>
+              // Keyed by identity: a positional key moves row state to another request.
+              <React.Fragment key={ row.request.uuid }>
                 <Request
                   item={ row.request }
-                  timelineStart={ timelineStart }
-                  timelineEnd={ timelineEnd }
+                  timeline={ timeline }
                   now={ now }
                   revealIndex={ revealIndexes.get(row.request.uuid) }
                 />
@@ -385,7 +381,7 @@ const RequestList = ({ className }: IComponentProps) => {
           }
         </div>
       </div>
-      <ListSummary requests={ requests } timelineSpan={ timelineEnd - timelineStart } />
+      <ListSummary requests={ requests } timelineSpan={ requests.length ? timeline.span : 0 } />
     </Resizable>
   );
 };

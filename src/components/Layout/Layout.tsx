@@ -126,7 +126,7 @@ const Layout = () => {
       ref={ layoutRef }
       className={ styles.layoutWrapper }
     >
-      <Header>
+      <Header className={ styles.toolbarHeader }>
         <Toolbar />
       </Header>
       <div

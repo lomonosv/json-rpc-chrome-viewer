@@ -3,7 +3,9 @@
   width: 12px;
   height: 12px;
 
+  // Inline, the svg sits on the baseline and renders low.
   > svg {
+    display: block;
     width: inherit;
     height: inherit;
   }

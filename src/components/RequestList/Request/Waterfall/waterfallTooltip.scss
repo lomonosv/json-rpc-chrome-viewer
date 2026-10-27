@@ -6,60 +6,50 @@
   box-sizing: border-box;
   width: 340px;
   max-width: calc(100vw - 16px);
-  padding: 10px 12px;
-  border: 1px solid variables.$borderColor;
-  border-radius: 4px;
-  background: variables.$background;
+  padding: 12px 14px;
+  border: 1px solid variables.$borderStrongColor;
+  border-radius: 10px;
+  background: variables.$surfaceRaised;
   color: variables.$color;
-  box-shadow: 0 2px 8px rgb(0 0 0 / 25%);
+  box-shadow: variables.$popoverShadow;
   font-size: 11px;
   line-height: 1.4;
+  font-variant-numeric: tabular-nums;
   white-space: normal;
   user-select: none;
-
-  :global(.isDark) & {
-    border-color: variables.$darkBorderColor;
-    background: variables.$darkBlurBackground;
-    color: variables.$darkHighLightedColor;
-  }
 }
 
 .startedAt {
-  margin-bottom: 8px;
-  font-weight: bold;
+  margin-bottom: 10px;
+  color: variables.$highLightedColor;
+  font-weight: 600;
 }
 
 .group + .group {
-  margin-top: 8px;
+  margin-top: 10px;
 }
 
 .groupHeader {
   display: flex;
   justify-content: space-between;
-  padding-bottom: 2px;
-  color: variables.$iconColor;
+  padding-bottom: 3px;
+  color: variables.$dimColor;
   font-size: 10px;
-  letter-spacing: 0.02em;
-
-  :global(.isDark) & {
-    color: variables.$darkColor;
-  }
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 .phase {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 1px 0;
-  border-radius: 2px;
+  padding: 2px 4px;
+  margin: 0 -4px;
+  border-radius: 4px;
 }
 
 .isHighlighted {
   background: variables.$selectedBackground;
-
-  :global(.isDark) & {
-    background: variables.$darkSelectedBackground;
-  }
 }
 
 .isDimmed {
@@ -67,7 +57,7 @@
 }
 
 .phaseLabel {
-  flex: 0 0 130px;
+  flex: 0 0 126px;
   overflow-wrap: break-word;
 }
 
@@ -78,14 +68,14 @@
 .phaseChart {
   position: relative;
   flex: 1;
-  height: 9px;
+  height: 8px;
 }
 
 .phaseBar {
   position: absolute;
   top: 0;
   height: 100%;
-  min-width: 1px;
+  min-width: 2px;
   border-radius: 2px;
 }
 
@@ -94,18 +84,15 @@
 .phaseDuration {
   flex: 0 0 66px;
   text-align: right;
-  font-variant-numeric: tabular-nums;
+  color: variables.$highLightedColor;
 }
 
 .total {
   display: flex;
   justify-content: space-between;
-  margin-top: 8px;
-  padding-top: 6px;
+  margin-top: 10px;
+  padding-top: 8px;
   border-top: 1px solid variables.$borderColor;
-  font-weight: bold;
-
-  :global(.isDark) & {
-    border-top-color: variables.$darkBorderColor;
-  }
+  color: variables.$highLightedColor;
+  font-weight: 600;
 }

@@ -182,10 +182,6 @@ const useSettings = () => {
     setConfig({ settings_extensionTheme });
   };
 
-  const getSystemJsonViewerTheme = (): JsonViewerTheme => (
-    isDevtoolsDarkTheme ? JsonViewerTheme.SummerFruit : JsonViewerTheme.SummerFruitInverted
-  );
-
   const handleAutoScrollChange = (settings_autoScroll: boolean) => {
     setAutoScroll(settings_autoScroll);
     setConfig({ settings_autoScroll });
@@ -251,7 +247,7 @@ const useSettings = () => {
     viewMode,
     serverGroupState,
     resilientCapture,
-    systemJsonViewerTheme: jsonViewerTheme === JsonViewerTheme.System ? getSystemJsonViewerTheme() : jsonViewerTheme,
+    systemJsonViewerTheme: jsonViewerTheme,
     isDarkTheme: (isDevtoolsDarkTheme && extensionTheme === ExtensionTheme.System)
       || extensionTheme === ExtensionTheme.Dark,
     setPreserveLog: handlePreserveLogChange,

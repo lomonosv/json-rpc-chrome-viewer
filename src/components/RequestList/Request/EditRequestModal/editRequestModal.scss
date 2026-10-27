@@ -10,28 +10,17 @@
   justify-content: space-between;
 }
 
-.button {
-  cursor: pointer;
-  background: variables.$background;
-  padding: 5px 10px;
-  border: 1px solid variables.$borderColor;
-  border-radius: 0.25rem;
+// Doubled to beat the shared Button's `.button` colours.
+.button.button {
+  @include variables.primaryButton;
+}
 
-  &:not(.cancel):hover {
-    background: variables.$hoverBackground;
-  }
+.cancel.cancel {
+  @include variables.secondaryButton;
+}
 
-  :global(.isDark) & {
-    background: variables.$darkBackground;
-    border: 1px solid variables.$darkBorderColor;
+.closeButton.closeButton {
+  @include variables.iconButton;
 
-    &:not(.cancel):hover {
-      background: variables.$darkBackground;
-    }
-  }
-
-  &.cancel {
-    border-width: 0;
-    margin-right: 10px;
-  }
+  margin-right: -6px;
 }

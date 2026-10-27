@@ -5,16 +5,19 @@
   flex-grow: 1;
   align-items: center;
   justify-content: center;
-  color: variables.$color;
-  font-size: 14px;
+  padding: 24px;
+  color: variables.$mutedColor;
+  font-size: 13px;
+  line-height: 1.6;
   text-align: center;
 
-  :global(.isDark) & {
-    color: variables.$darkColor;
-  }
-
   a {
-    font-weight: bold;
+    color: variables.$accent;
+    font-weight: 600;
     cursor: pointer;
+
+    &:hover {
+      text-decoration: underline;
+    }
   }
 }

@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import cn from 'classnames';
 import Modal from '~/components/common/Modal';
 import Button from '~/components/common/Button';
 import Icon, { IconType } from '~/components/common/Icon';
@@ -70,7 +69,7 @@ const EditRequestModal = ({ isVisible, item, close }: IProps) => {
       <span>
         { `Resend "${ item.requestJSON.method }" request` }
       </span>
-      <Button onClick={ close }>
+      <Button className={ styles.closeButton } title="Close" onClick={ close }>
         <Icon type={ IconType.Close } />
       </Button>
     </div>
@@ -79,7 +78,7 @@ const EditRequestModal = ({ isVisible, item, close }: IProps) => {
   const footer = (
     <>
       <Button
-        className={ cn(styles.button, styles.cancel) }
+        className={ styles.cancel }
         onClick={ close }
       >
         Cancel

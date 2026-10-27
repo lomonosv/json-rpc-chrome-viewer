@@ -1,17 +1,64 @@
-$background: #fff;
-$blurBackground: #f1f3f4;
-$headerBackground: #f1f3f4;
-$greenHeaderBackground: #32ff00;
-$color: #323941;
-$iconColor: #6e6e6e;
-$highLightedColor: #000;
-$evenRowBackground: #fff;
-$oddRowBackground: #f5f5f5;
-$selectedBackground: #dadce0;
-$borderColor: #cbcdd1;
-$hoverBackground: #f2f6fc;
-$waterfallBar: #4c8bf5;
-$waterfallTick: #1e8e3e;
+// Colours are CSS custom properties defined per theme in src/index.scss.
+// They are var() references at compile time: use color-mix(), not Sass colour
+// functions.
+
+$fontSans: var(--jr-font-sans);
+$fontMono: var(--jr-font-mono);
+
+$background: var(--jr-bg);
+$surface: var(--jr-surface);
+$surfaceRaised: var(--jr-surface-raised);
+$rowAltBackground: var(--jr-row-alt);
+$hoverBackground: var(--jr-hover);
+$selectedBackground: var(--jr-selected);
+$borderColor: var(--jr-border);
+$borderStrongColor: var(--jr-border-strong);
+
+$color: var(--jr-text-body);
+$highLightedColor: var(--jr-text);
+$mutedColor: var(--jr-text-muted);
+$dimColor: var(--jr-text-dim);
+
+$accent: var(--jr-accent);
+$accentSoft: var(--jr-accent-soft);
+$accentText: var(--jr-accent-text);
+
+$serverBand: var(--jr-server-band);
+$serverBandHover: var(--jr-server-band-hover);
+$serverRowBackground: var(--jr-server-row);
+$serverRowAltBackground: var(--jr-server-row-alt);
+$serverEdge: var(--jr-server-edge);
+
+$error: var(--jr-red);
+$errorSoft: var(--jr-red-soft);
+$success: var(--jr-green);
+$successSoft: var(--jr-green-soft);
+$warning: var(--jr-warning);
+$slowCall: var(--jr-amber);
+$verySlowCall: var(--jr-amber-strong);
+
+$interceptorAccent: var(--jr-amber);
+$mockBadge: var(--jr-mock-bg);
+$mockBadgeText: var(--jr-mock-text);
+
+$overlay: var(--jr-overlay);
+$popoverShadow: var(--jr-shadow-pop);
+$cardShadow: var(--jr-shadow-card);
+$barShadow: var(--jr-shadow-bar);
+
+$searchHighlightBackground: var(--jr-highlight-bg);
+$searchHighlightColor: var(--jr-highlight-text);
+
+$jsonKey: var(--jr-json-key);
+$jsonString: var(--jr-json-string);
+$jsonNumber: var(--jr-json-number);
+$jsonLiteral: var(--jr-json-literal);
+$jsonPunctuation: var(--jr-json-punct);
+
+$radius: 6px;
+$radiusSmall: 4px;
+// Load-bearing: layout calc, the response pane's resize strip, scroll-margin.
+$headerHeight: 27px;
 
 $narrowWidth: 620px;
 
@@ -22,113 +69,159 @@ $narrowWidth: 620px;
 }
 
 $waterfallColumnPadding: 8px;
-$resizeHandleColor: #4c8bf5;
-$focusOutlineColor: #4d90fe;
-$linkColor: #1a73e8;
-$darkLinkColor: #8ab4f8;
-$searchHighlightBackground: #ffdf5d;
-$searchHighlightColor: #000;
 
-$darkBackground: #202124;
-$darkBlurBackground: #292a2d;
-$darkHeaderBackground: #292a2d;
-$darkColor: #919191;
-$darkHighLightedColor: #fff;
-$darkEvenRowBackground: #242424;
-$darkOddRowBackground: #292929;
-$darkSelectedBackground: #454545;
-$darkBorderColor: #4a4c50;
-$darkHoverBackground: #192436;
-$darkWaterfallBar: #8ab4f8;
-$darkWaterfallTick: #81c995;
-$darkResizeHandleColor: #8ab4f8;
-$darkSearchHighlightBackground: #a1741b;
-$darkSearchHighlightColor: #fff;
-
-// Settings/section panels: a fill one step off the page plus a hairline and a
-// soft shadow, following DevTools' own settings cards.
-$cardBackground: #f8f9fa;
-$cardShadow: 0 1px 2px rgb(0 0 0 / 8%);
-$darkCardBackground: #282a2d;
-$darkCardShadow: 0 1px 3px rgb(0 0 0 / 40%);
-
-$jsonKey: #881391;
-$jsonString: #c41a16;
-$jsonNumber: #1c00cf;
-$jsonLiteral: #0d22aa;
-
-$darkJsonKey: #5db0d7;
-$darkJsonString: #f28b54;
-$darkJsonNumber: #9980ff;
-$darkJsonLiteral: #9980ff;
-
-$success: #2e7d4f;
-$error: #ee442e;
-$warning: #b8a679;
-$darkSuccess: #81c995;
-
-$slowCall: #a86400;
-$verySlowCall: #c24e00;
-$darkSlowCall: #e8c36a;
-$darkVerySlowCall: #ffa060;
-
-$interceptorAccent: #e37400;
-$darkInterceptorAccent: #f29900;
-
-$serverAccent: #1a73e8;
-$darkServerAccent: #8ab4f8;
-// The dark edge is too light to carry white badge text.
-$darkServerBadge: #3f6fb5;
-
-$serverGroupBackground: #e8f0fe;
-$darkServerGroupBackground: #1f2a3b;
-$serverGroupHoverBackground: #dce7fc;
-$darkServerGroupHoverBackground: #263449;
-$serverRowBackground: #f6f9fe;
-$serverRowAltBackground: #eef3fd;
-$darkServerRowBackground: #1c2129;
-$darkServerRowAltBackground: #20262f;
-
-$phaseIdle: #bfc3c9;
-$phaseSend: #85b0ef;
-$phaseWait: #45a86a;
-$phaseDownload: #4a8ce6;
-
-$darkPhaseIdle: #5f6368;
-$darkPhaseSend: #6b93d6;
-$darkPhaseWait: #81c995;
-$darkPhaseDownload: #8ab4f8;
-
+// Shared by the waterfall bar and its tooltip.
 @mixin phaseTones {
   .idle {
-    background: $phaseIdle;
-
-    :global(.isDark) & {
-      background: $darkPhaseIdle;
-    }
+    background: var(--jr-phase-idle);
   }
 
   .send {
-    background: $phaseSend;
-
-    :global(.isDark) & {
-      background: $darkPhaseSend;
-    }
+    background: var(--jr-phase-send);
   }
 
   .wait {
-    background: $phaseWait;
-
-    :global(.isDark) & {
-      background: $darkPhaseWait;
-    }
+    background: var(--jr-phase-wait);
   }
 
   .download {
-    background: $phaseDownload;
-
-    :global(.isDark) & {
-      background: $darkPhaseDownload;
-    }
+    background: var(--jr-phase-download);
   }
 }
+
+$wash: var(--jr-wash);
+$glass: var(--jr-glass);
+$accentGlow: var(--jr-accent-glow);
+$selectGlow: var(--jr-select-glow);
+$cyan: var(--jr-cyan);
+$amberSoft: var(--jr-amber-soft);
+$amberGlow: var(--jr-amber-glow);
+$redRow: var(--jr-red-row);
+$redGlow: var(--jr-red-glow);
+$greenGlow: var(--jr-green-glow);
+
+$easeOut: cubic-bezier(0.22, 1, 0.36, 1);
+
+@mixin motion {
+  @media (prefers-reduced-motion: no-preference) {
+    @content;
+  }
+}
+
+// Buttons. On the shared Button (<a>) apply them with a doubled class.
+// The linter cannot see where a mixin is included, so it flags `&` as unscoped.
+/* stylelint-disable nesting-selector-no-missing-scoping-root */
+@mixin buttonBase {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  box-sizing: border-box;
+  height: 28px;
+  padding: 0 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.12s, border-color 0.12s, box-shadow 0.12s, transform 0.08s;
+
+  &:active {
+    transform: translateY(0.5px);
+  }
+
+  &:focus-visible {
+    outline: 2px solid $accent;
+    outline-offset: 2px;
+  }
+}
+
+@mixin primaryButton {
+  @include buttonBase;
+
+  border: 1px solid color-mix(in srgb, var(--jr-accent) 78%, #000);
+  background-color: $accent;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 22%), 0 1px 2px rgb(0 0 0 / 22%);
+  color: #fff;
+  fill: #fff;
+
+  &:hover {
+    background-color: color-mix(in srgb, var(--jr-accent) 88%, #fff);
+    color: #fff;
+    fill: #fff;
+  }
+
+  &:active {
+    background-color: color-mix(in srgb, var(--jr-accent) 88%, #000);
+    box-shadow: inset 0 1px 2px rgb(0 0 0 / 25%);
+  }
+}
+
+@mixin secondaryButton {
+  @include buttonBase;
+
+  border: 1px solid $borderStrongColor;
+  background-color: $surfaceRaised;
+  box-shadow: var(--jr-shadow-button);
+  color: $highLightedColor;
+  fill: $highLightedColor;
+
+  &:hover {
+    border-color: color-mix(in srgb, var(--jr-text) 28%, transparent);
+    background-color: color-mix(in srgb, var(--jr-surface-raised) 92%, var(--jr-text));
+    color: $highLightedColor;
+    fill: $highLightedColor;
+  }
+
+  &:active {
+    box-shadow: inset 0 1px 2px rgb(0 0 0 / 15%);
+  }
+}
+
+@mixin iconButton {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border-radius: 7px;
+  color: $mutedColor;
+  fill: $mutedColor;
+  cursor: pointer;
+  transition: background-color 0.12s, fill 0.12s;
+
+  &:hover {
+    background-color: $hoverBackground;
+    color: $highLightedColor;
+    fill: $highLightedColor;
+  }
+
+  &:active {
+    transform: translateY(0.5px);
+  }
+
+  > i {
+    display: block;
+    width: 10px;
+    height: 10px;
+  }
+}
+
+@mixin plusGlyph {
+  &::before {
+    width: 10px;
+    height: 10px;
+    background:
+      linear-gradient(currentcolor, currentcolor) center / 10px 1.6px no-repeat,
+      linear-gradient(currentcolor, currentcolor) center / 1.6px 10px no-repeat;
+    content: "";
+  }
+}
+/* stylelint-enable nesting-selector-no-missing-scoping-root */

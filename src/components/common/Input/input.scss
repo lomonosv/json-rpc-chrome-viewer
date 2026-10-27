@@ -7,10 +7,6 @@
 
   &:hover input:not([disabled]) ~ .label {
     color: variables.$highLightedColor;
-
-    :global(.isDark) & {
-      color: variables.$darkHighLightedColor;
-    }
   }
 }
 
@@ -26,39 +22,38 @@
   &:has(input:disabled) {
     cursor: default;
   }
+
+  input {
+    margin: 0;
+    accent-color: variables.$accent;
+    cursor: inherit;
+  }
 }
 
 .input {
-  background: variables.$background;
-  color: variables.$color;
+  border: 1px solid variables.$borderColor;
+  border-radius: variables.$radius;
   outline: none;
-  border: 1px solid transparent;
-  font-family: system-ui, sans-serif;
+  background: variables.$background;
+  color: variables.$highLightedColor;
   font-size: 12px;
+  transition: border-color 0.15s;
 
-  :global(.isDark) & {
-    background: variables.$darkBackground;
-    color: variables.$darkColor;
+  &::placeholder {
+    color: variables.$dimColor;
   }
 
   &:hover {
-    border: 1px solid variables.$borderColor;
-
-    :global(.isDark) & {
-      border: 1px solid variables.$darkBorderColor;
-    }
+    border-color: variables.$borderStrongColor;
   }
 
   &:focus {
-    outline: 1px solid variables.$focusOutlineColor;
+    border-color: variables.$accent;
+    box-shadow: 0 0 0 2px variables.$accentSoft;
   }
 }
 
 .label {
-  margin-left: 5px;
+  margin-left: 6px;
   color: variables.$color;
-
-  :global(.isDark) & {
-    color: variables.$darkColor;
-  }
 }

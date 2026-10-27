@@ -2,8 +2,10 @@ import React, { useState, useEffect, useRef } from 'react';
 import ReactJsonView, { ThemeKeys } from '@microlink/react-json-view';
 import { JSONValue } from '~/logic/HTTPArchive/IRequest';
 import { useSettingsContext } from '~/logic/SettingsContext/SettingsContext';
+import { JsonViewerTheme } from '~/logic/SettingsContext/Theme';
 import { ExpandTreeState } from './ExpandTreeState';
 import { expandAllLevels } from './ExpandLevel';
+import { panelJsonTheme } from './panelJsonTheme';
 import useCollapsedPreview from './useCollapsedPreview';
 import styles from './jsonViewer.scss';
 
@@ -64,7 +66,9 @@ const JsonViewer = ({
           <ReactJsonView
             name={ false }
             src={ src as object }
-            theme={ systemJsonViewerTheme.toLowerCase() as ThemeKeys }
+            theme={ systemJsonViewerTheme === JsonViewerTheme.System
+              ? panelJsonTheme
+              : systemJsonViewerTheme.toLowerCase() as ThemeKeys }
             collapsed={ collapsed }
             enableClipboard={ false }
             indentWidth={ 2 }

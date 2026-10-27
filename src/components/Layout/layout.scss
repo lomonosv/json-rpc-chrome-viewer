@@ -7,19 +7,38 @@
   min-width: 0;
   flex-direction: column;
   height: 100%;
-  background: variables.$background;
+  background:
+    radial-gradient(ellipse 85% 420px at 50% -40px, variables.$wash, transparent 72%),
+    variables.$background;
   color: variables.$color;
+}
 
-  :global(.isDark) & {
-    background: variables.$darkBackground;
-    color: variables.$darkColor;
+// Doubled to beat Header's background and border.
+.toolbarHeader.toolbarHeader {
+  position: relative;
+  z-index: 3;
+  border-bottom-color: transparent;
+  background: variables.$glass;
+  box-shadow: variables.$barShadow;
+
+  &::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    bottom: -1px;
+    left: 0;
+    z-index: 4;
+    height: 2px;
+    background: linear-gradient(90deg, transparent 2%, variables.$accent 30%, variables.$cyan 70%, transparent 98%);
+    box-shadow: 0 0 14px 1px variables.$accentGlow;
+    opacity: var(--jr-accent-line-opacity);
   }
 }
 
 .layoutContainer {
   position: relative;
   display: flex;
-  height: calc(100% - 28px);
+  height: calc(100% - #{variables.$headerHeight + 1px});
   flex-grow: 1;
 
   &.isStacked {
@@ -35,10 +54,6 @@
 
 .leftSideContainer.isBesideDetail {
   border-right: 1px solid variables.$borderColor;
-
-  :global(.isDark) & {
-    border-right: 1px solid variables.$darkBorderColor;
-  }
 }
 
 .rightSideContainer {
@@ -54,10 +69,6 @@
   flex-direction: column;
   min-height: 0;
   border-top: 1px solid variables.$borderColor;
-
-  :global(.isDark) & {
-    border-top-color: variables.$darkBorderColor;
-  }
 }
 
 .drawer {
@@ -68,15 +79,9 @@
   display: flex;
   flex-direction: column;
   max-height: 100%;
-  border-left: 1px solid variables.$borderColor;
+  border-left: 1px solid variables.$borderStrongColor;
   background: variables.$background;
-  box-shadow: -4px 0 12px rgb(0 0 0 / 12%);
-
-  :global(.isDark) & {
-    border-left-color: variables.$darkBorderColor;
-    background: variables.$darkBackground;
-    box-shadow: -4px 0 12px rgb(0 0 0 / 45%);
-  }
+  box-shadow: variables.$popoverShadow;
 }
 
 .drawerResizeHandle {
@@ -95,11 +100,7 @@
 
 .drawerResizeHandle:hover::after,
 .drawerResizeHandle:active::after {
-  background: variables.$resizeHandleColor;
-
-  :global(.isDark) & {
-    background: variables.$darkResizeHandleColor;
-  }
+  background: variables.$accent;
 }
 
 // Covers the list rather than unmounting it, which would lose its scroll position.
@@ -110,35 +111,26 @@
   display: flex;
   flex-direction: column;
   background: variables.$background;
-
-  :global(.isDark) & {
-    background: variables.$darkBackground;
-  }
 }
 
 .drillDownNav {
   gap: 6px;
-  padding: 0 4px;
+  padding: 0 6px;
 }
 
 .navButton {
   flex-shrink: 0;
-  padding: 2px 6px;
-  border: none;
-  border-radius: 2px;
+  padding: 2px 8px;
+  border: 1px solid variables.$borderColor;
+  border-radius: variables.$radiusSmall;
   background: none;
-  font: inherit;
   color: inherit;
   cursor: pointer;
 
   &:hover {
-    background: variables.$selectedBackground;
+    border-color: variables.$borderStrongColor;
+    background: variables.$hoverBackground;
     color: variables.$highLightedColor;
-
-    :global(.isDark) & {
-      background: variables.$darkSelectedBackground;
-      color: variables.$darkHighLightedColor;
-    }
   }
 }
 
@@ -148,10 +140,12 @@
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
-  font-family: monospace;
+  font-family: variables.$fontMono;
+  color: variables.$highLightedColor;
 }
 
 .navPosition {
   flex-shrink: 0;
-  opacity: 0.7;
+  color: variables.$dimColor;
+  font-variant-numeric: tabular-nums;
 }

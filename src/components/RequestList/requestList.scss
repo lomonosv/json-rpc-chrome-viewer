@@ -10,24 +10,21 @@
   flex-shrink: 0;
   align-items: center;
   gap: 6px;
-  height: 22px;
-  padding: 0 7px;
+  height: 24px;
+  padding: 0 10px;
   overflow: hidden;
   border-top: 1px solid variables.$borderColor;
-  background: variables.$headerBackground;
+  background: variables.$surface;
+  color: variables.$dimColor;
   font-size: 11px;
+  font-variant-numeric: tabular-nums;
   white-space: nowrap;
   user-select: none;
-
-  :global(.isDark) & {
-    border-top-color: variables.$darkBorderColor;
-    background: variables.$darkHeaderBackground;
-  }
 
   > span:not(:first-child)::before {
     content: "·";
     margin-right: 6px;
-    opacity: 0.5;
+    opacity: 0.6;
   }
 }
 
@@ -37,10 +34,6 @@
 
 .summarySlow {
   color: variables.$slowCall;
-
-  :global(.isDark) & {
-    color: variables.$darkSlowCall;
-  }
 }
 
 .summarySpan {
@@ -59,13 +52,12 @@
   position: sticky;
   top: 0;
   z-index: 2;
-  background: variables.$headerBackground;
 
-  :global(.isDark) & {
-    background: variables.$darkHeaderBackground;
-  }
+  // Opaque, not backdrop-filter: blurring changing content flickers.
+  background: variables.$surface;
 }
 
+// Matches the rows' padding, or every column separator shifts.
 .requestsHeaderWrapper .requestsHeader {
   display: flex;
   align-items: stretch;
@@ -86,16 +78,12 @@
 
   &:hover {
     color: variables.$highLightedColor;
-
-    :global(.isDark) & {
-      color: variables.$darkHighLightedColor;
-    }
   }
 }
 
 .sortIndicator {
   font-size: 8px;
-  opacity: 0.7;
+  color: variables.$accent;
 }
 
 .methodHeader {
@@ -110,15 +98,12 @@
   display: flex;
   align-items: stretch;
 
+  // (0,1,1) - out-specifies .sortableHeader's `border: none`.
   > button {
     position: relative;
     box-sizing: border-box;
     justify-content: center;
     border-left: 1px solid variables.$borderColor;
-
-    :global(.isDark) & {
-      border-left-color: variables.$darkBorderColor;
-    }
   }
 
   > .waterfallHeader {
@@ -138,11 +123,7 @@
 
   &:hover,
   &.isResizing {
-    background: variables.$resizeHandleColor;
-
-    :global(.isDark) & {
-      background: variables.$darkResizeHandleColor;
-    }
+    background: variables.$accent;
   }
 }
 
@@ -159,11 +140,7 @@
 
 .paneResizeHandle:hover::after,
 .paneResizeHandle:active::after {
-  background: variables.$resizeHandleColor;
-
-  :global(.isDark) & {
-    background: variables.$darkResizeHandleColor;
-  }
+  background: variables.$accent;
 }
 
 .stackedResizeHandle {
@@ -183,22 +160,14 @@
 
 .stackedResizeHandle:hover::after,
 .stackedResizeHandle:active::after {
-  background: variables.$resizeHandleColor;
-
-  :global(.isDark) & {
-    background: variables.$darkResizeHandleColor;
-  }
+  background: variables.$accent;
 }
 
 .dropIndicator {
   align-self: stretch;
   width: 0;
-  border-left: 2px solid variables.$resizeHandleColor;
+  border-left: 2px solid variables.$accent;
   margin: 0 -1px;
-
-  :global(.isDark) & {
-    border-left-color: variables.$darkResizeHandleColor;
-  }
 }
 
 .isDragging {
@@ -213,13 +182,7 @@
   padding-left: 13px;
   border-top: 1px solid variables.$borderColor;
   border-bottom: 1px solid variables.$borderColor;
-  background: variables.$blurBackground;
-
-  :global(.isDark) & {
-    border-top-color: variables.$darkBorderColor;
-    border-bottom-color: variables.$darkBorderColor;
-    background: variables.$darkBlurBackground;
-  }
+  background: variables.$surface;
 }
 
 .accordionDetail::before {
@@ -231,11 +194,7 @@
   width: 3px;
   z-index: 1;
   pointer-events: none;
-  background: variables.$resizeHandleColor;
-
-  :global(.isDark) & {
-    background: variables.$darkResizeHandleColor;
-  }
+  background: variables.$accent;
 }
 
 .accordionResizeHandle {
@@ -256,47 +215,32 @@
 
 .accordionResizeHandle:hover::after,
 .accordionResizeHandle:active::after {
-  background: variables.$resizeHandleColor;
-
-  :global(.isDark) & {
-    background: variables.$darkResizeHandleColor;
-  }
+  background: variables.$accent;
 }
 
+// The edge is an inset shadow so the rows' width, and the separators, stay put.
 .serverGroup {
   position: relative;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   box-sizing: border-box;
   width: 100%;
-  padding: 5px 7px 5px 4px;
+  height: 28px;
+  padding: 0 10px 0 11px;
   border: none;
   border-bottom: 1px solid variables.$borderColor;
-  border-left: 3px solid variables.$serverAccent;
-  background: variables.$serverGroupBackground;
+  background: linear-gradient(90deg, variables.$serverBandHover, variables.$serverBand 45%, transparent);
+  box-shadow: inset 3px 0 0 variables.$accent, inset 60px 0 40px -40px variables.$selectGlow;
   font: inherit;
-  font-family: monospace;
+  font-family: variables.$fontMono;
   font-size: 12px;
-  color: variables.$highLightedColor;
+  color: variables.$accentText;
   text-align: left;
   cursor: pointer;
 
-  :global(.isDark) & {
-    border-bottom-color: variables.$darkBorderColor;
-    border-left-color: variables.$darkServerAccent;
-    background: variables.$darkServerGroupBackground;
-    color: variables.$darkHighLightedColor;
-  }
-
   &:hover {
-    background: variables.$serverGroupHoverBackground;
-    color: variables.$highLightedColor;
-
-    :global(.isDark) & {
-      background: variables.$darkServerGroupHoverBackground;
-      color: variables.$darkHighLightedColor;
-    }
+    background: linear-gradient(90deg, variables.$serverBandHover, variables.$serverBandHover 45%, variables.$serverBand);
   }
 }
 
@@ -333,5 +277,5 @@
 
 .serverGroupCount {
   flex-shrink: 0;
-  opacity: 0.65;
+  opacity: 0.7;
 }

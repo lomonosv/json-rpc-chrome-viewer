@@ -1,46 +1,29 @@
 @use "../variables";
 
-$chevronLight: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%236e6e6e' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-$chevronDark: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23919191' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-
 .select {
   box-sizing: border-box;
   appearance: none;
   height: 22px;
   padding: 0 24px 0 8px;
   border: 1px solid variables.$borderColor;
-  border-radius: 4px;
+  border-radius: variables.$radius;
   outline: none;
-  background-color: variables.$background;
-  background-image: $chevronLight;
-  background-repeat: no-repeat;
-  background-position: right 8px center;
-  background-size: 10px 6px;
+
+  // A <select> has no pseudo-elements, so the chevron colour lives in the url.
+  background: variables.$surfaceRaised var(--jr-chevron) no-repeat right 8px center / 10px 6px;
   color: variables.$color;
-  font-family: system-ui, sans-serif;
   font-size: 12px;
   line-height: 20px;
   cursor: pointer;
-
-  :global(.isDark) & {
-    border-color: variables.$darkBorderColor;
-    background-color: variables.$darkBackground;
-    background-image: $chevronDark;
-    color: variables.$darkColor;
-  }
+  transition: border-color 0.15s;
 
   &:hover {
-    border-color: variables.$iconColor;
-
-    :global(.isDark) & {
-      border-color: variables.$darkColor;
-    }
+    border-color: variables.$borderStrongColor;
   }
 
   &:focus-visible {
-    border-color: variables.$focusOutlineColor;
-    outline: 1px solid variables.$focusOutlineColor;
-    outline-offset: -2px;
+    border-color: variables.$accent;
+    box-shadow: 0 0 0 2px variables.$accentSoft;
   }
 
   &:disabled {
@@ -49,20 +32,11 @@ $chevronDark: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.
 
     &:hover {
       border-color: variables.$borderColor;
-
-      :global(.isDark) & {
-        border-color: variables.$darkBorderColor;
-      }
     }
   }
 
   option {
-    background-color: variables.$background;
+    background-color: variables.$surfaceRaised;
     color: variables.$color;
-
-    :global(.isDark) & {
-      background-color: variables.$darkBackground;
-      color: variables.$darkColor;
-    }
   }
 }

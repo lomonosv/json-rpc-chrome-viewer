@@ -2,21 +2,12 @@
 
 .button {
   display: inline-block;
-  color: variables.$color;
-  fill: variables.$iconColor;
-
-  :global(.isDark) & {
-    color: variables.$darkColor;
-    fill: variables.$darkColor;
-  }
+  color: variables.$mutedColor;
+  fill: variables.$mutedColor;
+  transition: color 0.15s, fill 0.15s;
 
   &:hover {
     color: variables.$highLightedColor;
     fill: variables.$highLightedColor;
-
-    :global(.isDark) & {
-      color: variables.$darkHighLightedColor;
-      fill: variables.$darkHighLightedColor;
-    }
   }
 }

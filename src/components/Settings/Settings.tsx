@@ -463,7 +463,7 @@ const Settings = ({ onClose }: IComponentProps) => {
                     />
                     <Input
                       name="showSizeColumn"
-                      label="Size (B)"
+                      label="Size"
                       wrapperClassName={ styles.checkboxRow }
                       type={ Type.Checkbox }
                       checked={ showSizeColumn }

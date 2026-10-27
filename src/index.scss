@@ -1,5 +1,134 @@
 @use "./components/common/variables";
 
+// Design tokens: light on body, dark on body.isDark.
+:global(body) {
+  --jr-font-sans: "Geist", system-ui, sans-serif;
+  --jr-font-mono: "Geist Mono", ui-monospace, menlo, consolas, monospace;
+  --jr-bg: #fff;
+  --jr-surface: #eceff5;
+  --jr-surface-raised: #fff;
+  --jr-row-alt: rgb(15 23 42 / 3%);
+  --jr-hover: rgb(37 99 235 / 6%);
+  --jr-selected: rgb(37 99 235 / 14%);
+  --jr-border: rgb(15 23 42 / 10%);
+  --jr-border-strong: rgb(15 23 42 / 17%);
+  --jr-text: #0b1220;
+  --jr-text-body: #273043;
+  --jr-text-muted: #4b5567;
+  --jr-text-dim: #6b7587;
+  --jr-accent: #2563eb;
+  --jr-accent-soft: rgb(37 99 235 / 10%);
+  --jr-accent-text: #1d4ed8;
+  --jr-server-band: rgb(37 99 235 / 14%);
+  --jr-server-band-hover: rgb(37 99 235 / 20%);
+  --jr-server-row: rgb(37 99 235 / 6%);
+  --jr-server-row-alt: rgb(37 99 235 / 8.5%);
+  --jr-server-edge: #2563eb;
+  --jr-red: #dc2626;
+  --jr-red-soft: rgb(220 38 38 / 12%);
+  --jr-green: #059669;
+  --jr-green-soft: rgb(5 150 105 / 15%);
+  --jr-warning: #a16207;
+  --jr-amber: #b45309;
+  --jr-amber-strong: #c2410c;
+  --jr-mock-bg: #fbbf24;
+  --jr-mock-text: #1a1200;
+  --jr-phase-idle: #c3c9d5;
+  --jr-phase-send: #10b981;
+  --jr-phase-wait: #3b82f6;
+  --jr-phase-download: #06b6d4;
+  --jr-overlay: rgb(15 23 42 / 30%);
+  --jr-shadow-pop: 0 18px 40px -12px rgb(15 23 42 / 22%), 0 0 0 1px rgb(15 23 42 / 7%);
+  --jr-shadow-card: 0 1px 2px rgb(15 23 42 / 5%), 0 6px 16px -10px rgb(15 23 42 / 14%);
+  --jr-shadow-bar: 0 1px 0 rgb(15 23 42 / 6%), 0 8px 18px -12px rgb(15 23 42 / 22%);
+  --jr-shadow-button: 0 1px 1px rgb(15 23 42 / 6%), inset 0 -1px 0 rgb(15 23 42 / 4%);
+  --jr-highlight-bg: #fde68a;
+  --jr-highlight-text: #000;
+  --jr-json-key: #1d4ed8;
+  --jr-json-string: #047857;
+  --jr-json-number: #c2410c;
+  --jr-json-literal: #7c3aed;
+  --jr-json-punct: #94a3b8;
+  --jr-chevron: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23556070' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  --jr-wash: rgb(37 99 235 / 15%);
+  --jr-accent-glow: rgb(37 99 235 / 35%);
+  --jr-select-glow: rgb(37 99 235 / 24%);
+  --jr-cyan: #0891b2;
+  --jr-amber-soft: rgb(217 119 6 / 15%);
+  --jr-amber-glow: rgb(217 119 6 / 35%);
+  --jr-red-row: rgb(220 38 38 / 7%);
+  --jr-red-glow: rgb(220 38 38 / 22%);
+  --jr-green-glow: rgb(5 150 105 / 30%);
+  --jr-glass: rgb(255 255 255 / 90%);
+  --jr-method-weight: 600;
+  --jr-accent-line-opacity: 1;
+
+  font-family: var(--jr-font-sans);
+  font-size: 12px;
+  -webkit-font-smoothing: antialiased;
+}
+
+:global(body.isDark) {
+  --jr-bg: #0f1117;
+  --jr-surface: #141721;
+  --jr-surface-raised: #181b26;
+  --jr-row-alt: rgb(255 255 255 / 1.5%);
+  --jr-hover: rgb(255 255 255 / 3.5%);
+  --jr-selected: rgb(79 140 255 / 14%);
+  --jr-border: rgb(255 255 255 / 7%);
+  --jr-border-strong: rgb(255 255 255 / 14%);
+  --jr-text: #eef0f6;
+  --jr-text-body: #c9cedb;
+  --jr-text-muted: #9aa1b4;
+  --jr-text-dim: #626a80;
+  --jr-accent: #4f8cff;
+  --jr-accent-soft: rgb(79 140 255 / 16%);
+  --jr-accent-text: #b8cfff;
+  --jr-server-band: rgb(79 140 255 / 13%);
+  --jr-server-band-hover: rgb(79 140 255 / 18%);
+  --jr-server-row: rgb(79 140 255 / 6%);
+  --jr-server-row-alt: rgb(79 140 255 / 8.5%);
+  --jr-server-edge: rgb(79 140 255 / 55%);
+  --jr-red: #ff5c6c;
+  --jr-red-soft: rgb(255 92 108 / 16%);
+  --jr-green: #3ddc97;
+  --jr-green-soft: rgb(61 220 151 / 16%);
+  --jr-warning: #d8b26a;
+  --jr-amber: #ffb020;
+  --jr-amber-strong: #ff8a3d;
+  --jr-phase-idle: #8a93a8;
+  --jr-phase-send: #3ddc97;
+  --jr-phase-wait: #4f8cff;
+  --jr-phase-download: #22d3ee;
+  --jr-overlay: rgb(5 6 10 / 60%);
+  --jr-shadow-pop: 0 16px 40px rgb(0 0 0 / 55%), 0 0 0 1px rgb(255 255 255 / 6%);
+  --jr-shadow-card: 0 1px 3px rgb(0 0 0 / 40%);
+  --jr-highlight-bg: rgb(255 176 32 / 40%);
+  --jr-highlight-text: #fff;
+  --jr-json-key: #9ecbff;
+  --jr-json-string: #a5e6a1;
+  --jr-json-number: #ffb38a;
+  --jr-json-literal: #c8a6ff;
+  --jr-json-punct: #6f7891;
+  --jr-chevron: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%239aa1b4' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  --jr-wash: rgb(79 140 255 / 18%);
+  --jr-accent-glow: rgb(79 140 255 / 55%);
+  --jr-select-glow: rgb(79 140 255 / 24%);
+  --jr-cyan: #22d3ee;
+  --jr-amber-soft: rgb(255 176 32 / 14%);
+  --jr-amber-glow: rgb(255 176 32 / 50%);
+  --jr-red-row: rgb(255 92 108 / 6%);
+  --jr-red-glow: rgb(255 92 108 / 45%);
+  --jr-green-glow: rgb(61 220 151 / 45%);
+  --jr-glass: rgb(20 23 33 / 78%);
+  --jr-shadow-bar: 0 1px 0 rgb(0 0 0 / 30%);
+  --jr-shadow-button: inset 0 1px 0 rgb(255 255 255 / 6%), 0 1px 2px rgb(0 0 0 / 35%);
+  --jr-method-weight: 500;
+  --jr-accent-line-opacity: 0.85;
+
+  color-scheme: dark;
+}
+
 html,
 body,
 :global(#application) {
@@ -10,20 +139,31 @@ body,
   margin: 0;
 }
 
+// Native form controls, scrollbars and buttons do not inherit the body font.
+:global(button),
+:global(input),
+:global(select),
+:global(textarea) {
+  font-family: inherit;
+  font-size: inherit;
+}
+
+:global(*) {
+  scrollbar-color: var(--jr-border-strong) transparent;
+  scrollbar-width: thin;
+}
+
+// A method's namespace, tinted by useNamespaceHighlight, below search.
+::highlight(json-rpc-namespace) {
+  color: var(--jr-accent);
+}
+
 ::highlight(json-rpc-search-list),
 ::highlight(json-rpc-search-request),
 ::highlight(json-rpc-search-response),
 ::highlight(json-rpc-search-message) {
   background-color: variables.$searchHighlightBackground;
   color: variables.$searchHighlightColor;
-}
-
-:global(.isDark) ::highlight(json-rpc-search-list),
-:global(.isDark) ::highlight(json-rpc-search-request),
-:global(.isDark) ::highlight(json-rpc-search-response),
-:global(.isDark) ::highlight(json-rpc-search-message) {
-  background-color: variables.$darkSearchHighlightBackground;
-  color: variables.$darkSearchHighlightColor;
 }
 
 :global(#application) {

@@ -12,9 +12,12 @@ import Icon, { IconType } from '~/components/common/Icon';
 import Waterfall from './Waterfall';
 import { getRequestLabel } from '~/logic/HTTPArchive/filters';
 import { SortField } from '~/logic/HTTPArchive/SortField';
-import { Slowness, getErrorSummary, getRequestError, getSlowness } from '~/logic/HTTPArchive/summary';
+import {
+  Slowness, formatSize, getErrorSummary, getRequestError, getSlowness, getStatusTone
+} from '~/logic/HTTPArchive/summary';
 import { ResizableColumn, getColumnWidthStyle } from '../columns';
 import useVisibleColumns from '../useVisibleColumns';
+import { ITimeline } from '../timeline';
 import { IRequest } from '~/logic/HTTPArchive/IRequest';
 import styles from './request.scss';
 
@@ -23,13 +26,12 @@ const maxStaggeredRows = 10;
 
 interface IComponentProps {
   item: IRequest,
-  timelineStart: number,
-  timelineEnd: number,
+  timeline: ITimeline,
   now: number,
   revealIndex?: number,
 }
 
-const Request = ({ item, timelineStart, timelineEnd, now, revealIndex }: IComponentProps) => {
+const Request = ({ item, timeline, now, revealIndex }: IComponentProps) => {
   const rowRef = useRef<HTMLDivElement>(null);
   const { selected, setSelected, clearSelection } = useRequestContext();
   const isSelected = item.uuid === selected?.uuid;
@@ -72,15 +74,16 @@ const Request = ({ item, timelineStart, timelineEnd, now, revealIndex }: ICompon
       return (
         <Waterfall
           item={ item }
-          timelineStart={ timelineStart }
-          timelineEnd={ timelineEnd }
+          timeline={ timeline }
           now={ now }
         />
       );
     }
 
     if (item.isPending) {
-      return field === SortField.Status ? 'Pending' : '';
+      return field === SortField.Status
+        ? <span className={ cn(styles.statusPill, styles.isPending) }>Pending</span>
+        : '';
     }
 
     if (item.isWebSocket) {
@@ -88,11 +91,14 @@ const Request = ({ item, timelineStart, timelineEnd, now, revealIndex }: ICompon
     }
 
     if (field === SortField.Status) {
-      return Math.ceil(item.response.status);
+      const status = Math.ceil(item.response.status);
+
+      return <span className={ cn(styles.statusPill, styles[getStatusTone(status)]) }>{ status }</span>;
     }
 
     if (field === SortField.Size) {
-      return Math.ceil(item.response.content.size);
+      // Display only - sorting still compares the raw byte count.
+      return formatSize(item.response.content.size);
     }
 
     return Math.ceil(item.time);
@@ -139,6 +145,7 @@ const Request = ({ item, timelineStart, timelineEnd, now, revealIndex }: ICompon
       className={ cn(styles.requestWrapper, {
         [styles.isRevealing]: isRevealing,
         [styles.isServerRow]: item.isServerSide,
+        [styles.isMockRow]: item.isIntercepted,
         [styles.isSelected]: isSelected,
         [styles.isCompact]: compactRows,
         [styles.isAccordionSelected]: isAccordionSelected,
@@ -174,7 +181,7 @@ const Request = ({ item, timelineStart, timelineEnd, now, revealIndex }: ICompon
               title="Called by the server while answering a request, not by the browser"
             />
           ) }
-          <span className={ styles.methodLabel }>{ getRequestLabel(item) }</span>
+          <span className={ styles.methodLabel } data-method-label>{ getRequestLabel(item) }</span>
           { compactRows && requestError && renderError() }
           <div
             className={ styles.rowActions }

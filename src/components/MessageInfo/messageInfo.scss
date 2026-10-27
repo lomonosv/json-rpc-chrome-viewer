@@ -33,8 +33,4 @@
   flex-grow: 1;
   border-bottom: 1px solid variables.$borderColor;
   display: flex;
-
-  :global(.isDark) & {
-    border-bottom: 1px solid variables.$darkBorderColor;
-  }
 }

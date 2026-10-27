@@ -5,213 +5,377 @@
   margin-right: 10px;
 }
 
+// Amber while armed: there is no API to badge an extension panel's tab.
 .interceptorIcon {
   width: 14px;
   height: 14px;
 
   &.isActive {
     fill: variables.$interceptorAccent;
+    filter: drop-shadow(0 0 4px variables.$amberGlow);
 
-    :global(.isDark) & {
-      fill: variables.$darkInterceptorAccent;
+    @include variables.motion {
+      animation: armed-breathe 2.4s ease-in-out infinite;
     }
   }
 }
 
 .interceptorWrapper {
-  display: flex;
-  flex-direction: column;
-  background: variables.$background;
-  color: variables.$color;
   position: fixed;
   inset: 0;
   z-index: 2;
-
-  :global(.isDark) & {
-    background: variables.$darkBackground;
-    color: variables.$darkColor;
-  }
+  display: flex;
+  flex-direction: column;
+  background:
+    radial-gradient(ellipse 70% 320px at 50% -80px, variables.$amberSoft, transparent 70%),
+    variables.$background;
+  color: variables.$color;
 }
 
-.headerTitle {
-  overflow: hidden;
+// Doubled to beat the shared Header's rules.
+.pageHeader.pageHeader {
+  justify-content: space-between;
+  height: 40px;
+  min-height: 40px;
+  padding: 0 12px 0 14px;
+  background: variables.$glass;
+  box-shadow: variables.$barShadow;
+}
+
+.pageTitle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   min-width: 0;
-  text-overflow: ellipsis;
+  overflow: hidden;
+  color: variables.$highLightedColor;
+  font-size: 13px;
+  font-weight: 600;
   white-space: nowrap;
-  padding-right: 20px;
 }
 
-.closeButton {
-  position: absolute;
-  right: 9px;
-  top: 7px;
+.titleMark {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 7px;
+  background: linear-gradient(135deg, var(--jr-mock-bg), variables.$verySlowCall);
+  box-shadow: 0 0 14px variables.$amberGlow;
+  fill: #1a1200;
 
-  > i {
+  i {
     width: 13px;
     height: 13px;
   }
 }
 
-.interceptorContainer {
-  flex-grow: 1;
-  overflow: auto;
-  padding: 12px 10px 20px;
+.ruleCount {
+  padding: 0 8px;
+  border: 1px solid variables.$borderStrongColor;
+  border-radius: 999px;
+  color: variables.$mutedColor;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 18px;
 }
 
-.interceptorContent {
-  width: 100%;
-}
-
-.statusBar {
+.pageActions {
   display: flex;
+  flex: none;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 8px 12px;
-  padding: 7px 10px;
-  border: 1px solid variables.$borderColor;
-  border-left: 3px solid variables.$borderColor;
-  border-radius: 3px;
-  background: variables.$headerBackground;
-
-  :global(.isDark) & {
-    border-color: variables.$darkBorderColor;
-    background: variables.$darkHeaderBackground;
-  }
-
-  &.isArmed {
-    border-left-color: variables.$success;
-
-    .statusText {
-      color: variables.$success;
-      opacity: 1;
-    }
-
-    :global(.isDark) & {
-      border-left-color: variables.$darkSuccess;
-
-      .statusText {
-        color: variables.$darkSuccess;
-      }
-    }
-  }
-
-  &.isIncomplete {
-    border-left-color: variables.$interceptorAccent;
-
-    .statusText {
-      color: variables.$interceptorAccent;
-      opacity: 1;
-    }
-
-    :global(.isDark) & {
-      border-left-color: variables.$darkInterceptorAccent;
-
-      .statusText {
-        color: variables.$darkInterceptorAccent;
-      }
-    }
-  }
+  gap: 10px;
 }
 
-.statusToggle {
-  flex: 0 0 auto;
-  font-weight: bold;
-}
-
-.statusText {
-  flex: 1 1 auto;
-  min-width: 0;
-  opacity: 0.75;
+.primaryButton {
+  @include variables.primaryButton;
 }
 
 .addButton {
-  flex: 0 0 auto;
-  cursor: pointer;
-  background: variables.$background;
-  padding: 3px 10px;
-  border: 1px solid variables.$borderColor;
-  border-radius: 3px;
-  white-space: nowrap;
+  @include variables.plusGlyph;
+}
 
-  &:hover {
-    background: variables.$hoverBackground;
+// Doubled to beat the shared Button's `.button` rules.
+.closeButton.closeButton {
+  @include variables.iconButton;
+}
+
+.interceptorContainer {
+  flex-grow: 1;
+  overflow: auto;
+  padding: 18px 18px 32px;
+}
+
+.interceptorContent {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+}
+
+.statusCard {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 18px;
+  border: 1px solid variables.$borderColor;
+  border-radius: 14px;
+  background: variables.$surfaceRaised;
+  box-shadow: variables.$cardShadow;
+  transition: border-color 0.3s, box-shadow 0.3s;
+
+  &.isIncomplete {
+    border-color: color-mix(in srgb, var(--jr-mock-bg) 45%, transparent);
+
+    .statusDot {
+      background: var(--jr-mock-bg);
+    }
   }
 
-  :global(.isDark) & {
-    background: variables.$darkBackground;
-    border-color: variables.$darkBorderColor;
+  &.isArmed {
+    border-color: color-mix(in srgb, var(--jr-mock-bg) 70%, transparent);
+    background:
+      linear-gradient(100deg, variables.$amberSoft, transparent 60%),
+      variables.$surfaceRaised;
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--jr-mock-bg) 25%, transparent),
+      0 10px 32px -12px variables.$amberGlow;
 
-    &:hover {
-      background: variables.$darkHoverBackground;
+    .statusDot {
+      background: var(--jr-mock-bg);
+      box-shadow: 0 0 0 0 variables.$amberGlow;
+
+      @include variables.motion {
+        animation: live-ping 1.8s ease-out infinite;
+      }
     }
   }
 }
 
+.statusCopy {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.statusTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: variables.$highLightedColor;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.statusDot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: variables.$dimColor;
+}
+
+.statusText {
+  color: variables.$mutedColor;
+}
+
+// A real checkbox, visually replaced, so keyboard and screen readers work.
+.switch {
+  position: relative;
+  display: inline-flex;
+  flex: none;
+  cursor: pointer;
+
+  input {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    margin: 0;
+    opacity: 0;
+    cursor: inherit;
+  }
+
+  &:has(input:disabled) {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+}
+
+.switchTrack {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  border-radius: 999px;
+  background: variables.$borderStrongColor;
+  transition: background 0.25s variables.$easeOut, box-shadow 0.25s;
+
+  &::after {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 3px rgb(0 0 0 / 30%);
+    content: "";
+    transition: transform 0.25s variables.$easeOut;
+  }
+}
+
+.switch input:checked + .switchTrack {
+  background: linear-gradient(135deg, var(--jr-mock-bg), variables.$verySlowCall);
+  box-shadow: 0 0 14px variables.$amberGlow;
+}
+
+.switch input:checked + .switchTrack::after {
+  transform: translateX(20px);
+}
+
+.switch input:focus-visible + .switchTrack {
+  outline: 2px solid variables.$accent;
+  outline-offset: 2px;
+}
+
+.isSmall .switchTrack {
+  width: 32px;
+  height: 18px;
+
+  &::after {
+    top: 2px;
+    left: 2px;
+    width: 14px;
+    height: 14px;
+  }
+}
+
+.isSmall input:checked + .switchTrack::after {
+  transform: translateX(14px);
+}
+
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+// Body text, not help-text grey, so it gets read.
 .hint {
-  margin: 8px 0 14px;
-  padding: 0 3px;
-  opacity: 0.85;
-  font-size: 11px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 0;
+  padding: 10px 14px;
+  border: 1px solid variables.$borderColor;
+  border-radius: 10px;
+  background: variables.$surface;
+  color: variables.$mutedColor;
+  font-size: 11.5px;
   line-height: 1.5;
+
+  code {
+    color: variables.$highLightedColor;
+    font-family: variables.$fontMono;
+  }
+}
+
+.hintIcon {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  margin-top: 1px;
+  border-radius: 50%;
+  background: variables.$accentSoft;
+  color: variables.$accentText;
+  font-size: 10px;
+  font-style: italic;
+  font-weight: 700;
 }
 
 .empty {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
-  padding: 34px 20px;
-  border: 1px dashed variables.$borderColor;
-  border-radius: 3px;
+  gap: 8px;
+  padding: 48px 24px;
+  border: 1px dashed variables.$borderStrongColor;
+  border-radius: 14px;
+  text-align: center;
+}
 
-  :global(.isDark) & {
-    border-color: variables.$darkBorderColor;
+.emptyMark {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  margin-bottom: 6px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, var(--jr-mock-bg), variables.$verySlowCall);
+  box-shadow: 0 0 32px variables.$amberGlow;
+  fill: #1a1200;
+
+  i {
+    width: 22px;
+    height: 22px;
   }
 }
 
 .emptyTitle {
-  font-size: 13px;
+  color: variables.$highLightedColor;
+  font-size: 15px;
+  font-weight: 600;
 }
 
 .emptyText {
-  opacity: 0.65;
-  text-align: center;
+  max-width: 420px;
+  margin-bottom: 8px;
+  color: variables.$mutedColor;
+  line-height: 1.5;
 }
 
-.emptyButton {
-  margin-top: 6px;
+.rules {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .rule {
+  overflow: hidden;
   border: 1px solid variables.$borderColor;
-  border-radius: 3px;
-  margin-bottom: 10px;
+  border-radius: 14px;
+  background: variables.$surfaceRaised;
+  box-shadow: variables.$cardShadow;
+  transition: border-color 0.25s, box-shadow 0.25s, opacity 0.25s;
 
-  :global(.isDark) & {
-    border-color: variables.$darkBorderColor;
-  }
-
-  &.isDisabled {
-    .ruleBody input,
-    .ruleBody select,
-    .ruleBody textarea {
-      cursor: not-allowed;
-    }
+  // A full border, not an inset edge: an edge bends round the rounded corner.
+  &.isLive {
+    border-color: color-mix(in srgb, var(--jr-mock-bg) 65%, transparent);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--jr-mock-bg) 18%, transparent), 0 8px 24px -14px variables.$amberGlow;
   }
 
   &.isDisabled:not(.isInactive) {
     .ruleBody,
     .ruleTitle,
     .ruleMeta {
-      opacity: 0.5;
+      opacity: 0.55;
     }
   }
 
   &.isInactive {
-    opacity: 0.45;
+    opacity: 0.55;
+  }
 
+  &.isDisabled,
+  &.isInactive {
     input,
-    select,
     textarea {
       cursor: not-allowed;
     }
@@ -221,151 +385,166 @@
 .ruleHeader {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 8px;
-}
-
-.ruleCheckbox {
-  flex: 0 0 auto;
+  gap: 12px;
+  padding: 10px 12px 10px 14px;
 }
 
 .ruleToggle {
   display: flex;
-  align-items: center;
-  gap: 8px;
   flex: 1 1 auto;
+  align-items: center;
+  gap: 10px;
   min-width: 0;
   cursor: pointer;
-  padding: 2px 0;
 }
 
 .ruleTitle {
-  font-weight: bold;
   overflow: hidden;
+  flex: 0 1 auto;
+  color: variables.$highLightedColor;
+  font-family: variables.$fontMono;
+  font-size: 13px;
+  font-weight: 600;
   text-overflow: ellipsis;
   white-space: nowrap;
-  flex: 0 1 auto;
 
   &.isUntitled {
-    font-weight: normal;
-    opacity: 0.55;
+    color: variables.$dimColor;
+    font-family: inherit;
+    font-weight: 500;
   }
 }
 
 .ruleUrl {
+  overflow: hidden;
   flex: 0 1 auto;
   min-width: 0;
-  overflow: hidden;
+  padding: 1px 8px;
+  border-radius: 6px;
+  background: variables.$surface;
+  color: variables.$mutedColor;
+  font-family: variables.$fontMono;
+  font-size: 11px;
   text-overflow: ellipsis;
   white-space: nowrap;
-  opacity: 0.55;
 }
 
 .ruleMeta {
   display: flex;
-  align-items: center;
-  gap: 5px;
   flex: 1 0 auto;
+  align-items: center;
   justify-content: flex-end;
+  gap: 6px;
 }
 
-.tag {
-  border: 1px solid variables.$borderColor;
-  border-radius: 8px;
-  padding: 0 7px;
+.pill {
+  padding: 0 8px;
+  border-radius: 999px;
+  background: variables.$surface;
+  color: variables.$mutedColor;
+  font-family: variables.$fontMono;
   font-size: 11px;
-  line-height: 16px;
+  font-weight: 600;
+  line-height: 19px;
   white-space: nowrap;
-  opacity: 0.75;
 
-  :global(.isDark) & {
-    border-color: variables.$darkBorderColor;
+  &.isResult {
+    background: variables.$successSoft;
+    color: variables.$success;
   }
 
   &.isError {
+    background: variables.$errorSoft;
     color: variables.$error;
-    border-color: variables.$error;
-    opacity: 1;
   }
 
   &.isWarning {
-    color: variables.$interceptorAccent;
-    border-color: variables.$interceptorAccent;
-    opacity: 1;
-
-    :global(.isDark) & {
-      color: variables.$darkInterceptorAccent;
-      border-color: variables.$darkInterceptorAccent;
-    }
+    background: variables.$amberSoft;
+    color: variables.$slowCall;
+    font-family: inherit;
   }
 }
 
-.ruleChevron {
-  flex: 0 0 auto;
-  width: 11px;
-  height: 11px;
+.chevron {
+  flex: none;
+  width: 0;
+  height: 0;
+  margin: 0 4px;
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+  border-left: 5px solid variables.$dimColor;
+  transition: transform 0.2s variables.$easeOut;
+
+  &.isOpen {
+    transform: rotate(90deg);
+  }
 }
 
-.removeButton {
-  flex: 0 0 auto;
-  cursor: pointer;
-  width: 11px;
-  height: 11px;
+.removeButton.removeButton {
+  @include variables.iconButton;
 
-  > i {
-    width: 11px;
-    height: 11px;
+  &:hover {
+    background-color: variables.$errorSoft;
+    fill: variables.$error;
   }
 }
 
 .ruleBody {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding: 4px 8px 12px 28px;
+  display: grid;
+  grid-template-columns: minmax(220px, 300px) minmax(0, 1fr);
+  gap: 20px;
+  padding: 14px 16px 16px;
+  border-top: 1px solid variables.$borderColor;
+  background: variables.$surface;
+
+  @include variables.motion {
+    animation: rule-open 0.24s variables.$easeOut both;
+  }
+
+  @media (width <= 700px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
-.fieldRow {
+.ruleSettings {
   display: flex;
-  flex-wrap: wrap;
-  gap: 12px 16px;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
 }
 
 .field {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  flex: 0 0 auto;
+  gap: 6px;
   min-width: 0;
+}
 
-  &.isWide {
-    flex: 1 1 240px;
-  }
+.fieldPair {
+  display: flex;
+  gap: 12px;
 }
 
 .fieldLabel {
-  opacity: 0.65;
-  white-space: nowrap;
+  color: variables.$dimColor;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .fieldHint {
-  opacity: 0.5;
+  color: variables.$dimColor;
   font-size: 11px;
+
+  code {
+    color: variables.$color;
+    font-family: variables.$fontMono;
+  }
 
   &.isInvalidHint {
     color: variables.$error;
-    opacity: 1;
   }
-}
-
-.inputWithSuffix {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-
-.fieldSuffix {
-  opacity: 0.65;
 }
 
 .inputGrow {
@@ -373,32 +552,116 @@
   min-width: 0;
 }
 
-.responseTypeSelect {
-  width: 110px;
-}
-
 .patternInput {
   box-sizing: border-box;
-  border: 1px solid variables.$borderColor;
-  border-radius: 2px;
-  padding: 3px 6px;
   width: 100%;
   min-width: 0;
-
-  :global(.isDark) & {
-    border-color: variables.$darkBorderColor;
-  }
+  height: 30px;
+  padding: 0 10px;
+  font-family: variables.$fontMono;
 }
 
 .numberInput {
   box-sizing: border-box;
-  border: 1px solid variables.$borderColor;
-  border-radius: 2px;
-  padding: 3px 6px;
-  width: 70px;
+  width: 84px;
+  height: 30px;
+  padding: 0 10px;
+  font-variant-numeric: tabular-nums;
+}
 
-  :global(.isDark) & {
-    border-color: variables.$darkBorderColor;
+.inputWithSuffix {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.fieldSuffix {
+  color: variables.$mutedColor;
+}
+
+.segmented {
+  display: inline-flex;
+  align-self: flex-start;
+  padding: 3px;
+  border: 1px solid variables.$borderColor;
+  border-radius: 9px;
+  background: variables.$background;
+}
+
+.segment {
+  position: relative;
+  padding: 4px 14px;
+  border-radius: 6px;
+  color: variables.$mutedColor;
+  font-weight: 500;
+  text-transform: capitalize;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+
+  input {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    opacity: 0;
+    cursor: inherit;
+  }
+
+  &:has(input:focus-visible) {
+    outline: 2px solid variables.$accent;
+    outline-offset: 1px;
+  }
+
+  &:has(input:disabled) {
+    cursor: not-allowed;
+  }
+
+  &.isChecked {
+    background: variables.$successSoft;
+    color: variables.$success;
+  }
+
+  &.isChecked.isErrorSegment {
+    background: variables.$errorSoft;
+    color: variables.$error;
   }
 }
 
+.bodyField {
+  min-height: 180px;
+
+  > :nth-child(2) {
+    flex: 1;
+  }
+}
+
+@keyframes armed-breathe {
+  0%, 100% {
+    filter: drop-shadow(0 0 2px variables.$amberGlow);
+  }
+
+  50% {
+    filter: drop-shadow(0 0 7px variables.$amberGlow);
+  }
+}
+
+@keyframes live-ping {
+  0% {
+    box-shadow: 0 0 0 0 variables.$amberGlow;
+  }
+
+  80%, 100% {
+    box-shadow: 0 0 0 8px transparent;
+  }
+}
+
+@keyframes rule-open {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}

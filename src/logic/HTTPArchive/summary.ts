@@ -21,6 +21,26 @@ export const getSlowness = (request: IRequest): Slowness => {
   return request.time >= slowCallMs ? Slowness.Slow : Slowness.Normal;
 };
 
+export enum StatusTone {
+  Success = 'success',
+  Redirect = 'redirect',
+  ClientError = 'clientError',
+  ServerError = 'serverError',
+}
+
+// 0 (network failure, aborted fetch) reads as a server error.
+export const getStatusTone = (status: number): StatusTone => {
+  if (status >= 200 && status < 300) {
+    return StatusTone.Success;
+  }
+
+  if (status >= 300 && status < 400) {
+    return StatusTone.Redirect;
+  }
+
+  return status >= 400 && status < 500 ? StatusTone.ClientError : StatusTone.ServerError;
+};
+
 export interface IRequestError {
   code: string,
   message: string,
