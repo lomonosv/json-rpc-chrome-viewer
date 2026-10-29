@@ -40,7 +40,7 @@
   "bugs": {
     "url": "https://github.com/lomonosv/json-rpc-chrome-viewer/issues"
   },
-  "homepage": "https://github.com/lomonosv/json-rpc-chrome-viewer#readme",
+  "homepage": "https://json-rpc-chrome-viewer.lomonos.com.ua/",
   "dependencies": {
     "@fontsource-variable/geist": "^5.3.0",
     "@fontsource-variable/geist-mono": "^5.3.0",

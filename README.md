@@ -2,6 +2,8 @@
 
 A Chrome DevTools extension for working with **JSON-RPC** traffic. It adds a dedicated panel that captures JSON-RPC calls over both HTTP and WebSocket, decodes them, and presents them in a way that is actually readable - instead of hunting through the Network tab for POSTs that all share the same URL.
 
+**[Website and live demo](https://json-rpc-chrome-viewer.lomonos.com.ua/)** · [Chrome Web Store](https://chromewebstore.google.com/detail/json-rpc-chrome-viewer/bfkookcjhlalpmeedppachhdkhmflbah)
+
 Built on Manifest V3. MIT licensed.
 
 ## Why

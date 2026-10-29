@@ -12,12 +12,13 @@ const features: IFeature[] = [
   {
     icon: 'layers',
     title: 'Calls by method',
-    text: 'Zero config. Batches split into one row per call, each paired with its response by id.'
+    text: 'Zero config for any JSON-RPC 2.0 API. Batches split into one row per call, each paired with its '
+      + 'response by id.'
   },
   {
     icon: 'socket',
     title: 'HTTP and WebSocket',
-    text: 'Socket frames land in the same list, SockJS included, with direction marked.'
+    text: 'JSON-RPC over WebSocket lands in the same list, SockJS included, with direction marked.'
   },
   {
     icon: 'timer',
@@ -31,7 +32,7 @@ const features: IFeature[] = [
   },
   {
     icon: 'mask',
-    title: 'Mock any method',
+    title: 'Mock JSON-RPC responses',
     text: 'Answer a method from a local rule — result or error, status, delay. Only while DevTools is open.'
   },
   {

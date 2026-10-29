@@ -9,6 +9,14 @@
   text-align: center;
 }
 
+.eyebrow {
+  margin: 0 0 18px;
+  color: var(--text-muted);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
 .title {
   max-width: 900px;
   margin: 0;

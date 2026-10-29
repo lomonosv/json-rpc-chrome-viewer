@@ -5,7 +5,8 @@ import styles from './nav.module.css';
 
 const links = [
   { href: '#features', label: 'Features' },
-  { href: '#start', label: 'Get started' }
+  { href: '#start', label: 'Get started' },
+  { href: '#faq', label: 'FAQ' }
 ];
 
 export default function Nav() {

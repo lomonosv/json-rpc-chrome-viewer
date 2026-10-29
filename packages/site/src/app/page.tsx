@@ -1,4 +1,6 @@
 import PageBackground from '~/components/PageBackground';
+import StructuredData from '~/components/StructuredData';
+import Faq from '~/components/sections/Faq';
 import Features from '~/components/sections/Features';
 import Footer from '~/components/sections/Footer';
 import GetStarted from '~/components/sections/GetStarted';
@@ -8,12 +10,14 @@ import Nav from '~/components/sections/Nav';
 export default function Home() {
   return (
     <>
+      <StructuredData />
       <PageBackground />
       <Nav />
       <main>
         <Hero />
         <Features />
         <GetStarted />
+        <Faq />
       </main>
       <Footer />
     </>

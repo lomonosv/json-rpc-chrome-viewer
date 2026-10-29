@@ -13,7 +13,8 @@ export default function Hero() {
   return (
     <section id="top" className={ styles.hero }>
       <div className={ `container ${ styles.inner }` }>
-        <h1 className={ styles.title }>
+        <h1 className={ styles.eyebrow }>JSON-RPC viewer and debugger for Chrome DevTools</h1>
+        <p className={ styles.title }>
           <span className={ styles.titleLine }>
             Every call is <span className={ styles.nowrap }>POST /rpc.</span>
           </span>{ ' ' }
@@ -22,11 +23,11 @@ export default function Hero() {
               Until now.
             </GradientText>
           </span>
-        </h1>
+        </p>
 
         <p className={ styles.lead }>
-          A Chrome DevTools panel that lists JSON-RPC calls by method — HTTP and WebSocket, with each
-          request paired to its response.
+          Inspect JSON-RPC 2.0 calls by method — over HTTP and WebSocket, with each request paired to
+          its response.
         </p>
 
         <div className={ styles.ctas }>
