@@ -5,7 +5,7 @@
   "devEngines": {
     "runtime": {
       "name": "node",
-      "version": "24.22.1",
+      "version": "26.13.0",
       "onFail": "download"
     },
     "packageManager": {
@@ -15,21 +15,14 @@
     }
   },
   "scripts": {
-    "eslint": "eslint --cache=true --cache-location=./.cache/eslint ./",
-    "stylelint": "pnpm --filter @json-rpc-chrome-viewer/extension run stylelint",
-    "lint": "pnpm run eslint && pnpm run stylelint",
-    "clean": "pnpm --filter @json-rpc-chrome-viewer/extension run clean",
-    "build": "pnpm --filter @json-rpc-chrome-viewer/extension run build",
-    "typecheck": "pnpm --filter @json-rpc-chrome-viewer/extension run typecheck",
-    "release": "pnpm --filter @json-rpc-chrome-viewer/extension run release",
-    "build:logger": "pnpm --filter @json-rpc-chrome-viewer/server-logger run build",
-    "typecheck:logger": "pnpm --filter @json-rpc-chrome-viewer/server-logger run typecheck",
+    "build": "nx run-many -t build",
+    "lint": "nx run-many -t lint",
+    "typecheck": "nx run-many -t typecheck",
+    "dev:site": "nx run site:dev",
+    "graph": "nx graph",
+    "release:extension": "cd packages/extension && release-it",
     "release:logger": "cd packages/server-logger && release-it",
-    "dev:site": "pnpm run build:demo && pnpm --filter @json-rpc-chrome-viewer/site run dev",
-    "build:site": "pnpm run build:demo && pnpm --filter @json-rpc-chrome-viewer/site run build",
-    "typecheck:site": "pnpm --filter @json-rpc-chrome-viewer/site run typecheck",
-    "release:site": "cd packages/site && release-it",
-    "build:demo": "SENTRY_AUTH_TOKEN= pnpm --filter @json-rpc-chrome-viewer/extension run bundle"
+    "release:site": "cd packages/site && release-it"
   },
   "repository": {
     "type": "git",
@@ -48,6 +41,7 @@
     "eslint-config-airbnb-extended": "^3.3.0",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^7.1.1",
+    "nx": "^24.0.2",
     "release-it": "^21.1.1",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.72.1"

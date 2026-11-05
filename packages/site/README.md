@@ -8,11 +8,10 @@ Router).
 From the repo root:
 
 ```bash
-pnpm run dev:site        # builds the extension's panel bundle, then next dev on :3000
-pnpm run typecheck:site
-pnpm run build:site      # panel bundle + standalone build
-pnpm --filter @json-rpc-chrome-viewer/site run start   # serve that build on :3000
-pnpm run lint            # the root ESLint config covers the site
+pnpm run dev:site                  # next dev on :3000
+pnpm exec nx run site:build        # standalone build
+pnpm exec nx run site:start        # serve it on :3000
+pnpm exec nx run-many -t lint typecheck -p site
 ```
 
 The hero embeds the **real panel**: `demo/stub.js` fakes the `chrome.*` API and

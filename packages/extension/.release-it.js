@@ -1,9 +1,7 @@
 module.exports = {
   'hooks': {
     'after:init': [
-      'pnpm run lint',
-      'pnpm run typecheck',
-      'pnpm run bundle'
+      'pnpm exec nx run-many -t lint typecheck build -p extension'
     ]
   },
   'git': {

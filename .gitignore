@@ -27,3 +27,7 @@ Thumbs.db
 
 # Coverage
 coverage/
+
+# Nx
+.nx/cache
+.nx/workspace-data

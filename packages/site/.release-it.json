@@ -1,9 +1,7 @@
 {
   "hooks": {
     "after:init": [
-      "pnpm --dir ../.. run lint",
-      "pnpm run typecheck",
-      "pnpm run build"
+      "pnpm exec nx run-many -t lint typecheck build -p site"
     ]
   },
   "git": {

@@ -1,7 +1,6 @@
 // Assembles public/demo/: the extension's real panel bundle plus the chrome
 // stub that lets it run on a web page (see demo/stub.js). The panel bundle is
-// produced by the extension build (`packages/extension`, `pnpm run bundle`);
-// the root `build:site` / `dev:site` scripts run that first.
+// produced by `extension:build`, which Nx runs before site:build / site:dev.
 import { copyFileSync, existsSync, mkdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -12,7 +11,7 @@ const out = join(site, 'public', 'demo');
 
 if (!existsSync(panelBundle)) {
   console.error(`prepare-demo: ${ panelBundle } is missing. Build the extension first `
-    + '(`pnpm run build:site` from the repo root does both).');
+    + '(`pnpm exec nx run site:build` from the repo root does both).');
   process.exit(1);
 }
 

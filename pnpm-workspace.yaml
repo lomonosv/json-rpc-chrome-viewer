@@ -44,6 +44,8 @@ allowBuilds:
   '@sentry/cli': false
   esbuild: false
   unrs-resolver: false
+  # Postinstall only fetches the Nx Cloud client, which is not used.
+  nx: false
 
 # Verify every package in the store against its lockfile integrity hash.
 verifyStoreIntegrity: true

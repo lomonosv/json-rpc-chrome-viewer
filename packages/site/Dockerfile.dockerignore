@@ -7,6 +7,7 @@ packages/extension/build
 .git
 .github
 **/.cache
+**/.nx
 .idea
 **/.DS_Store
 # Secrets must never reach a build context. `**/` because ignore patterns are

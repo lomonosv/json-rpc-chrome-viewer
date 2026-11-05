@@ -1,6 +1,7 @@
 {
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    // TypeScript 6 defaults `strict` to true; pinned to preserve existing behaviour.
+    // Turning strict on surfaces ~50 real null-safety errors.
     "strict": false,
     "noImplicitAny": false,
     // TypeScript 6 no longer auto-includes every @types package.
@@ -8,8 +9,6 @@
       "chrome",
       "node"
     ],
-    "module": "esnext",
-    "target": "ES2022",
     "lib": [
       "es2022",
       "es2021",
@@ -18,12 +17,10 @@
     ],
     "jsx": "react",
     "allowJs": true,
-    "moduleResolution": "bundler",
     "paths": {
       "~/logic/*": ["./src/logic/*"],
       "~/components/*": ["./src/components/*"]
     },
-    "esModuleInterop": true,
     "sourceMap": true
   },
   "include": [

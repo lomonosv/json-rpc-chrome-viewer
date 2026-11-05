@@ -1,4 +1,4 @@
-name: Deploy to Chrome Web Store
+name: Deploy extension
 
 on:
   release:
@@ -10,47 +10,31 @@ on:
         type: boolean
         default: false
 
+concurrency:
+  group: deploy-extension
+  cancel-in-progress: false
+
 jobs:
   deploy:
-    # a pre-release must not auto-publish to users; dispatch it manually instead
+    # Pre-releases are published by manual dispatch only.
     if: github.event_name != 'release' || !github.event.release.prerelease
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     permissions:
       contents: write
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 24.x
+      - uses: ./.github/actions/setup
 
-      # pnpm comes from corepack, which verifies the release against npm's
-      # signing keys - no third-party setup action. Corepack only reads
-      # `packageManager`, so the version is taken from the single pin in
-      # devEngines.packageManager instead.
-      - name: Install pnpm
-        run: |
-          corepack enable pnpm
-          corepack install -g "pnpm@$(node -p "require('./package.json').devEngines.packageManager.version")"
+      - run: pnpm exec nx run-many -t lint typecheck -p extension
 
-      # Frozen lockfile; pnpm-workspace.yaml enforces the supply-chain policies.
-      - run: pnpm install --frozen-lockfile
-
-      # The extension's scripts/envSubstitute.js reads packages/extension/.env
-      # through dotenv and exits 1 if it parses nothing, so the secrets have to
-      # land on disk before the build.
-      - name: Write .env from secrets
-        run: |
-          cat > packages/extension/.env <<EOF
-          ENVIRONMENT=${{ secrets.ENVIRONMENT }}
-          SENTRY_DSN=${{ secrets.SENTRY_DSN }}
-          SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}
-          EOF
-
-      # clean -> lint -> tsc -> esbuild (+ Sentry sourcemap upload) -> env substitution
-      - run: pnpm run build
+      # production adds the Sentry upload; a cache hit would skip it.
+      - run: pnpm exec nx run extension:build:production --skip-nx-cache
         env:
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+          ENVIRONMENT: ${{ secrets.ENVIRONMENT }}
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
 
       - name: Verify manifest version matches the tag
@@ -77,13 +61,7 @@ jobs:
             echo "::notice::No CWS_* secrets set - skipping the store upload. Download extension.zip from this run and upload it manually."
           fi
 
-      # A locked devDependency, not `npx`: this step holds the store
-      # credentials, so the uploader goes through the same lockfile and
-      # supply-chain policies as everything else.
-      #
-      # v4 has no --auto-publish flag, and silently ignores it if passed - a
-      # release would upload as a draft and the job would still go green.
-      # Instead the command decides: none = upload + publish, `upload` = draft.
+      # No command = upload and publish; `upload` = draft. v4 ignores --auto-publish.
       - name: Upload to Chrome Web Store
         if: steps.creds.outputs.present == 'true'
         run: |
@@ -99,14 +77,13 @@ jobs:
         env:
           PUBLISH: ${{ github.event_name == 'release' || inputs.publish }}
           EXTENSION_ID: ${{ secrets.CWS_EXTENSION_ID }}
-          # v4 talks to the Chrome Web Store API v2, which needs the publisher id.
           PUBLISHER_ID: ${{ secrets.CWS_PUBLISHER_ID }}
           CLIENT_ID: ${{ secrets.CWS_CLIENT_ID }}
           CLIENT_SECRET: ${{ secrets.CWS_CLIENT_SECRET }}
           REFRESH_TOKEN: ${{ secrets.CWS_REFRESH_TOKEN }}
 
       - name: Upload the zip as a run artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: extension-zip
           path: extension.zip

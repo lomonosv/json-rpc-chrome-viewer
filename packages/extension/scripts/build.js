@@ -4,6 +4,9 @@ const crypto = require('crypto');
 const { sassPlugin, postcssModules } = require('esbuild-sass-plugin');
 const { sentryEsbuildPlugin } = require("@sentry/esbuild-plugin");
 
+// Sentry upload only for `extension:build:production`; the default build is cached and embedded by the site.
+const isRelease = process.argv.includes('--release');
+
 const shared = {
   bundle: true,
   minify: true,
@@ -85,11 +88,11 @@ const hashContentScripts = () => {
         type: 'style',
         transform: postcssModules({})
       }),
-      sentryEsbuildPlugin({
+      ...(isRelease ? [sentryEsbuildPlugin({
         authToken: process.env.SENTRY_AUTH_TOKEN,
         org: "json-rpc-chrome-viewer",
         project: "json-rpc-chrome-viewer",
-      })
+      })] : [])
     ]
   }).catch(() => process.exit(1));
 

@@ -55,10 +55,10 @@
     "access": "public"
   },
   "scripts": {
-    "clean": "rm -rf dist",
-    "build": "pnpm run clean && tsc -p tsconfig.esm.json && tsc -p tsconfig.cjs.json && node scripts/postbuild.cjs",
-    "typecheck": "tsc -p tsconfig.json --noEmit",
-    "prepublishOnly": "pnpm run build"
+    "prepublishOnly": "nx run server-logger:build"
+  },
+  "nx": {
+    "includedScripts": []
   },
   "peerDependencies": {
     "next": ">=16"
