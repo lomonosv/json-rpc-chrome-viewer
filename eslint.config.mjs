@@ -9,11 +9,10 @@ export default [
   plugins.typescriptEslint,
   {
     ignores: [
-      '.cache/**',
-      'build/**',
-      'static/**',
-      'scripts/**',
-      'node_modules/**',
+      '**/.cache/**',
+      '**/node_modules/**',
+      'packages/extension/build/**',
+      'packages/extension/static/**',
       'packages/*/dist/**',
       'packages/*/scripts/**',
       'packages/site/.next/**',
@@ -33,7 +32,9 @@ export default [
   {
     settings: {
       react: {
-        version: 'detect'
+        // Not 'detect': that resolves `react` from the workspace root, which no
+        // longer depends on it. Keep in step with the packages' react range.
+        version: '19.3'
       }
     },
     rules: {
@@ -85,8 +86,8 @@ export default [
     }
   },
   {
-    // Root-level CommonJS tooling config files.
-    files: ['*.js'],
+    // CommonJS tooling config files at the root of the workspace and the extension.
+    files: ['*.js', 'packages/extension/*.js'],
     languageOptions: {
       sourceType: 'commonjs',
       globals: {

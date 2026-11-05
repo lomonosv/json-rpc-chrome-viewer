@@ -1,13 +1,13 @@
 // Assembles public/demo/: the extension's real panel bundle plus the chrome
 // stub that lets it run on a web page (see demo/stub.js). The panel bundle is
-// produced by the extension build (`node scripts/build.js` at the repo root);
+// produced by the extension build (`packages/extension`, `pnpm run bundle`);
 // the root `build:site` / `dev:site` scripts run that first.
 import { copyFileSync, existsSync, mkdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const site = join(dirname(fileURLToPath(import.meta.url)), '..');
-const panelBundle = join(site, '..', '..', 'build', 'application.js');
+const panelBundle = join(site, '..', 'extension', 'build', 'application.js');
 const out = join(site, 'public', 'demo');
 
 if (!existsSync(panelBundle)) {

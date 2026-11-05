@@ -32,9 +32,8 @@ jobs:
         corepack install -g "pnpm@$(node -p "require('./package.json').devEngines.packageManager.version")"
     - run: pnpm install --frozen-lockfile
     - run: pnpm run lint
-    - run: pnpm run stylelint
-    - run: pnpm exec tsc -noEmit
-    - run: node scripts/build.js
+    - run: pnpm run typecheck
+    - run: pnpm run build:demo
     - run: pnpm run typecheck:logger
     - run: pnpm run build:logger
     - run: pnpm run typecheck:site

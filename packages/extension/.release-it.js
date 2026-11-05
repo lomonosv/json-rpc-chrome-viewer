@@ -2,8 +2,8 @@ module.exports = {
   'hooks': {
     'after:init': [
       'pnpm run lint',
-      'pnpm exec tsc -noEmit',
-      'node scripts/build.js'
+      'pnpm run typecheck',
+      'pnpm run bundle'
     ]
   },
   'git': {

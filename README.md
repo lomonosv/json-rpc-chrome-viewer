@@ -81,9 +81,9 @@ pnpm install
 pnpm run build
 ```
 
-Then open `chrome://extensions`, enable **Developer mode**, choose **Load unpacked**, and select the generated `build/` directory.
+Then open `chrome://extensions`, enable **Developer mode**, choose **Load unpacked**, and select the generated `packages/extension/build/` directory.
 
-Building requires a `.env` file in the project root - see [Environment](#environment).
+Building requires a `.env` file in `packages/extension/` - see [Environment](#environment).
 
 ## Usage
 
@@ -133,12 +133,15 @@ Requires **Node 24+** and **pnpm 12.13.0**, pinned in `package.json`'s `devEngin
 
 ```bash
 pnpm install
-pnpm run build      # clean → lint → typecheck → bundle → env substitution
-pnpm run lint       # eslint + stylelint
+pnpm run build      # extension: clean → lint → typecheck → bundle → env substitution
+pnpm run typecheck  # extension: tsc -noEmit
+pnpm run lint       # eslint (whole workspace) + stylelint (extension)
 pnpm run eslint
 pnpm run stylelint
 pnpm run clean
 ```
+
+The root scripts delegate to the workspace packages under `packages/`; each package also runs its own scripts directly (`pnpm --filter @json-rpc-chrome-viewer/extension run bundle`).
 
 Plain `npm` refuses to run in the repo root unless your shell's Node is exactly 24.22.1, because npm enforces `devEngines.runtime` itself. Run everything through `pnpm`.
 
@@ -153,32 +156,37 @@ Plain `npm` refuses to run in the repo root unless your shell's Node is exactly 
 
 Exceptions (`minimumReleaseAgeExclude`, `trustPolicyExclude`) name an exact `pkg@version`, never a bare package name, with a comment explaining why.
 
-`pnpm run build` writes the unpacked extension to `build/`. Reload it from `chrome://extensions` after each build to pick up changes.
+`pnpm run build` writes the unpacked extension to `packages/extension/build/`. Reload it from `chrome://extensions` after each build to pick up changes.
 
 There is no test suite; verification is lint, `tsc -noEmit`, and a build. Lint is expected to report zero problems.
 
 ### Environment
 
-Create a `.env` file in the project root:
+Create a `.env` file in `packages/extension/`:
 
 ```ini
 SENTRY_DSN=<your sentry dsn>
 ENVIRONMENT=development
 ```
 
-`scripts/envSubstitute.js` inlines these into the bundle after esbuild runs, so they only take effect via the full `pnpm run build` - not a bare `node scripts/build.js`. The build exits non-zero if `.env` is missing.
+`packages/extension/scripts/envSubstitute.js` inlines these into the bundle after esbuild runs, so they only take effect via the full `pnpm run build` - not a bare `bundle`. The build exits non-zero if `.env` is missing.
 
 `SENTRY_AUTH_TOKEN` is optional and only used to upload source maps during a release build. If it is set in your shell, a local build will upload to Sentry - unset it (`SENTRY_AUTH_TOKEN= pnpm run build`) to avoid that.
 
 ### Project layout
 
 ```
-src/
-  components/      React UI (co-located .scss modules)
-  content/         Content scripts + service worker
-  logic/           Contexts, request model, helpers
-static/            manifest.json, DevTools page, icons
-scripts/           esbuild build + env substitution
+packages/
+  extension/         The Chrome extension
+    src/
+      components/    React UI (co-located .scss modules)
+      content/       Content scripts + service worker
+      logic/         Contexts, request model, helpers
+    static/          manifest.json, DevTools page, icons
+    scripts/         esbuild build + env substitution
+  server-logger/     npm package reporting server-side JSON-RPC calls
+  site/              Landing site (embeds the extension's panel bundle)
+docs/                Server capture wire format
 ```
 
 The panel UI, the DevTools page, the content script and the page-level WebSocket interceptor run in four separate JavaScript realms. `CLAUDE.md` documents how they communicate.
@@ -189,7 +197,7 @@ The panel UI, the DevTools page, the content script and the page-level WebSocket
 pnpm run release
 ```
 
-Runs `release-it`: lints, typechecks, builds, bumps the version in both `package.json` and `static/manifest.json`, tags, and creates a GitHub release. The packaged `build/` directory is then uploaded to the Chrome Web Store manually.
+Runs `release-it`: lints, typechecks, builds, bumps the version in both `packages/extension/package.json` and `packages/extension/static/manifest.json`, tags, and creates a GitHub release. The packaged `packages/extension/build/` directory is then uploaded to the Chrome Web Store manually.
 
 ## Contributing
 

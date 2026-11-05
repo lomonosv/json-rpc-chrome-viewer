@@ -37,11 +37,12 @@ jobs:
       # Frozen lockfile; pnpm-workspace.yaml enforces the supply-chain policies.
       - run: pnpm install --frozen-lockfile
 
-      # scripts/envSubstitute.js reads .env through dotenv and exits 1 if it
-      # parses nothing, so the secrets have to land on disk before the build.
+      # The extension's scripts/envSubstitute.js reads packages/extension/.env
+      # through dotenv and exits 1 if it parses nothing, so the secrets have to
+      # land on disk before the build.
       - name: Write .env from secrets
         run: |
-          cat > .env <<EOF
+          cat > packages/extension/.env <<EOF
           ENVIRONMENT=${{ secrets.ENVIRONMENT }}
           SENTRY_DSN=${{ secrets.SENTRY_DSN }}
           SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}
@@ -55,7 +56,7 @@ jobs:
       - name: Verify manifest version matches the tag
         if: github.event_name == 'release'
         run: |
-          MANIFEST=$(node -p "require('./build/manifest.json').version")
+          MANIFEST=$(node -p "require('./packages/extension/build/manifest.json').version")
           TAG=${GITHUB_REF_NAME#v}
           if [ "$MANIFEST" != "$TAG" ]; then
             echo "manifest.json is $MANIFEST but the tag is $TAG"
@@ -64,7 +65,7 @@ jobs:
           echo "version=$MANIFEST" >> "$GITHUB_ENV"
 
       - name: Zip the build folder contents
-        run: (cd build && zip -r ../extension.zip .)
+        run: (cd packages/extension/build && zip -r "$GITHUB_WORKSPACE/extension.zip" .)
 
       - name: Check for store credentials
         id: creds
@@ -91,9 +92,9 @@ jobs:
             exit 1
           fi
           if [ "$PUBLISH" = "true" ]; then
-            pnpm exec chrome-webstore-upload --source extension.zip
+            pnpm --filter @json-rpc-chrome-viewer/extension exec chrome-webstore-upload --source "$GITHUB_WORKSPACE/extension.zip"
           else
-            pnpm exec chrome-webstore-upload upload --source extension.zip
+            pnpm --filter @json-rpc-chrome-viewer/extension exec chrome-webstore-upload upload --source "$GITHUB_WORKSPACE/extension.zip"
           fi
         env:
           PUBLISH: ${{ github.event_name == 'release' || inputs.publish }}

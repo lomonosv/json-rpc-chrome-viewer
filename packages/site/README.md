@@ -16,7 +16,7 @@ pnpm run lint            # the root ESLint config covers the site
 ```
 
 The hero embeds the **real panel**: `demo/stub.js` fakes the `chrome.*` API and
-plays scripted traffic into the extension's own `build/application.js`, which
+plays scripted traffic into the extension's own `packages/extension/build/application.js`, which
 `scripts/prepare-demo.mjs` copies into `public/demo/`. Edit the demo traffic in
 `demo/stub.js`.
 

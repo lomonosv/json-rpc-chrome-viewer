@@ -87,7 +87,7 @@ DevTools reads raw response headers rather than the CORS-filtered set JS sees,
 so neither header needs `Access-Control-Expose-Headers`, and both work against a
 BFF on a different origin.
 
-**The panel drains the deferred log itself** (`src/logic/HTTPArchive/serverLog.ts`).
+**The panel drains the deferred log itself** (`packages/extension/src/logic/HTTPArchive/serverLog.ts`).
 A devtools panel is an extension page, and extension pages with host permissions
 are exempt from CORS — so the drain endpoint needs no `Access-Control-*` headers,
 and no hop through the service worker or the broadcast relay is needed. The

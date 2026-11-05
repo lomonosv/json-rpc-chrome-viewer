@@ -3,7 +3,7 @@
 # standalone server, run as a non-root user.
 #
 # Build context is the REPO ROOT, not this folder - the site embeds the
-# extension's real panel bundle, which is built from src/ at the root:
+# extension's real panel bundle, which is built from packages/extension:
 #   docker build -f packages/site/Dockerfile .
 # Dokploy: Build Type "Dockerfile", Docker File "packages/site/Dockerfile",
 # Docker Context Path ".".
@@ -17,6 +17,7 @@ WORKDIR /app
 # pnpm-workspace.yaml carries the supply-chain policies (release age, trust
 # policy, build allow-list), so they apply here exactly as in CI.
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY packages/extension/package.json packages/extension/
 COPY packages/site/package.json packages/site/
 COPY packages/server-logger/package.json packages/server-logger/
 # pnpm from corepack (signature-verified), at the single devEngines pin.
