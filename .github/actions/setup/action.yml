@@ -16,6 +16,13 @@ runs:
         registry-url: ${{ inputs.registry-url }}
         package-manager-cache: false
 
+    # Node 25+ no longer bundles Corepack; install a pinned one (keep in step with packages/site/Dockerfile).
+    # Outside the repo, so npm does not apply the root devEngines pin.
+    - name: Install Corepack
+      shell: bash
+      working-directory: ${{ runner.temp }}
+      run: npm install -g corepack@0.36.0
+
     # Corepack only reads `packageManager`, so the version comes from devEngines.
     - name: Install pnpm
       shell: bash

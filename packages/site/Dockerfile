@@ -12,6 +12,8 @@
 # makes pnpm download that Node inside the build.
 
 FROM node:26.13.0-alpine AS deps
+# Node 25+ no longer bundles Corepack; install a pinned one (keep in step with .github/actions/setup).
+RUN npm install -g corepack@0.36.0
 WORKDIR /app
 # Workspace manifests only, so this layer is reused until a dependency changes.
 # pnpm-workspace.yaml carries the supply-chain policies (release age, trust

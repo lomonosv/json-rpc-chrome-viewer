@@ -75,6 +75,7 @@ Search for **JSON-RPC Chrome Viewer** in the Chrome Web Store and click Add to C
 ```bash
 git clone https://github.com/lomonosv/json-rpc-chrome-viewer.git
 cd json-rpc-chrome-viewer
+npm install -g corepack   # Node 25+ no longer bundles it
 corepack enable pnpm
 corepack install -g pnpm@12.13.0
 pnpm install
@@ -129,7 +130,7 @@ Captured traffic stays local - it is held in memory in the DevTools panel and is
 
 ## Development
 
-Requires **Node 26+** and **pnpm 12.13.0**, pinned in `package.json`'s `devEngines.packageManager` (`corepack enable pnpm && corepack install -g pnpm@12.13.0` gets it). pnpm then downloads the Node version pinned in `devEngines.runtime` (26.13.0) and runs every script on it.
+Requires **Node 26+** and **pnpm 12.13.0**, pinned in `package.json`'s `devEngines.packageManager` (`npm install -g corepack && corepack enable pnpm && corepack install -g pnpm@12.13.0` gets it; Node 25+ no longer bundles Corepack). pnpm then downloads the Node version pinned in `devEngines.runtime` (26.13.0) and runs every script on it.
 
 Tasks run through [Nx](https://nx.dev). Projects: `extension`, `server-logger`, `site`; targets are in each `project.json`.
 
