@@ -1,4 +1,4 @@
-name: Deploy server-logger
+name: Publish server-logger
 
 on:
   push:
@@ -12,7 +12,7 @@ on:
         default: true
 
 concurrency:
-  group: deploy-server-logger
+  group: publish-server-logger
   cancel-in-progress: false
 
 jobs:
@@ -61,7 +61,7 @@ jobs:
           echo "Publishing $PKG_VERSION under dist-tag $TAG"
 
       # No NODE_AUTH_TOKEN: a blank one would shadow the OIDC exchange.
-      # The trusted publisher on npmjs.com names this file: deploy-server-logger.yml.
+      # The trusted publisher on npmjs.com names this file: publish-server-logger.yml.
       - name: Publish
         if: github.event_name == 'push' || inputs.dryRun == false
         working-directory: packages/server-logger
