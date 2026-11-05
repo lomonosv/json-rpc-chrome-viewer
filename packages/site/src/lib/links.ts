@@ -1,6 +1,6 @@
 export const githubUrl = 'https://github.com/lomonosv/json-rpc-chrome-viewer';
-export const issuesUrl = `${ githubUrl }/issues`;
-export const serverCaptureDocsUrl = `${ githubUrl }/blob/main/docs/server-capture.md`;
+export const issuesUrl = `${githubUrl}/issues`;
+export const serverCaptureDocsUrl = `${githubUrl}/blob/main/docs/server-capture.md`;
 export const serverLoggerNpmUrl = 'https://www.npmjs.com/package/@json-rpc-chrome-viewer/server-logger';
 
 export const chromeWebStoreUrl =

@@ -1,0 +1,61 @@
+@use '../variables';
+
+.wrapper {
+  display: flex;
+  background: transparent;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+}
+
+.backgroundOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: variables.$overlay;
+  backdrop-filter: blur(2px);
+}
+
+.modal {
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+  border: 1px solid variables.$borderStrongColor;
+  border-radius: 12px;
+  background: variables.$background;
+  box-shadow: variables.$popoverShadow;
+}
+
+.header,
+.footer {
+  padding: 10px 14px;
+}
+
+.header {
+  min-height: 40px;
+  box-sizing: border-box;
+  align-items: center;
+  border-bottom: 1px solid variables.$borderColor;
+  background: variables.$surface;
+  color: variables.$highLightedColor;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.contentWrapper {
+  height: calc(100% - 94px);
+  overflow: auto;
+}
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  border-top: 1px solid variables.$borderColor;
+}

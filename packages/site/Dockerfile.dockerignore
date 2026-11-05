@@ -3,10 +3,11 @@
 **/node_modules
 **/.next
 **/out
-build
+packages/extension/build
 .git
 .github
-.cache
+**/.cache
+**/.nx
 .idea
 **/.DS_Store
 # Secrets must never reach a build context. `**/` because ignore patterns are

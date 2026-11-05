@@ -9,8 +9,9 @@ const sans = Geist({ subsets: ['latin'], variable: '--font-sans' });
 const mono = Geist_Mono({ subsets: ['latin'], variable: '--font-mono' });
 
 const title = 'JSON-RPC Chrome Viewer: JSON-RPC debugger for DevTools';
-const description = 'Inspect, debug and mock JSON-RPC 2.0 calls in Chrome DevTools - every request by method, '
-  + 'over HTTP and WebSocket. Free and open source.';
+const description =
+  'Inspect, debug and mock JSON-RPC 2.0 calls in Chrome DevTools - every request by method, ' +
+  'over HTTP and WebSocket. Free and open source.';
 const imageAlt = 'JSON-RPC Chrome Viewer panel listing JSON-RPC calls by method in Chrome DevTools';
 
 export const metadata: Metadata = {
@@ -19,8 +20,18 @@ export const metadata: Metadata = {
   description,
   applicationName: 'JSON-RPC Chrome Viewer',
   keywords: [
-    'json-rpc', 'json rpc', 'jsonrpc', 'json-rpc viewer', 'json-rpc debugger', 'json-rpc chrome extension',
-    'json-rpc devtools', 'json-rpc websocket', 'mock json-rpc', 'ethereum json-rpc', 'web3', 'chrome devtools'
+    'json-rpc',
+    'json rpc',
+    'jsonrpc',
+    'json-rpc viewer',
+    'json-rpc debugger',
+    'json-rpc chrome extension',
+    'json-rpc devtools',
+    'json-rpc websocket',
+    'mock json-rpc',
+    'ethereum json-rpc',
+    'web3',
+    'chrome devtools'
   ],
   openGraph: {
     type: 'website',
@@ -41,9 +52,9 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className={ `${ sans.variable } ${ mono.variable }` }>
+    <html lang="en" className={`${sans.variable} ${mono.variable}`}>
       <body>
-        { children }
+        {children}
         <GoogleAnalytics />
       </body>
     </html>

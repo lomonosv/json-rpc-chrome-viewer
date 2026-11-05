@@ -16,7 +16,7 @@ import { logIdRequestHeader } from '../core/types.js';
  */
 
 interface IIncomingRequestLike {
-  headers?: Record<string, string | string[] | undefined>,
+  headers?: Record<string, string | string[] | undefined>;
 }
 
 /**
@@ -47,10 +47,11 @@ type AnyHandler = (...args: never[]) => unknown;
  *
  * Or once, in whatever shared wrapper your pages already go through.
  */
-export const withJsonRpcLog = <T extends AnyHandler>(handler: T): T => ((...args: Parameters<T>) => {
-  const logId = isEnabled() ? getLogId(args[0]) : undefined;
+export const withJsonRpcLog = <T extends AnyHandler>(handler: T): T =>
+  ((...args: Parameters<T>) => {
+    const logId = isEnabled() ? getLogId(args[0]) : undefined;
 
-  if (!logId) return handler(...args);
+    if (!logId) return handler(...args);
 
-  return runWithLog(logId, () => handler(...args));
-}) as T;
+    return runWithLog(logId, () => handler(...args));
+  }) as T;

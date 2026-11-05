@@ -77,7 +77,9 @@
   font-weight: 600;
   text-decoration: none;
   white-space: nowrap;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
 }
 
 .install:hover {

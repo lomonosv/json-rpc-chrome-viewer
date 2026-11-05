@@ -25,38 +25,47 @@ export default function GetStarted() {
   };
 
   return (
-    <section id="start" className={ styles.section }>
-      <div className={ `container ${ styles.layout }` }>
+    <section id="start" className={styles.section}>
+      <div className={`container ${styles.layout}`}>
         <div>
-          <h2 className={ styles.heading }>Get started</h2>
-          <ol className={ styles.steps }>
+          <h2 className={styles.heading}>Get started</h2>
+          <ol className={styles.steps}>
             <li>
-              <a href={ chromeWebStoreUrl } { ...newTabProps }>Add the extension</a> from the Chrome Web Store.
+              <a href={chromeWebStoreUrl} {...newTabProps}>
+                Add the extension
+              </a>{' '}
+              from the Chrome Web Store.
             </li>
-            <li>Open DevTools and pick the <strong>JSON-RPC Chrome Viewer</strong> tab.</li>
+            <li>
+              Open DevTools and pick the <strong>JSON-RPC Chrome Viewer</strong> tab.
+            </li>
             <li>
               Use your app — calls appear by method as they happen, including ones made before you opened the tab.
             </li>
           </ol>
         </div>
 
-        <div className={ styles.card }>
-          <div className={ styles.cardHeader }>
+        <div className={styles.card}>
+          <div className={styles.cardHeader}>
             <span>Optional: server-side calls</span>
-            <span className={ styles.links }>
-              <a href={ serverLoggerNpmUrl } { ...newTabProps }>npm</a>
-              <a href={ serverCaptureDocsUrl } { ...newTabProps }>Docs</a>
+            <span className={styles.links}>
+              <a href={serverLoggerNpmUrl} {...newTabProps}>
+                npm
+              </a>
+              <a href={serverCaptureDocsUrl} {...newTabProps}>
+                Docs
+              </a>
             </span>
           </div>
-          <div className={ styles.install }>
-            <span className={ styles.prompt }>$</span>
-            <code>{ installCommand }</code>
-            <button type="button" onClick={ copy } className={ styles.copy } aria-label="Copy install command">
-              <Icon name={ isCopied ? 'check' : 'copy' } size={ 15 } />
+          <div className={styles.install}>
+            <span className={styles.prompt}>$</span>
+            <code>{installCommand}</code>
+            <button type="button" onClick={copy} className={styles.copy} aria-label="Copy install command">
+              <Icon name={isCopied ? 'check' : 'copy'} size={15} />
             </button>
           </div>
-          <Code className={ styles.code } language="ts" source={ proxySource } />
-          <p className={ styles.note }>
+          <Code className={styles.code} language="ts" source={proxySource} />
+          <p className={styles.note}>
             Next.js 16 App and Pages Router, or any Node server through the core API. Inert unless
             <code> NODE_ENV=development</code>.
           </p>

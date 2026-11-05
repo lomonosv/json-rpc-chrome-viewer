@@ -1,0 +1,19 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    // Turning strict on surfaces ~50 real null-safety errors.
+    "strict": false,
+    "noImplicitAny": false,
+    // TypeScript 6+ no longer auto-includes every @types package.
+    "types": ["chrome", "node"],
+    "lib": ["es2022", "es2021", "es2021.promise", "dom"],
+    "jsx": "react",
+    "allowJs": true,
+    "paths": {
+      "~/logic/*": ["./src/logic/*"],
+      "~/components/*": ["./src/components/*"]
+    },
+    "sourceMap": true
+  },
+  "include": ["./src/**/*"]
+}

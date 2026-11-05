@@ -1,0 +1,71 @@
+@use '../common/variables';
+
+.responseInfoWrapper {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  overflow: hidden;
+}
+
+.responseInfoHeader {
+  justify-content: space-between;
+}
+
+.responseInfoHeaderLeftSide {
+  display: flex;
+  align-items: center;
+}
+
+.responseInfoHeaderRightSide {
+  display: flex;
+  align-items: center;
+
+  > * {
+    margin-right: 10px;
+  }
+
+  > *:last-child {
+    margin-right: 0;
+  }
+}
+
+.responseInfoContainer {
+  height: 0;
+  flex-grow: 1;
+  border-bottom-width: 0;
+  display: flex;
+
+  &.responseNotParsed {
+    font-family: variables.$fontMono;
+    font-size: 12px;
+    color: variables.$color;
+
+    .rawResponseWrapper {
+      width: 100%;
+      overflow: auto;
+
+      > pre {
+        white-space: break-spaces;
+        padding: 10px;
+        margin: 0;
+      }
+    }
+  }
+}
+
+.expandButton {
+  margin-right: 10px;
+}
+
+.convertToTSButton > i {
+  width: 15px;
+  height: 15px;
+}
+
+.closeButton {
+  line-height: 12px;
+  padding: 2px;
+  margin-left: -2px;
+  margin-right: 6px;
+  display: inline-flex;
+}

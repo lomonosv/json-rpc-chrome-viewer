@@ -1,0 +1,74 @@
+@use '../common/variables';
+
+.requestInfoWrapper {
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100% - 28px);
+}
+
+.isFill {
+  flex: 1 1 0;
+  min-height: 0;
+  max-height: none;
+}
+
+.requestInfoHeader {
+  justify-content: space-between;
+}
+
+.requestInfoHeaderLeftSide {
+  display: flex;
+  align-items: center;
+}
+
+.expandButton {
+  margin-right: 10px;
+}
+
+.closeButton {
+  line-height: 12px;
+  padding: 2px;
+  margin-left: -2px;
+  margin-right: 6px;
+  display: inline-flex;
+}
+
+.requestInfoContainer {
+  height: 0;
+  flex-grow: 1;
+  border-bottom: 1px solid variables.$borderColor;
+  display: flex;
+}
+
+.resizableBottomHandlerWrapper {
+  height: 27px !important;
+  bottom: -27px !important;
+  left: 30px !important;
+  width: calc(100% - 100px) !important;
+  z-index: 2;
+}
+
+.resizableBottomHandlerWrapper::before {
+  content: '';
+  position: absolute;
+  top: 27px;
+  left: -30px;
+  right: -70px;
+  height: 2px;
+}
+
+.resizableBottomHandlerWrapper::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -30px;
+  right: -70px;
+  height: 2px;
+}
+
+.resizableBottomHandlerWrapper:hover::before,
+.resizableBottomHandlerWrapper:hover::after,
+.resizableBottomHandlerWrapper:active::before,
+.resizableBottomHandlerWrapper:active::after {
+  background: variables.$accent;
+}

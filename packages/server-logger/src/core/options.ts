@@ -5,17 +5,17 @@ export interface ILoggerOptions {
    * and response bodies to whoever can read the response, so anything other than
    * development is opt-in rather than opt-out.
    */
-  isEnabled?: boolean,
+  isEnabled?: boolean;
   /** Per-body cap before members are replaced with a marker. */
-  maxBodyBytes?: number,
+  maxBodyBytes?: number;
   /** Cap on the encoded inline header; over this, inline emission is skipped. */
-  maxInlineBytes?: number,
+  maxInlineBytes?: number;
   /** Calls retained per log before the oldest are dropped. */
-  maxCallsPerLog?: number,
+  maxCallsPerLog?: number;
   /** Logs retained in the ring buffer before the oldest are dropped. */
-  maxLogs?: number,
+  maxLogs?: number;
   /** How long an undrained log survives, in ms. */
-  logTtlMs?: number,
+  logTtlMs?: number;
 }
 
 type ResolvedOptions = Required<ILoggerOptions>;
@@ -46,7 +46,7 @@ const defaultOptions: ResolvedOptions = {
 const optionsKey = Symbol.for('json-rpc-chrome-viewer.server-logger.options.v1');
 
 interface IOptionsGlobal {
-  [optionsKey]?: ResolvedOptions,
+  [optionsKey]?: ResolvedOptions;
 }
 
 const target = globalThis as IOptionsGlobal;

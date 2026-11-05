@@ -5,13 +5,7 @@ import { getOptions, isEnabled } from './core/options.js';
 
 export type { ILoggerOptions } from './core/options.js';
 export type { IServerRpcCall, IServerRpcLog } from './core/types.js';
-export {
-  deferredLogHeader,
-  drainPath,
-  inlineLogHeader,
-  logIdRequestHeader,
-  wireFormatVersion
-} from './core/types.js';
+export { deferredLogHeader, drainPath, inlineLogHeader, logIdRequestHeader, wireFormatVersion } from './core/types.js';
 export { configure, resetOptions } from './core/options.js';
 export {
   clearLogs,
@@ -28,16 +22,16 @@ export { isJsonRpcBody, truncateJsonRpcBody } from './core/jsonRpc.js';
 export { instrumentFetch, uninstrumentFetch } from './instrument/fetch.js';
 
 export interface IRecordRpcCallInput {
-  url: string,
-  rawRequest: string,
-  rawResponse?: string,
-  status?: number,
+  url: string;
+  rawRequest: string;
+  rawResponse?: string;
+  status?: number;
   /** Epoch ms; defaults to `Date.now() - time`. */
-  startTime?: number,
+  startTime?: number;
   /** Duration in ms. */
-  time?: number,
-  callId?: string,
-  logId?: string,
+  time?: number;
+  callId?: string;
+  logId?: string;
 }
 
 /**
@@ -51,7 +45,7 @@ export const recordRpcCall = async (input: IRecordRpcCallInput): Promise<boolean
 
   // Async because the App Router can only answer "which request am I in" from a
   // promise; a caller that does not care about the answer can ignore it.
-  const logId = input.logId || await resolveLogIdAsync();
+  const logId = input.logId || (await resolveLogIdAsync());
 
   if (!logId) return false;
 
@@ -60,16 +54,19 @@ export const recordRpcCall = async (input: IRecordRpcCallInput): Promise<boolean
   const request = truncateJsonRpcBody(input.rawRequest, maxBodyBytes);
   const response = truncateJsonRpcBody(input.rawResponse || '', maxBodyBytes);
 
-  recordCall({
-    callId: input.callId || createCallId(),
-    url: input.url,
-    startTime: input.startTime ?? Date.now() - time,
-    time,
-    status: input.status ?? 0,
-    rawRequest: request.body,
-    rawResponse: response.body,
-    ...(request.isTruncated || response.isTruncated ? { isTruncated: true } : {})
-  }, logId);
+  recordCall(
+    {
+      callId: input.callId || createCallId(),
+      url: input.url,
+      startTime: input.startTime ?? Date.now() - time,
+      time,
+      status: input.status ?? 0,
+      rawRequest: request.body,
+      rawResponse: response.body,
+      ...(request.isTruncated || response.isTruncated ? { isTruncated: true } : {})
+    },
+    logId
+  );
 
   return true;
 };

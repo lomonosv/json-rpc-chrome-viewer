@@ -9,17 +9,17 @@ import styles from './pageBackground.module.css';
 // colour comes from the headline and the panel, not the backdrop.
 export default function PageBackground() {
   return (
-    <div className={ styles.background } aria-hidden="true">
+    <div className={styles.background} aria-hidden="true">
       <LightRays
         raysOrigin="top-center"
         raysColor="#e2e8f5"
-        raysSpeed={ 0.6 }
-        lightSpread={ 0.8 }
-        rayLength={ 2.2 }
-        intensity={ 1 }
-        glow={ 0.6 }
-        haze={ 0.25 }
-        clickPulse={ false }
+        raysSpeed={0.6}
+        lightSpread={0.8}
+        rayLength={2.2}
+        intensity={1}
+        glow={0.6}
+        haze={0.25}
+        clickPulse={false}
       />
     </div>
   );

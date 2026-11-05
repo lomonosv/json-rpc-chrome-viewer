@@ -1,0 +1,49 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "name": "site",
+  "projectType": "application",
+  "sourceRoot": "packages/site/src",
+  "targets": {
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "{projectRoot}",
+        "command": "oxlint"
+      }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "{projectRoot}",
+        "command": "tsc --noEmit"
+      }
+    },
+    "build": {
+      "executor": "nx:run-commands",
+      "inputs": ["production", "^production", { "env": "NEXT_PUBLIC_SITE_URL" }, { "env": "NEXT_PUBLIC_GA_ID" }],
+      "outputs": ["{projectRoot}/.next", "{projectRoot}/public/demo"],
+      "options": {
+        "cwd": "{projectRoot}",
+        "command": "node scripts/prepare-demo.mjs && next build"
+      }
+    },
+    "dev": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["^build"],
+      "continuous": true,
+      "options": {
+        "cwd": "{projectRoot}",
+        "command": "node scripts/prepare-demo.mjs && next dev"
+      }
+    },
+    "start": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build"],
+      "continuous": true,
+      "options": {
+        "cwd": "{projectRoot}",
+        "command": "node .next/standalone/packages/site/server.js"
+      }
+    }
+  }
+}

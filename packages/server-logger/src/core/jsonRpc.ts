@@ -9,9 +9,7 @@
  */
 const jsonRpcRegex = /jsonrpc\\?["']?\s*:\s*\\?["']?2\.0\\?["']?/;
 
-export const isJsonRpcBody = (body: string): boolean => (
-  typeof body === 'string' && jsonRpcRegex.test(body)
-);
+export const isJsonRpcBody = (body: string): boolean => typeof body === 'string' && jsonRpcRegex.test(body);
 
 const parse = (raw: string) => {
   try {
@@ -23,7 +21,7 @@ const parse = (raw: string) => {
 
 const byteLength = (value: string) => Buffer.byteLength(value, 'utf8');
 
-const truncatedMarker = (bytes: number) => `[truncated ${ bytes } bytes]`;
+const truncatedMarker = (bytes: number) => `[truncated ${bytes} bytes]`;
 
 /**
  * Replaces oversized members rather than cutting the string, so the result is
@@ -34,10 +32,7 @@ const truncatedMarker = (bytes: number) => `[truncated ${ bytes } bytes]`;
  * Returns the body unchanged when it already fits, and an empty string when it
  * is too large but cannot be parsed (there is nothing safe to trim).
  */
-export const truncateJsonRpcBody = (
-  raw: string,
-  maxBodyBytes: number
-): { body: string, isTruncated: boolean } => {
+export const truncateJsonRpcBody = (raw: string, maxBodyBytes: number): { body: string; isTruncated: boolean } => {
   if (!raw || byteLength(raw) <= maxBodyBytes) {
     return { body: raw || '', isTruncated: false };
   }
@@ -70,7 +65,5 @@ export const truncateJsonRpcBody = (
 
   // Still over budget means the overflow was in members we must not touch
   // (`id`, `method`); an unparseable body is worse than no body.
-  return byteLength(body) > maxBodyBytes
-    ? { body: '', isTruncated: true }
-    : { body, isTruncated: true };
+  return byteLength(body) > maxBodyBytes ? { body: '', isTruncated: true } : { body, isTruncated: true };
 };

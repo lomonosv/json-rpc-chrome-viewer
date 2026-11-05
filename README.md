@@ -53,7 +53,7 @@ Every JSON-RPC call to a given endpoint hits the same URL with the same method (
 
 **Troubleshoot**
 
-- **Resilient capture** - for when requests show up in Chrome's Network tab but not here. Another DevTools extension patching `window.fetch` makes Chrome credit *it* as the request's initiator, and this panel is then never told the request happened. **React DevTools 7.0.1 does this.** Turning this on reads requests inside the page instead of relying on Chrome to report them
+- **Resilient capture** - for when requests show up in Chrome's Network tab but not here. Another DevTools extension patching `window.fetch` makes Chrome credit _it_ as the request's initiator, and this panel is then never told the request happened. **React DevTools 7.0.1 does this.** Turning this on reads requests inside the page instead of relying on Chrome to report them
 - Also shows each call **while it is still in flight**, with a live-growing waterfall bar, so a slow or hanging request is visible immediately
 
 **Appearance**
@@ -78,12 +78,12 @@ cd json-rpc-chrome-viewer
 corepack enable pnpm
 corepack install -g pnpm@12.13.0
 pnpm install
-pnpm run build
+pnpm exec nx run extension:build
 ```
 
-Then open `chrome://extensions`, enable **Developer mode**, choose **Load unpacked**, and select the generated `build/` directory.
+Then open `chrome://extensions`, enable **Developer mode**, choose **Load unpacked**, and select the generated `packages/extension/build/` directory.
 
-Building requires a `.env` file in the project root - see [Environment](#environment).
+See [Environment](#environment) for optional crash reporting.
 
 ## Usage
 
@@ -99,12 +99,12 @@ A request is treated as JSON-RPC when it is a POST with an `application/json` bo
 
 The dialog is organised into tabs, each holding a couple of grouped panels.
 
-| Tab | Setting |
-| --- | --- |
-| Preferences | **General**: Preserve log · Autoscroll to the latest request<br>**Filters**: Include JSON-RPC logs · Include Websocket logs · Include server-side logs (needs [server-logger](https://www.npmjs.com/package/@json-rpc-chrome-viewer/server-logger)) |
-| Appearance | **Layout**: Request view (Panes / Accordion) · Theme · Server calls group (Collapsed / Expanded)<br>**Request row**: Show url for each request · CORS badge · Websocket badge<br>**Columns**: Waterfall, Status, Size, Time |
-| JSON Viewer | **JSON tree**: Theme · Open state · Expand level (shown only when Open state is Expanded) · Preview collapsed nodes<br>**Websocket messages**: Open state |
-| Troubleshooting | Resilient capture (patch fetch in page) |
+| Tab             | Setting                                                                                                                                                                                                                                             |
+| --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Preferences     | **General**: Preserve log · Autoscroll to the latest request<br>**Filters**: Include JSON-RPC logs · Include Websocket logs · Include server-side logs (needs [server-logger](https://www.npmjs.com/package/@json-rpc-chrome-viewer/server-logger)) |
+| Appearance      | **Layout**: Request view (Panes / Accordion) · Theme · Server calls group (Collapsed / Expanded)<br>**Request row**: Show url for each request · CORS badge · Websocket badge<br>**Columns**: Waterfall, Status, Size, Time                         |
+| JSON Viewer     | **JSON tree**: Theme · Open state · Expand level (shown only when Open state is Expanded) · Preview collapsed nodes<br>**Websocket messages**: Open state                                                                                           |
+| Troubleshooting | Resilient capture (patch fetch in page)                                                                                                                                                                                                             |
 
 Search scope and case sensitivity live in the toolbar rather than this dialog, but persist the same way.
 
@@ -118,29 +118,36 @@ Settings persist in `chrome.storage.local`, along with pane sizes and column wid
 
 ## Permissions
 
-| Permission | Why |
-| --- | --- |
-| `storage` | Persist settings, pane sizes and column widths/order |
-| `activeTab`, `scripting` | Register the WebSocket interceptor in the page |
-| `clipboardWrite` | Copy request/response payloads and method names |
-| `http://*/*`, `https://*/*` | Observe traffic on the inspected page |
+| Permission                  | Why                                                  |
+| --------------------------- | ---------------------------------------------------- |
+| `storage`                   | Persist settings, pane sizes and column widths/order |
+| `activeTab`, `scripting`    | Register the WebSocket interceptor in the page       |
+| `clipboardWrite`            | Copy request/response payloads and method names      |
+| `http://*/*`, `https://*/*` | Observe traffic on the inspected page                |
 
 Captured traffic stays local - it is held in memory in the DevTools panel and is not transmitted anywhere. The only outbound requests the extension makes are optional crash reports from its own panel code, sent when a `SENTRY_DSN` is configured at build time.
 
 ## Development
 
-Requires **Node 24+** and **pnpm 12.13.0**, pinned in `package.json`'s `devEngines.packageManager` (`corepack enable pnpm && corepack install -g pnpm@12.13.0` gets it). pnpm then downloads the Node version pinned in `devEngines.runtime` (24.22.1) and runs every script on it.
+Requires **Node 26+** and **pnpm 12.13.0**, pinned in `package.json`'s `devEngines.packageManager` (`corepack enable pnpm && corepack install -g pnpm@12.13.0` gets it). pnpm then downloads the Node version pinned in `devEngines.runtime` (26.13.0) and runs every script on it.
+
+Tasks run through [Nx](https://nx.dev). Projects: `extension`, `server-logger`, `site`; targets are in each `project.json`.
 
 ```bash
 pnpm install
-pnpm run build      # clean → lint → typecheck → bundle → env substitution
-pnpm run lint       # eslint + stylelint
-pnpm run eslint
-pnpm run stylelint
-pnpm run clean
+pnpm run build
+pnpm run lint       # oxlint (+ stylelint for the extension)
+pnpm run typecheck
+pnpm run format     # oxfmt
+pnpm run dev:site
+pnpm run graph
+
+pnpm exec nx run extension:build
+pnpm exec nx run extension:build:production   # also uploads source maps to Sentry
+pnpm exec nx affected -t lint typecheck build
 ```
 
-Plain `npm` refuses to run in the repo root unless your shell's Node is exactly 24.22.1, because npm enforces `devEngines.runtime` itself. Run everything through `pnpm`.
+Plain `npm` refuses to run in the repo root unless your shell's Node is exactly 26.13.0, because npm enforces `devEngines.runtime` itself. Run everything through `pnpm`.
 
 #### Supply-chain policy
 
@@ -153,32 +160,37 @@ Plain `npm` refuses to run in the repo root unless your shell's Node is exactly 
 
 Exceptions (`minimumReleaseAgeExclude`, `trustPolicyExclude`) name an exact `pkg@version`, never a bare package name, with a comment explaining why.
 
-`pnpm run build` writes the unpacked extension to `build/`. Reload it from `chrome://extensions` after each build to pick up changes.
+`nx run extension:build` writes the unpacked extension to `packages/extension/build/`. Reload it from `chrome://extensions` after each build to pick up changes.
 
 There is no test suite; verification is lint, `tsc -noEmit`, and a build. Lint is expected to report zero problems.
 
 ### Environment
 
-Create a `.env` file in the project root:
+Optionally create a `.env` file in `packages/extension/`:
 
 ```ini
 SENTRY_DSN=<your sentry dsn>
 ENVIRONMENT=development
 ```
 
-`scripts/envSubstitute.js` inlines these into the bundle after esbuild runs, so they only take effect via the full `pnpm run build` - not a bare `node scripts/build.js`. The build exits non-zero if `.env` is missing.
+The build inlines these two values. Without `SENTRY_DSN`, no crash reports are sent.
 
-`SENTRY_AUTH_TOKEN` is optional and only used to upload source maps during a release build. If it is set in your shell, a local build will upload to Sentry - unset it (`SENTRY_AUTH_TOKEN= pnpm run build`) to avoid that.
+`SENTRY_AUTH_TOKEN` is only used by `nx run extension:build:production` to upload source maps. A token in `.env` is used even if you pass `SENTRY_AUTH_TOKEN=`.
 
 ### Project layout
 
 ```
-src/
-  components/      React UI (co-located .scss modules)
-  content/         Content scripts + service worker
-  logic/           Contexts, request model, helpers
-static/            manifest.json, DevTools page, icons
-scripts/           esbuild build + env substitution
+packages/
+  extension/         The Chrome extension
+    src/
+      components/    React UI (co-located .scss modules)
+      content/       Content scripts + service worker
+      logic/         Contexts, request model, helpers
+    static/          manifest.json, DevTools page, icons
+    scripts/         esbuild build + env substitution
+  server-logger/     npm package reporting server-side JSON-RPC calls
+  site/              Landing site (embeds the extension's panel bundle)
+docs/                Server capture wire format
 ```
 
 The panel UI, the DevTools page, the content script and the page-level WebSocket interceptor run in four separate JavaScript realms. `CLAUDE.md` documents how they communicate.
@@ -186,10 +198,10 @@ The panel UI, the DevTools page, the content script and the page-level WebSocket
 ### Release
 
 ```bash
-pnpm run release
+pnpm run release:extension
 ```
 
-Runs `release-it`: lints, typechecks, builds, bumps the version in both `package.json` and `static/manifest.json`, tags, and creates a GitHub release. The packaged `build/` directory is then uploaded to the Chrome Web Store manually.
+Runs `release-it`: lints, typechecks, builds, bumps the version in both `packages/extension/package.json` and `packages/extension/static/manifest.json`, tags, and creates a GitHub release. The packaged `packages/extension/build/` directory is then uploaded to the Chrome Web Store manually.
 
 ## Contributing
 

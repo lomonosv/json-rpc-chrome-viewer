@@ -7,8 +7,8 @@ const data = [
     '@type': 'SoftwareApplication',
     name: 'JSON-RPC Chrome Viewer',
     description: 'Chrome DevTools extension to inspect, debug and mock JSON-RPC 2.0 calls over HTTP and WebSocket.',
-    url: `${ siteUrl }/`,
-    image: `${ siteUrl }/og.png`,
+    url: `${siteUrl}/`,
+    image: `${siteUrl}/og.png`,
     applicationCategory: 'DeveloperApplication',
     operatingSystem: 'Chrome',
     downloadUrl: chromeWebStoreUrl,
@@ -33,7 +33,7 @@ export default function StructuredData() {
     <script
       type="application/ld+json"
       // Static, build-time data with no user input.
-      dangerouslySetInnerHTML={ { __html: JSON.stringify(data) } }
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
     />
   );
 }

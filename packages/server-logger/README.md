@@ -45,7 +45,7 @@ export const proxy = withJsonRpcLogger((request) => {
 });
 ```
 
-The wrapper answers the extension's log requests *before* your code runs — they
+The wrapper answers the extension's log requests _before_ your code runs — they
 are sent without cookies, so an auth check would otherwise redirect them.
 Everything else reaches your handler as before. A `next()` or `rewrite()` you
 return gets the log id added, keeping your headers and cookies; redirects and
@@ -95,8 +95,14 @@ The core is framework-agnostic. Wrap the request in a log scope and let the
 `fetch` patch do the rest:
 
 ```ts
-import { createLogId, drainLog, instrumentFetch, runWithLog, encodeInlineLog, inlineLogHeader }
-  from '@json-rpc-chrome-viewer/server-logger';
+import {
+  createLogId,
+  drainLog,
+  instrumentFetch,
+  runWithLog,
+  encodeInlineLog,
+  inlineLogHeader
+} from '@json-rpc-chrome-viewer/server-logger';
 
 instrumentFetch();
 
@@ -116,7 +122,11 @@ a driver with its own transport — record it yourself:
 import { recordRpcCall } from '@json-rpc-chrome-viewer/server-logger';
 
 await recordRpcCall({
-  url, rawRequest, rawResponse, status: 200, time: 42
+  url,
+  rawRequest,
+  rawResponse,
+  status: 200,
+  time: 42
 });
 ```
 

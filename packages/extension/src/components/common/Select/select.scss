@@ -1,0 +1,42 @@
+@use '../variables';
+
+.select {
+  box-sizing: border-box;
+  appearance: none;
+  height: 22px;
+  padding: 0 24px 0 8px;
+  border: 1px solid variables.$borderColor;
+  border-radius: variables.$radius;
+  outline: none;
+
+  // A <select> has no pseudo-elements, so the chevron colour lives in the url.
+  background: variables.$surfaceRaised var(--jr-chevron) no-repeat right 8px center / 10px 6px;
+  color: variables.$color;
+  font-size: 12px;
+  line-height: 20px;
+  cursor: pointer;
+  transition: border-color 0.15s;
+
+  &:hover {
+    border-color: variables.$borderStrongColor;
+  }
+
+  &:focus-visible {
+    border-color: variables.$accent;
+    box-shadow: 0 0 0 2px variables.$accentSoft;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: default;
+
+    &:hover {
+      border-color: variables.$borderColor;
+    }
+  }
+
+  option {
+    background-color: variables.$surfaceRaised;
+    color: variables.$color;
+  }
+}

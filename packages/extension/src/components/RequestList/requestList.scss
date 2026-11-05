@@ -1,0 +1,288 @@
+@use '../common/variables';
+
+.requestListWrapper {
+  flex-grow: 1;
+  overflow: auto;
+}
+
+.listSummary {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 6px;
+  height: 24px;
+  padding: 0 10px;
+  overflow: hidden;
+  border-top: 1px solid variables.$borderColor;
+  background: variables.$surface;
+  color: variables.$dimColor;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  user-select: none;
+
+  > span:not(:first-child)::before {
+    content: '·';
+    margin-right: 6px;
+    opacity: 0.6;
+  }
+}
+
+.summaryErrors {
+  color: variables.$error;
+}
+
+.summarySlow {
+  color: variables.$slowCall;
+}
+
+.summarySpan {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.requestList {
+  display: table;
+  min-width: 100%;
+}
+
+.requestsHeaderWrapper {
+  display: inline-block;
+  min-width: 100%;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+
+  // Opaque, not backdrop-filter: blurring changing content flickers.
+  background: variables.$surface;
+}
+
+// Matches the rows' padding, or every column separator shifts.
+.requestsHeaderWrapper .requestsHeader {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  padding: 0 7px;
+}
+
+.sortableHeader {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+
+  &:hover {
+    color: variables.$highLightedColor;
+  }
+}
+
+.sortIndicator {
+  font-size: 8px;
+  color: variables.$accent;
+}
+
+.methodHeader {
+  min-width: 300px;
+
+  @include variables.narrowLayout {
+    min-width: 0;
+  }
+}
+
+.metaHeaders {
+  display: flex;
+  align-items: stretch;
+
+  // (0,1,1) - out-specifies .sortableHeader's `border: none`.
+  > button {
+    position: relative;
+    box-sizing: border-box;
+    justify-content: center;
+    border-left: 1px solid variables.$borderColor;
+  }
+
+  > .waterfallHeader {
+    justify-content: flex-start;
+    padding: 0 variables.$waterfallColumnPadding;
+  }
+}
+
+.resizeHandle {
+  position: absolute;
+  top: 0;
+  left: -4px;
+  width: 7px;
+  height: 100%;
+  cursor: col-resize;
+  z-index: 1;
+
+  &:hover,
+  &.isResizing {
+    background: variables.$accent;
+  }
+}
+
+.paneResizeHandle::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 2px;
+  transform: translateX(-50%);
+  z-index: 2;
+}
+
+.paneResizeHandle:hover::after,
+.paneResizeHandle:active::after {
+  background: variables.$accent;
+}
+
+.stackedResizeHandle {
+  cursor: row-resize;
+  z-index: 3;
+}
+
+.stackedResizeHandle::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 2px;
+  transform: translateY(-50%);
+}
+
+.stackedResizeHandle:hover::after,
+.stackedResizeHandle:active::after {
+  background: variables.$accent;
+}
+
+.dropIndicator {
+  align-self: stretch;
+  width: 0;
+  border-left: 2px solid variables.$accent;
+  margin: 0 -1px;
+}
+
+.isDragging {
+  opacity: 0.4;
+}
+
+.accordionDetail {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  position: relative;
+  padding-left: 13px;
+  border-top: 1px solid variables.$borderColor;
+  border-bottom: 1px solid variables.$borderColor;
+  background: variables.$surface;
+}
+
+.accordionDetail::before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  bottom: -1px;
+  left: 0;
+  width: 3px;
+  z-index: 1;
+  pointer-events: none;
+  background: variables.$accent;
+}
+
+.accordionResizeHandle {
+  height: 8px !important;
+  bottom: -8px !important;
+  cursor: row-resize;
+  z-index: 2;
+}
+
+.accordionResizeHandle::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+}
+
+.accordionResizeHandle:hover::after,
+.accordionResizeHandle:active::after {
+  background: variables.$accent;
+}
+
+// The edge is an inset shadow so the rows' width, and the separators, stay put.
+.serverGroup {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-sizing: border-box;
+  width: 100%;
+  height: 28px;
+  padding: 0 10px 0 11px;
+  border: none;
+  border-bottom: 1px solid variables.$borderColor;
+  background: linear-gradient(90deg, variables.$serverBandHover, variables.$serverBand 45%, transparent);
+  box-shadow:
+    inset 3px 0 0 variables.$accent,
+    inset 60px 0 40px -40px variables.$selectGlow;
+  font: inherit;
+  font-family: variables.$fontMono;
+  font-size: 12px;
+  color: variables.$accentText;
+  text-align: left;
+  cursor: pointer;
+
+  &:hover {
+    background: linear-gradient(
+      90deg,
+      variables.$serverBandHover,
+      variables.$serverBandHover 45%,
+      variables.$serverBand
+    );
+  }
+}
+
+.serverGroupChevron {
+  position: relative;
+  flex-shrink: 0;
+  width: 12px;
+  height: 12px;
+  transition: transform 0.15s ease-out;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    margin: -4px 0 0 -2.5px;
+    border-top: 4px solid transparent;
+    border-bottom: 4px solid transparent;
+    border-left: 5px solid currentcolor;
+  }
+}
+
+.isGroupExpanded {
+  transform: rotate(90deg);
+}
+
+.serverGroupLabel {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.serverGroupCount {
+  flex-shrink: 0;
+  opacity: 0.7;
+}

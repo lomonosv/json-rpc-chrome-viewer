@@ -1,0 +1,98 @@
+@use '../../../common/variables';
+
+.tooltip {
+  position: fixed;
+  z-index: 3;
+  box-sizing: border-box;
+  width: 340px;
+  max-width: calc(100vw - 16px);
+  padding: 12px 14px;
+  border: 1px solid variables.$borderStrongColor;
+  border-radius: 10px;
+  background: variables.$surfaceRaised;
+  color: variables.$color;
+  box-shadow: variables.$popoverShadow;
+  font-size: 11px;
+  line-height: 1.4;
+  font-variant-numeric: tabular-nums;
+  white-space: normal;
+  user-select: none;
+}
+
+.startedAt {
+  margin-bottom: 10px;
+  color: variables.$highLightedColor;
+  font-weight: 600;
+}
+
+.group + .group {
+  margin-top: 10px;
+}
+
+.groupHeader {
+  display: flex;
+  justify-content: space-between;
+  padding-bottom: 3px;
+  color: variables.$dimColor;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.phase {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 4px;
+  margin: 0 -4px;
+  border-radius: 4px;
+}
+
+.isHighlighted {
+  background: variables.$selectedBackground;
+}
+
+.isDimmed {
+  opacity: 0.45;
+}
+
+.phaseLabel {
+  flex: 0 0 126px;
+  overflow-wrap: break-word;
+}
+
+.isNested {
+  padding-left: 10px;
+}
+
+.phaseChart {
+  position: relative;
+  flex: 1;
+  height: 8px;
+}
+
+.phaseBar {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  min-width: 2px;
+  border-radius: 2px;
+}
+
+@include variables.phaseTones;
+
+.phaseDuration {
+  flex: 0 0 66px;
+  text-align: right;
+  color: variables.$highLightedColor;
+}
+
+.total {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid variables.$borderColor;
+  color: variables.$highLightedColor;
+  font-weight: 600;
+}

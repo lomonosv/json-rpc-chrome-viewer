@@ -1,0 +1,110 @@
+@use '../common/variables';
+
+.toolbarContainer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.toolbarSection {
+  display: flex;
+  align-items: center;
+
+  &:first-child {
+    position: relative;
+    margin-right: 10px;
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
+  &:last-child {
+    margin-left: 10px;
+    flex-shrink: 0;
+  }
+}
+
+.clearButton {
+  height: 14px;
+}
+
+.clearIcon {
+  width: 14px;
+  height: 14px;
+}
+
+.searchScope {
+  margin-right: 10px;
+}
+
+.filterWrapper {
+  flex: 0 1 190px;
+  min-width: 130px;
+}
+
+.filter {
+  flex: 1 1 auto;
+  width: 0;
+  min-width: 0;
+  height: 22px;
+  box-sizing: border-box;
+  margin-left: 10px;
+  margin-right: 10px;
+  padding: 0 24px 0 8px;
+  vertical-align: middle;
+}
+
+.isOverflowing.isOverflowing {
+  position: absolute;
+  top: 0;
+  left: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.filterClearIconWrapper {
+  position: absolute;
+  right: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: variables.$dimColor;
+  fill: variables.$background;
+  font-size: 14px;
+
+  &:hover {
+    background: variables.$mutedColor;
+  }
+}
+
+.filterClearIcon {
+  width: 8px;
+  height: 8px;
+  font-size: 8px;
+}
+
+.settingsItemWrapper:not(:last-child) {
+  margin-right: 10px;
+}
+
+.searchScope,
+.clearButton,
+.settingsItemWrapper {
+  flex-shrink: 0;
+}
+
+@include variables.narrowLayout {
+  .filterWrapper {
+    min-width: 60px;
+  }
+
+  .searchScope {
+    flex-shrink: 1;
+    min-width: 80px;
+  }
+}

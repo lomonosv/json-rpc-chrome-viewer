@@ -3,7 +3,7 @@
 # standalone server, run as a non-root user.
 #
 # Build context is the REPO ROOT, not this folder - the site embeds the
-# extension's real panel bundle, which is built from src/ at the root:
+# extension's real panel bundle, which is built from packages/extension:
 #   docker build -f packages/site/Dockerfile .
 # Dokploy: Build Type "Dockerfile", Docker File "packages/site/Dockerfile",
 # Docker Context Path ".".
@@ -11,12 +11,13 @@
 # Node is pinned to the exact devEngines.runtime version; any other version
 # makes pnpm download that Node inside the build.
 
-FROM node:24.22.1-alpine AS deps
+FROM node:26.13.0-alpine AS deps
 WORKDIR /app
 # Workspace manifests only, so this layer is reused until a dependency changes.
 # pnpm-workspace.yaml carries the supply-chain policies (release age, trust
 # policy, build allow-list), so they apply here exactly as in CI.
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY packages/extension/package.json packages/extension/
 COPY packages/site/package.json packages/site/
 COPY packages/server-logger/package.json packages/server-logger/
 # pnpm from corepack (signature-verified), at the single devEngines pin.
@@ -42,10 +43,10 @@ RUN case "$NEXT_PUBLIC_SITE_URL" in \
 ARG NEXT_PUBLIC_GA_ID
 ENV NEXT_PUBLIC_GA_ID=$NEXT_PUBLIC_GA_ID
 COPY . .
-# Builds the extension's panel bundle (without a Sentry release), then the site.
-RUN pnpm run build:site
+# Builds the extension bundle first (site depends on it), then the site.
+RUN NX_DAEMON=false pnpm exec nx run site:build
 
-FROM node:24.22.1-alpine AS runner
+FROM node:26.13.0-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1
 RUN addgroup -S nodejs && adduser -S nextjs -G nodejs

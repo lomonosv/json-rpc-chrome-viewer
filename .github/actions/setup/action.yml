@@ -1,0 +1,28 @@
+name: Setup
+description: Node, pnpm at the devEngines pin, and a frozen install. Run after checkout.
+
+inputs:
+  registry-url:
+    description: Passed to setup-node (npm publishing only).
+    required: false
+    default: ''
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version: 26.x
+        registry-url: ${{ inputs.registry-url }}
+        package-manager-cache: false
+
+    # Corepack only reads `packageManager`, so the version comes from devEngines.
+    - name: Install pnpm
+      shell: bash
+      run: |
+        corepack enable pnpm
+        corepack install -g "pnpm@$(node -p "require('./package.json').devEngines.packageManager.version")"
+
+    - name: Install dependencies
+      shell: bash
+      run: pnpm install --frozen-lockfile

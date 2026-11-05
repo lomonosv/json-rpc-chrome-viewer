@@ -11,28 +11,28 @@ export const wireFormatVersion = 1;
 /** One JSON-RPC call the server made while handling an incoming request. */
 export interface IServerRpcCall {
   /** Correlates the call across reports; minted once, at the point of the call. */
-  callId: string,
+  callId: string;
   /** The endpoint the server called, not the endpoint the browser called. */
-  url: string,
+  url: string;
   /** Epoch ms, measured on the server clock. */
-  startTime: number,
+  startTime: number;
   /** Duration in ms. */
-  time: number,
+  time: number;
   /** Transport status; 0 when the call threw before a response arrived. */
-  status: number,
+  status: number;
   /** The request body verbatim, or with oversized members replaced. */
-  rawRequest: string,
+  rawRequest: string;
   /** The response body verbatim, or with oversized members replaced. */
-  rawResponse: string,
+  rawResponse: string;
   /** Set when either body had members replaced to fit the size cap. */
-  isTruncated?: boolean,
+  isTruncated?: boolean;
 }
 
 /** The envelope carried inline in a header, or served by the drain endpoint. */
 export interface IServerRpcLog {
-  v: number,
-  logId: string,
-  calls: IServerRpcCall[],
+  v: number;
+  logId: string;
+  calls: IServerRpcCall[];
 }
 
 /**

@@ -40,7 +40,7 @@
 }
 
 .question::after {
-  content: "+";
+  content: '+';
   flex: none;
   color: var(--text-dim);
   font-size: 18px;

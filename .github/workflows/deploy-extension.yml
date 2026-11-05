@@ -1,0 +1,96 @@
+name: Deploy extension
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: 'Publish to users (unchecked = upload as draft only)'
+        type: boolean
+        default: false
+
+concurrency:
+  group: deploy-extension
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    # Pre-releases are published by manual dispatch only.
+    if: github.event_name != 'release' || !github.event.release.prerelease
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: ./.github/actions/setup
+
+      - run: pnpm exec nx run-many -t lint typecheck -p extension
+
+      # production adds the Sentry upload; a cache hit would skip it.
+      - run: pnpm exec nx run extension:build:production --skip-nx-cache
+        env:
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+          ENVIRONMENT: ${{ secrets.ENVIRONMENT }}
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+
+      - name: Verify manifest version matches the tag
+        if: github.event_name == 'release'
+        run: |
+          MANIFEST=$(node -p "require('./packages/extension/build/manifest.json').version")
+          TAG=${GITHUB_REF_NAME#v}
+          if [ "$MANIFEST" != "$TAG" ]; then
+            echo "manifest.json is $MANIFEST but the tag is $TAG"
+            exit 1
+          fi
+          echo "version=$MANIFEST" >> "$GITHUB_ENV"
+
+      - name: Zip the build folder contents
+        run: (cd packages/extension/build && zip -r "$GITHUB_WORKSPACE/extension.zip" .)
+
+      - name: Check for store credentials
+        id: creds
+        run: |
+          if [ -n "${{ secrets.CWS_REFRESH_TOKEN }}" ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::No CWS_* secrets set - skipping the store upload. Download extension.zip from this run and upload it manually."
+          fi
+
+      # No command = upload and publish; `upload` = draft. v4 ignores --auto-publish.
+      - name: Upload to Chrome Web Store
+        if: steps.creds.outputs.present == 'true'
+        run: |
+          if [ -z "$PUBLISHER_ID" ]; then
+            echo "::error::CWS_PUBLISHER_ID secret is not set - chrome-webstore-upload v4 requires it."
+            exit 1
+          fi
+          if [ "$PUBLISH" = "true" ]; then
+            pnpm --filter @json-rpc-chrome-viewer/extension exec chrome-webstore-upload --source "$GITHUB_WORKSPACE/extension.zip"
+          else
+            pnpm --filter @json-rpc-chrome-viewer/extension exec chrome-webstore-upload upload --source "$GITHUB_WORKSPACE/extension.zip"
+          fi
+        env:
+          PUBLISH: ${{ github.event_name == 'release' || inputs.publish }}
+          EXTENSION_ID: ${{ secrets.CWS_EXTENSION_ID }}
+          PUBLISHER_ID: ${{ secrets.CWS_PUBLISHER_ID }}
+          CLIENT_ID: ${{ secrets.CWS_CLIENT_ID }}
+          CLIENT_SECRET: ${{ secrets.CWS_CLIENT_SECRET }}
+          REFRESH_TOKEN: ${{ secrets.CWS_REFRESH_TOKEN }}
+
+      - name: Upload the zip as a run artifact
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: extension-zip
+          path: extension.zip
+          retention-days: 30
+
+      - name: Attach the zip to the GitHub release
+        if: github.event_name == 'release'
+        run: gh release upload "$GITHUB_REF_NAME" extension.zip --clobber
+        env:
+          GH_TOKEN: ${{ github.token }}

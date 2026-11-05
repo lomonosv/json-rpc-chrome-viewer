@@ -1,0 +1,59 @@
+@use '../variables';
+
+.inputWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+
+  &:hover input:not([disabled]) ~ .label {
+    color: variables.$highLightedColor;
+  }
+}
+
+.checkboxWrapper {
+  user-select: none;
+  cursor: pointer;
+
+  input:disabled ~ .label {
+    opacity: 0.5;
+    cursor: default;
+  }
+
+  &:has(input:disabled) {
+    cursor: default;
+  }
+
+  input {
+    margin: 0;
+    accent-color: variables.$accent;
+    cursor: inherit;
+  }
+}
+
+.input {
+  border: 1px solid variables.$borderColor;
+  border-radius: variables.$radius;
+  outline: none;
+  background: variables.$background;
+  color: variables.$highLightedColor;
+  font-size: 12px;
+  transition: border-color 0.15s;
+
+  &::placeholder {
+    color: variables.$dimColor;
+  }
+
+  &:hover {
+    border-color: variables.$borderStrongColor;
+  }
+
+  &:focus {
+    border-color: variables.$accent;
+    box-shadow: 0 0 0 2px variables.$accentSoft;
+  }
+}
+
+.label {
+  margin-left: 6px;
+  color: variables.$color;
+}

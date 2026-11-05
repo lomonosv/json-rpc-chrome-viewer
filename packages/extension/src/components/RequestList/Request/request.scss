@@ -1,0 +1,389 @@
+@use '../../common/variables';
+
+// Every row state is the same three inset shadows (edge, glow, separator), so
+// states transition and no state changes the row's geometry.
+$separator: inset 0 -1px 0 0 variables.$borderColor;
+$noEdge: inset 0 0 0 0 transparent;
+$noGlow: inset 0 0 0 0 transparent;
+
+// Glow: `inset 160px 0 110px -110px <colour>`, written out because stylelint
+// rejects a Sass @function.
+
+.requestWrapper {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  white-space: nowrap;
+  padding: 0 7px;
+  scroll-margin-top: 28px;
+  color: variables.$color;
+  background-color: transparent;
+  box-shadow: $noEdge, $noGlow, $separator;
+
+  // Not the fill: it follows row parity, and an inserted row flips it below.
+  transition: box-shadow 0.28s variables.$easeOut;
+
+  &:nth-child(2n + 1) {
+    background-color: variables.$rowAltBackground;
+  }
+
+  // Before the hover rule, which ties on specificity and has to win.
+  &.isServerRow:nth-child(2n) {
+    background-color: variables.$serverRowBackground;
+  }
+
+  &.isServerRow:nth-child(2n + 1) {
+    background-color: variables.$serverRowAltBackground;
+  }
+
+  &.error:nth-child(n) {
+    background-color: variables.$redRow;
+  }
+
+  @include variables.motion {
+    animation: row-in 0.2s ease-out both;
+  }
+
+  .meta {
+    display: flex;
+    align-items: stretch;
+    flex-shrink: 0;
+    font-variant-numeric: tabular-nums;
+
+    > div {
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-left: 1px solid variables.$borderColor;
+      color: variables.$mutedColor;
+    }
+
+    > .waterfallCell {
+      padding: 0 variables.$waterfallColumnPadding;
+    }
+
+    > .isSlow {
+      color: variables.$slowCall;
+    }
+
+    > .isVerySlow {
+      font-weight: 700;
+      color: variables.$verySlowCall;
+      text-shadow: 0 0 10px variables.$amberGlow;
+    }
+  }
+
+  &.error .method {
+    color: variables.$error;
+  }
+
+  &.responseNotParsed .method,
+  &.responseNotParsed .meta > div {
+    color: variables.$warning;
+  }
+
+  &:not(.isSelected):hover {
+    background-color: variables.$hoverBackground;
+  }
+
+  &:hover .rowActions {
+    display: inline-flex;
+  }
+}
+
+.isServerRow {
+  box-shadow:
+    inset 3px 0 0 0 variables.$serverEdge,
+    $noGlow,
+    $separator;
+}
+
+.isMockRow {
+  box-shadow:
+    inset 3px 0 0 0 var(--jr-mock-bg),
+    inset 160px 0 110px -110px variables.$amberSoft,
+    $separator;
+}
+
+.error {
+  box-shadow:
+    inset 3px 0 0 0 variables.$error,
+    inset 160px 0 110px -110px variables.$redRow,
+    $separator;
+}
+
+.isSelected,
+.isSelected.isServerRow,
+.isSelected.isMockRow,
+.isSelected.error {
+  background-color: variables.$selectedBackground !important;
+  box-shadow:
+    inset 2px 0 0 0 variables.$accent,
+    inset 160px 0 110px -110px variables.$selectGlow,
+    $separator;
+}
+
+.isAccordionSelected,
+.isAccordionSelected.isServerRow,
+.isAccordionSelected.isMockRow,
+.isAccordionSelected.error {
+  box-shadow:
+    inset 3px 0 0 0 variables.$accent,
+    inset 160px 0 110px -110px variables.$selectGlow,
+    $separator;
+}
+
+.isDimmed {
+  opacity: 0.35;
+  transition: opacity 0.12s ease-in-out;
+
+  &:hover {
+    opacity: 1;
+  }
+}
+
+.methodWrapper {
+  min-width: 300px;
+  padding: 6px 0;
+  flex: 1 1 auto;
+  width: 0;
+  overflow: hidden;
+
+  @include variables.narrowLayout {
+    min-width: 0;
+  }
+}
+
+.method {
+  display: flex;
+  align-items: center;
+  font-family: variables.$fontMono;
+  font-size: 12px;
+  font-weight: var(--jr-method-weight);
+  color: variables.$highLightedColor;
+  padding-right: 5px;
+  overflow: hidden;
+  position: relative;
+}
+
+.isCompact .methodWrapper {
+  padding: 4px 0;
+}
+
+.isCompact .errorLine {
+  margin-left: 10px;
+}
+
+.methodLabel {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rowActions {
+  display: none;
+  margin-left: 10px;
+  vertical-align: middle;
+  align-items: center;
+  gap: 8px;
+}
+
+.rowActionButton {
+  height: 12px;
+  cursor: pointer;
+}
+
+.isRuleAdded.isRuleAdded {
+  fill: variables.$success;
+}
+
+// Badges are ::before at (0,2,1), so source order does not decide them.
+.badge {
+  display: inline-flex;
+  flex-shrink: 0;
+
+  &::before {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 6px;
+    padding: 0 5px;
+    border-radius: 3px;
+    font-family: variables.$fontMono;
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    line-height: 15px;
+  }
+
+  &.isCors::before {
+    content: 'CORS';
+    box-shadow: inset 0 0 0 1px variables.$borderStrongColor;
+    color: variables.$dimColor;
+    font-weight: 600;
+  }
+
+  &.isWebsocket::before {
+    content: 'WS';
+    background: variables.$successSoft;
+    color: variables.$success;
+  }
+
+  &.isIntercepted::before {
+    content: 'MOCK';
+    background: variables.$mockBadge;
+    box-shadow: 0 0 12px variables.$amberGlow;
+    color: variables.$mockBadgeText;
+  }
+
+  &.isServerSide::before {
+    content: 'SERVER';
+    background: linear-gradient(135deg, variables.$accent, variables.$cyan);
+    box-shadow: 0 0 12px variables.$accentGlow;
+    color: #fff;
+  }
+}
+
+.isPendingRow {
+  .methodWrapper,
+  .meta {
+    animation: pending-pulse 1.4s ease-in-out infinite;
+  }
+}
+
+// Stagger comes from an inline animation-delay. No animation of its own: the
+// class is removed later, and changing animation-name restarts the fade.
+
+// HTTP status only: a JSON-RPC error rides a 200.
+.statusPill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 18px;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, currentcolor 22%, transparent);
+
+  &.success {
+    background: variables.$successSoft;
+    color: variables.$success;
+  }
+
+  &.redirect {
+    background: variables.$accentSoft;
+    color: variables.$accentText;
+  }
+
+  &.clientError {
+    background: variables.$amberSoft;
+    color: variables.$slowCall;
+  }
+
+  &.serverError {
+    background: variables.$errorSoft;
+    color: variables.$error;
+    box-shadow:
+      inset 0 0 0 1px color-mix(in srgb, currentcolor 22%, transparent),
+      0 0 10px variables.$redGlow;
+  }
+
+  &.isPending {
+    background: variables.$accentSoft;
+    color: variables.$accentText;
+  }
+}
+
+@keyframes row-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes pending-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.45;
+  }
+}
+
+.badgeMessageType {
+  display: inline-flex;
+  width: 0;
+  height: 0;
+  margin-right: 6px;
+
+  &.income {
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 6px solid variables.$success;
+  }
+
+  &.outcome {
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-bottom: 6px solid variables.$success;
+  }
+}
+
+.urlRow {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  margin-top: 2px;
+}
+
+.url {
+  display: flex;
+  align-items: center;
+  height: 14px;
+  flex: 1 1 auto;
+  width: 0;
+  min-width: 0;
+  font-size: 11px;
+
+  > span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: variables.$dimColor;
+  }
+}
+
+.errorLine {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 14px;
+  flex: 1 1 auto;
+  width: 0;
+  min-width: 0;
+  font-family: variables.$fontMono;
+  font-size: 11px;
+  color: variables.$error;
+}
+
+.errorCode {
+  flex-shrink: 0;
+  padding: 0 4px;
+  border-radius: 3px;
+  line-height: 14px;
+  background: variables.$errorSoft;
+}
+
+.errorMessage {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  opacity: 0.85;
+}

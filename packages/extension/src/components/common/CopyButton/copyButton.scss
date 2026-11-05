@@ -1,0 +1,12 @@
+@use '../variables';
+
+.icon {
+  width: 11px;
+  height: 11px;
+}
+
+// Doubled to beat Button's `.button` fill.
+.isCopied.isCopied {
+  fill: variables.$success;
+  cursor: default;
+}

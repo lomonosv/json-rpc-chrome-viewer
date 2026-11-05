@@ -6,6 +6,6 @@ import { siteUrl } from '~/lib/links';
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: { userAgent: '*', allow: '/', disallow: '/demo/' },
-    sitemap: `${ siteUrl }/sitemap.xml`
+    sitemap: `${siteUrl}/sitemap.xml`
   };
 }
