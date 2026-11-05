@@ -1,6 +1,8 @@
 module.exports = {
   hooks: {
-    'after:init': ['pnpm exec nx run-many -t lint typecheck build -p extension']
+    'after:init': ['pnpm exec nx run-many -t lint typecheck build -p extension'],
+    // The bumper rewrites manifest.json with its own JSON layout; restore oxfmt's before the release commit.
+    'after:bump': ['pnpm exec oxfmt static/manifest.json']
   },
   git: {
     requireCleanWorkingDir: true,
