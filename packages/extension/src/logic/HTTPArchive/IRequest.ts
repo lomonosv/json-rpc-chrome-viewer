@@ -1,80 +1,75 @@
-export type JSONValue =
-  string |
-  number |
-  boolean |
-  IJSONObject |
-  IJSONArray;
+export type JSONValue = string | number | boolean | IJSONObject | IJSONArray;
 
 export interface IJSONObject {
-  [k: string]: JSONValue,
+  [k: string]: JSONValue;
 }
 
-interface IJSONArray extends Array<JSONValue> { }
+interface IJSONArray extends Array<JSONValue> {}
 
 export interface IRequestTimings {
-  blocked?: number,
-  queueing?: number,
-  dns?: number,
-  connect?: number,
-  ssl?: number,
-  send?: number,
-  wait?: number,
-  receive?: number,
+  blocked?: number;
+  queueing?: number;
+  dns?: number;
+  connect?: number;
+  ssl?: number;
+  send?: number;
+  wait?: number;
+  receive?: number;
 }
 
 export interface IRequest {
-  uuid: string,
-  isCors: boolean,
-  isError: boolean,
-  isWarning: boolean,
-  isWebSocket: boolean,
-  isIntercepted?: boolean,
-  isPending?: boolean,
+  uuid: string;
+  isCors: boolean;
+  isError: boolean;
+  isWarning: boolean;
+  isWebSocket: boolean;
+  isIntercepted?: boolean;
+  isPending?: boolean;
   // Made by the server while handling a browser request, reported through the
   // server logger's response header rather than seen on the wire.
-  isServerSide?: boolean,
-  serverGroupId?: string,
-  callId?: string,
-  websocketMessageType?: 'income' | 'outcome',
+  isServerSide?: boolean;
+  serverGroupId?: string;
+  callId?: string;
+  websocketMessageType?: 'income' | 'outcome';
   websocketJSON?: JSONValue & {
-    id: string,
-    method: string,
-    params?: JSONValue,
+    id: string;
+    method: string;
+    params?: JSONValue;
     error?: JSONValue & {
-      code?: number,
-      message?: string,
-    },
-    result?: JSONValue,
-  },
+      code?: number;
+      message?: string;
+    };
+    result?: JSONValue;
+  };
   request: {
-    url: string,
-    method?: string,
-    headers?: { name: string }[],
+    url: string;
+    method?: string;
+    headers?: { name: string }[];
     postData?: {
-      text: string,
-    },
-  },
+      text: string;
+    };
+  };
   response: {
-    status: number,
+    status: number;
     content: {
-      size: number,
-    },
-  },
-  startTime: number,
-  time: number,
-  timings?: IRequestTimings,
+      size: number;
+    };
+  };
+  startTime: number;
+  time: number;
+  timings?: IRequestTimings;
   requestJSON?: {
-    id: string,
-    jsonrpc: string,
-    method: string,
-    params: JSONValue,
-  },
-  rawRequest: string,
+    id: string;
+    jsonrpc: string;
+    method: string;
+    params: JSONValue;
+  };
+  rawRequest: string;
   responseJSON?: {
-    id: string,
-    jsonrpc: string,
-    error?: JSONValue,
-    result?: JSONValue,
-  },
-  rawResponse: string,
+    id: string;
+    jsonrpc: string;
+    error?: JSONValue;
+    result?: JSONValue;
+  };
+  rawResponse: string;
 }

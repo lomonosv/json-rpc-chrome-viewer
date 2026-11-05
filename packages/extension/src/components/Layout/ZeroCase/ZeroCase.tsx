@@ -11,7 +11,7 @@ const ZeroCase = () => {
     includeServerLogs,
     setIncludeJsonRpcLogs,
     setIncludeWebsocketLogs,
-    setIncludeServerLogs,
+    setIncludeServerLogs
   } = useSettingsContext();
 
   const filterExists = filter || (!includeJsonRpcLogs && !includeWebsocketLogs && !includeServerLogs);
@@ -32,11 +32,18 @@ const ZeroCase = () => {
   };
 
   return (
-    <div className={ styles.zeroCase }>
+    <div className={styles.zeroCase}>
       <div>
-        There are no JSON-RPC requests{ filterExists ? ' for current filter' : '' }<br />
-        { filterExists ? <><a onClick={ handleClearFilter }>Clear</a> the filter </> : 'Perform a request ' }
-        or <a onClick={ handlePageReload }>reload</a> the page to record activity
+        There are no JSON-RPC requests{filterExists ? ' for current filter' : ''}
+        <br />
+        {filterExists ? (
+          <>
+            <a onClick={handleClearFilter}>Clear</a> the filter{' '}
+          </>
+        ) : (
+          'Perform a request '
+        )}
+        or <a onClick={handlePageReload}>reload</a> the page to record activity
       </div>
     </div>
   );

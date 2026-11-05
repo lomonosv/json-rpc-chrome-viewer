@@ -6,25 +6,23 @@ export const previewAttribute = 'data-json-preview';
 const maxPreviewValueLength = 24;
 const ellipsisCharacter = '...';
 
-const isObjectNode = (value: JSONValue): value is IJSONObject | JSONValue[] => (
-  typeof value === 'object' && value !== null
-);
+const isObjectNode = (value: JSONValue): value is IJSONObject | JSONValue[] =>
+  typeof value === 'object' && value !== null;
 
 const getValuePreview = (value: JSONValue): string => {
   if (Array.isArray(value)) {
-    return value.length ? `[${ ellipsisCharacter }]` : '[]';
+    return value.length ? `[${ellipsisCharacter}]` : '[]';
   }
 
   if (isObjectNode(value)) {
-    return Object.keys(value).length ? `{${ ellipsisCharacter }}` : '{}';
+    return Object.keys(value).length ? `{${ellipsisCharacter}}` : '{}';
   }
 
   if (typeof value === 'string') {
-    const text = value.length > maxPreviewValueLength
-      ? `${ value.slice(0, maxPreviewValueLength) }${ ellipsisCharacter }`
-      : value;
+    const text =
+      value.length > maxPreviewValueLength ? `${value.slice(0, maxPreviewValueLength)}${ellipsisCharacter}` : value;
 
-    return `"${ text }"`;
+    return `"${text}"`;
   }
 
   return String(value);
@@ -38,9 +36,9 @@ const getNodePreview = (node: IJSONObject | JSONValue[]): string => {
   }
 
   const [[key, value]] = entries;
-  const head = Array.isArray(node) ? getValuePreview(value) : `${ key }: ${ getValuePreview(value) }`;
+  const head = Array.isArray(node) ? getValuePreview(value) : `${key}: ${getValuePreview(value)}`;
 
-  return entries.length > 1 ? `\u00A0${ head }, ${ ellipsisCharacter }\u00A0` : `\u00A0${ head }\u00A0`;
+  return entries.length > 1 ? `\u00A0${head}, ${ellipsisCharacter}\u00A0` : `\u00A0${head}\u00A0`;
 };
 
 const setPreview = (element: Element, preview: string) => {
@@ -82,11 +80,7 @@ const walk = (data: JSONValue, element: Element) => {
   });
 };
 
-const useCollapsedPreview = (
-  containerRef: RefObject<HTMLElement>,
-  src: JSONValue,
-  isEnabled: boolean
-) => {
+const useCollapsedPreview = (containerRef: RefObject<HTMLElement>, src: JSONValue, isEnabled: boolean) => {
   useEffect(() => {
     const container = containerRef.current;
 

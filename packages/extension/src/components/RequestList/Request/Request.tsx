@@ -13,7 +13,12 @@ import Waterfall from './Waterfall';
 import { getRequestLabel } from '~/logic/HTTPArchive/filters';
 import { SortField } from '~/logic/HTTPArchive/SortField';
 import {
-  Slowness, formatSize, getErrorSummary, getRequestError, getSlowness, getStatusTone
+  Slowness,
+  formatSize,
+  getErrorSummary,
+  getRequestError,
+  getSlowness,
+  getStatusTone
 } from '~/logic/HTTPArchive/summary';
 import { ResizableColumn, getColumnWidthStyle } from '../columns';
 import useVisibleColumns from '../useVisibleColumns';
@@ -25,10 +30,10 @@ const rowStaggerMs = 18;
 const maxStaggeredRows = 10;
 
 interface IComponentProps {
-  item: IRequest,
-  timeline: ITimeline,
-  now: number,
-  revealIndex?: number,
+  item: IRequest;
+  timeline: ITimeline;
+  now: number;
+  revealIndex?: number;
 }
 
 const Request = ({ item, timeline, now, revealIndex }: IComponentProps) => {
@@ -54,12 +59,8 @@ const Request = ({ item, timeline, now, revealIndex }: IComponentProps) => {
   const requestError = getRequestError(item);
   // Warning rows already colour their meta cells; two tints would race on source order.
   const slowness = item.isWarning ? Slowness.Normal : getSlowness(item);
-  const {
-    EditRequestModal,
-    isEditRequestModalVisible,
-    showEditRequestModal,
-    hideEditRequestModal
-  } = useEditRequestModal();
+  const { EditRequestModal, isEditRequestModalVisible, showEditRequestModal, hideEditRequestModal } =
+    useEditRequestModal();
   const { addRuleFromRequest } = useInterceptorContext();
   const [isRuleAdded, setIsRuleAdded] = useState<boolean>(false);
 
@@ -71,19 +72,11 @@ const Request = ({ item, timeline, now, revealIndex }: IComponentProps) => {
 
   const renderCellContent = (field: ResizableColumn) => {
     if (field === SortField.Waterfall) {
-      return (
-        <Waterfall
-          item={ item }
-          timeline={ timeline }
-          now={ now }
-        />
-      );
+      return <Waterfall item={item} timeline={timeline} now={now} />;
     }
 
     if (item.isPending) {
-      return field === SortField.Status
-        ? <span className={ cn(styles.statusPill, styles.isPending) }>Pending</span>
-        : '';
+      return field === SortField.Status ? <span className={cn(styles.statusPill, styles.isPending)}>Pending</span> : '';
     }
 
     if (item.isWebSocket) {
@@ -93,7 +86,7 @@ const Request = ({ item, timeline, now, revealIndex }: IComponentProps) => {
     if (field === SortField.Status) {
       const status = Math.ceil(item.response.status);
 
-      return <span className={ cn(styles.statusPill, styles[getStatusTone(status)]) }>{ status }</span>;
+      return <span className={cn(styles.statusPill, styles[getStatusTone(status)])}>{status}</span>;
     }
 
     if (field === SortField.Size) {
@@ -105,12 +98,9 @@ const Request = ({ item, timeline, now, revealIndex }: IComponentProps) => {
   };
 
   const renderError = () => (
-    <div
-      className={ styles.errorLine }
-      title={ `${ getErrorSummary(item) }\n${ item.request.url }` }
-    >
-      { requestError.code && <span className={ styles.errorCode }>{ requestError.code }</span> }
-      <span className={ styles.errorMessage }>{ requestError.message }</span>
+    <div className={styles.errorLine} title={`${getErrorSummary(item)}\n${item.request.url}`}>
+      {requestError.code && <span className={styles.errorCode}>{requestError.code}</span>}
+      <span className={styles.errorMessage}>{requestError.message}</span>
     </div>
   );
 
@@ -141,8 +131,8 @@ const Request = ({ item, timeline, now, revealIndex }: IComponentProps) => {
 
   return (
     <div
-      ref={ rowRef }
-      className={ cn(styles.requestWrapper, {
+      ref={rowRef}
+      className={cn(styles.requestWrapper, {
         [styles.isRevealing]: isRevealing,
         [styles.isServerRow]: item.isServerSide,
         [styles.isMockRow]: item.isIntercepted,
@@ -153,113 +143,95 @@ const Request = ({ item, timeline, now, revealIndex }: IComponentProps) => {
         [styles.isPendingRow]: item.isPending && !isDimmed,
         [styles.error]: item.isError,
         [styles.responseNotParsed]: item.isWarning
-      }) }
-      style={ isRevealing
-        ? { animationDelay: `${ Math.min(revealIndex, maxStaggeredRows) * rowStaggerMs }ms` }
-        : undefined }
-      onClick={ handleClick }
+      })}
+      style={
+        isRevealing ? { animationDelay: `${Math.min(revealIndex, maxStaggeredRows) * rowStaggerMs}ms` } : undefined
+      }
+      onClick={handleClick}
     >
-      <div className={ styles.methodWrapper }>
-        <div
-          className={ styles.method }
-          title={ getRequestLabel(item) }
-        >
-          { !showRequestUrl && item.isWebSocket && (
+      <div className={styles.methodWrapper}>
+        <div className={styles.method} title={getRequestLabel(item)}>
+          {!showRequestUrl && item.isWebSocket && (
             <div
-              className={ cn(styles.badgeMessageType, {
+              className={cn(styles.badgeMessageType, {
                 [styles.income]: item.websocketMessageType === 'income',
                 [styles.outcome]: item.websocketMessageType === 'outcome'
-              }) }
+              })}
             />
-          ) }
-          { item.isIntercepted && (
-            <div className={ cn(styles.badge, styles.isIntercepted) } />
-          ) }
-          { item.isServerSide && (
+          )}
+          {item.isIntercepted && <div className={cn(styles.badge, styles.isIntercepted)} />}
+          {item.isServerSide && (
             <div
-              className={ cn(styles.badge, styles.isServerSide) }
+              className={cn(styles.badge, styles.isServerSide)}
               title="Called by the server while answering a request, not by the browser"
             />
-          ) }
-          <span className={ styles.methodLabel } data-method-label>{ getRequestLabel(item) }</span>
-          { compactRows && requestError && renderError() }
-          <div
-            className={ styles.rowActions }
-            onClick={ (e) => e.stopPropagation() }
-          >
-            <CopyButton
-              text={ getRequestLabel(item) }
-              hint="Copy method name"
-              className={ styles.rowActionButton }
-            />
-            { isReplayable && (
-              <Button
-                title="Resend Request"
-                onClick={ handleResendButtonClick }
-                className={ styles.rowActionButton }
-              >
-                <Icon type={ IconType.Update }></Icon>
+          )}
+          <span className={styles.methodLabel} data-method-label>
+            {getRequestLabel(item)}
+          </span>
+          {compactRows && requestError && renderError()}
+          <div className={styles.rowActions} onClick={(e) => e.stopPropagation()}>
+            <CopyButton text={getRequestLabel(item)} hint="Copy method name" className={styles.rowActionButton} />
+            {isReplayable && (
+              <Button title="Resend Request" onClick={handleResendButtonClick} className={styles.rowActionButton}>
+                <Icon type={IconType.Update}></Icon>
               </Button>
-            ) }
-            { isReplayable && (
+            )}
+            {isReplayable && (
               <Button
                 title="Add interceptor rule from this response"
-                onClick={ handleAddInterceptorRuleClick }
-                className={ cn(styles.rowActionButton, { [styles.isRuleAdded]: isRuleAdded }) }
+                onClick={handleAddInterceptorRuleClick}
+                className={cn(styles.rowActionButton, { [styles.isRuleAdded]: isRuleAdded })}
               >
-                <Icon type={ IconType.Interceptor }></Icon>
+                <Icon type={IconType.Interceptor}></Icon>
               </Button>
-            ) }
+            )}
           </div>
         </div>
-        { (showRequestUrl || (requestError && !compactRows)) && (
-          <div className={ styles.urlRow }>
-            <div className={ cn(styles.badge, { [styles.isCors]: showRequestUrl && item.isCors && showCorsBadge }) } />
+        {(showRequestUrl || (requestError && !compactRows)) && (
+          <div className={styles.urlRow}>
+            <div className={cn(styles.badge, { [styles.isCors]: showRequestUrl && item.isCors && showCorsBadge })} />
             <div
-              className={ cn(styles.badge, {
+              className={cn(styles.badge, {
                 [styles.isWebsocket]: showRequestUrl && item.isWebSocket && showWebsocketBadge
-              }) }
+              })}
             />
-            { showRequestUrl && item.isWebSocket && (
+            {showRequestUrl && item.isWebSocket && (
               <div
-                className={ cn(styles.badgeMessageType, {
+                className={cn(styles.badgeMessageType, {
                   [styles.income]: item.websocketMessageType === 'income',
                   [styles.outcome]: item.websocketMessageType === 'outcome'
-                }) }
+                })}
               />
-            ) }
-            { requestError ? (
+            )}
+            {requestError ? (
               renderError()
             ) : (
-              <div className={ styles.url }>
-                <span>{ item.request.url }</span>
+              <div className={styles.url}>
+                <span>{item.request.url}</span>
               </div>
-            ) }
+            )}
           </div>
-        ) }
+        )}
       </div>
-      <div className={ styles.meta }>
-        { visibleColumns.map((field) => (
+      <div className={styles.meta}>
+        {visibleColumns.map((field) => (
           <div
-            key={ field }
-            className={ cn({
+            key={field}
+            className={cn({
               [styles.waterfallCell]: field === SortField.Waterfall,
               [styles.isSlow]: field === SortField.Time && slowness === Slowness.Slow,
               [styles.isVerySlow]: field === SortField.Time && slowness === Slowness.VerySlow
-            }) }
-            style={ getColumnWidthStyle(field) }
+            })}
+            style={getColumnWidthStyle(field)}
           >
-            { renderCellContent(field) }
+            {renderCellContent(field)}
           </div>
-        )) }
+        ))}
       </div>
-      { isEditRequestModalVisible && (
-        <EditRequestModal
-          isVisible={ isEditRequestModalVisible }
-          item={ item }
-          close={ hideEditRequestModal }
-        />
-      ) }
+      {isEditRequestModalVisible && (
+        <EditRequestModal isVisible={isEditRequestModalVisible} item={item} close={hideEditRequestModal} />
+      )}
     </div>
   );
 };

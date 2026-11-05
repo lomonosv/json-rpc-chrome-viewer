@@ -1,30 +1,25 @@
 module.exports = {
-  'hooks': {
-    'after:init': [
-      'pnpm exec nx run-many -t lint typecheck build -p extension'
-    ]
+  hooks: {
+    'after:init': ['pnpm exec nx run-many -t lint typecheck build -p extension']
   },
-  'git': {
-    'requireCleanWorkingDir': true,
-    'commitMessage': 'Release v${version}',
-    'tagAnnotation': 'v${version}',
-    'push': true
+  git: {
+    requireCleanWorkingDir: true,
+    commitMessage: 'Release v${version}',
+    tagAnnotation: 'v${version}',
+    push: true
   },
-  'github': {
-    'release': true,
-    'releaseName': 'Release v${version}',
-    'tokenRef': 'GITHUB_TOKEN'
+  github: {
+    release: true,
+    releaseName: 'Release v${version}',
+    tokenRef: 'GITHUB_TOKEN'
   },
-  'npm': {
-    'publish': false
+  npm: {
+    publish: false
   },
-  'plugins': {
+  plugins: {
     '@release-it/bumper': {
-      'in': 'static/manifest.json',
-      'out': [
-        'static/manifest.json',
-        'build/manifest.json'
-      ]
+      in: 'static/manifest.json',
+      out: ['static/manifest.json', 'build/manifest.json']
     }
   }
 };

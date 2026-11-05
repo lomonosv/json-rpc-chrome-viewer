@@ -20,7 +20,7 @@ import { SettingsTab, settingsTabs } from './SettingsTab';
 import styles from './settings.scss';
 
 interface IComponentProps {
-  onClose: () => void,
+  onClose: () => void;
 }
 
 const tabStepMap: Record<string, number> = {
@@ -109,7 +109,7 @@ const Settings = ({ onClose }: IComponentProps) => {
     serverGroupState,
     setServerGroupState,
     resilientCapture,
-    setResilientCapture,
+    setResilientCapture
   } = useSettingsContext();
 
   const handlePreserveLogChange: ChangeEventHandler<HTMLInputElement> = (e) => {
@@ -226,175 +226,148 @@ const Settings = ({ onClose }: IComponentProps) => {
   const urlDependentTitle = isUrlLineShown ? undefined : 'Requires "Show url for each request"';
 
   const columnsDescription = isNarrowLayout
-    ? 'Method is always shown. The panel is too narrow to fit the others right now - '
-      + 'they come back when you widen it.'
+    ? 'Method is always shown. The panel is too narrow to fit the others right now - ' +
+      'they come back when you widen it.'
     : 'Method is always shown.';
 
   return (
     <Portal>
-      <div className={ styles.settingsWrapper }>
+      <div className={styles.settingsWrapper}>
         <Header>
           <strong>JSON-RPC Chrome Viewer Settings</strong>
-          <Button
-            className={ styles.closeButton }
-            onClick={ onClose }
-          >
-            <Icon type={ IconType.Close } />
+          <Button className={styles.closeButton} onClick={onClose}>
+            <Icon type={IconType.Close} />
           </Button>
         </Header>
-        <div className={ styles.settingsBody }>
-          <div
-            className={ styles.sidebar }
-            role="tablist"
-            aria-orientation="vertical"
-            aria-label="Settings sections"
-          >
-            { settingsTabs.map((tab) => (
+        <div className={styles.settingsBody}>
+          <div className={styles.sidebar} role="tablist" aria-orientation="vertical" aria-label="Settings sections">
+            {settingsTabs.map((tab) => (
               <button
-                key={ tab }
+                key={tab}
                 type="button"
                 role="tab"
-                aria-selected={ tab === activeTab }
-                tabIndex={ tab === activeTab ? 0 : -1 }
-                ref={ (el) => {
+                aria-selected={tab === activeTab}
+                tabIndex={tab === activeTab ? 0 : -1}
+                ref={(el) => {
                   tabRefs.current[tab] = el;
-                } }
-                className={ cn(styles.tabButton, {
+                }}
+                className={cn(styles.tabButton, {
                   [styles.isActive]: tab === activeTab
-                }) }
-                onClick={ () => setActiveTab(tab) }
-                onKeyDown={ handleTabKeyDown }
+                })}
+                onClick={() => setActiveTab(tab)}
+                onKeyDown={handleTabKeyDown}
               >
-                { tab }
+                {tab}
               </button>
-            )) }
+            ))}
           </div>
-          <div
-            className={ styles.settingsContainer }
-            role="tabpanel"
-            aria-label={ activeTab }
-          >
-            <div className={ styles.settingsColumns }>
-              { activeTab === SettingsTab.Preferences && (
+          <div className={styles.settingsContainer} role="tabpanel" aria-label={activeTab}>
+            <div className={styles.settingsColumns}>
+              {activeTab === SettingsTab.Preferences && (
                 <>
                   <SettingsCard title="General">
                     <Input
                       name="preserveLog"
                       label="Preserve log"
-                      wrapperClassName={ styles.checkboxRow }
-                      type={ Type.Checkbox }
-                      checked={ preserveLog }
-                      onChange={ handlePreserveLogChange }
+                      wrapperClassName={styles.checkboxRow}
+                      type={Type.Checkbox}
+                      checked={preserveLog}
+                      onChange={handlePreserveLogChange}
                     />
                     <Input
                       name="autoScroll"
                       label="Autoscroll to the latest request"
-                      wrapperClassName={ styles.checkboxRow }
-                      type={ Type.Checkbox }
-                      checked={ autoScroll }
-                      onChange={ handleAutoScrollChange }
+                      wrapperClassName={styles.checkboxRow}
+                      type={Type.Checkbox}
+                      checked={autoScroll}
+                      onChange={handleAutoScrollChange}
                     />
                   </SettingsCard>
-                  <SettingsCard
-                    title="Filters"
-                    description="Which kinds of traffic the panel records."
-                  >
+                  <SettingsCard title="Filters" description="Which kinds of traffic the panel records.">
                     <Input
                       name="includeJsonRpcLogs"
                       label="Include JSON-RPC logs"
-                      wrapperClassName={ styles.checkboxRow }
-                      type={ Type.Checkbox }
-                      checked={ includeJsonRpcLogs }
-                      onChange={ handleIncludeJsonRpcLogsChange }
+                      wrapperClassName={styles.checkboxRow}
+                      type={Type.Checkbox}
+                      checked={includeJsonRpcLogs}
+                      onChange={handleIncludeJsonRpcLogsChange}
                     />
                     <Input
                       name="includeWebsocketLogs"
                       label="Include Websocket logs"
-                      wrapperClassName={ styles.checkboxRow }
-                      type={ Type.Checkbox }
-                      checked={ includeWebsocketLogs }
-                      onChange={ handleIncludeWebsocketLogsChange }
+                      wrapperClassName={styles.checkboxRow}
+                      type={Type.Checkbox}
+                      checked={includeWebsocketLogs}
+                      onChange={handleIncludeWebsocketLogsChange}
                     />
                     <Input
                       name="includeServerLogs"
                       label="Include server-side logs"
-                      title={ `JSON-RPC calls your server made, reported by ${ serverLoggerPackageName }` }
-                      wrapperClassName={ styles.checkboxRow }
-                      type={ Type.Checkbox }
-                      checked={ includeServerLogs }
-                      onChange={ handleIncludeServerLogsChange }
+                      title={`JSON-RPC calls your server made, reported by ${serverLoggerPackageName}`}
+                      wrapperClassName={styles.checkboxRow}
+                      type={Type.Checkbox}
+                      checked={includeServerLogs}
+                      onChange={handleIncludeServerLogsChange}
                     />
-                    <span className={ styles.fieldHint }>
-                      Server-side calls appear only when your app uses the{ ' ' }
-                      <a
-                        href={ serverLoggerPackageUrl }
-                        onClick={ handleServerLoggerLinkClick }
-                      >
-                        { serverLoggerPackageName }
-                      </a>
-                      { ' ' }package.
+                    <span className={styles.fieldHint}>
+                      Server-side calls appear only when your app uses the{' '}
+                      <a href={serverLoggerPackageUrl} onClick={handleServerLoggerLinkClick}>
+                        {serverLoggerPackageName}
+                      </a>{' '}
+                      package.
                     </span>
                   </SettingsCard>
                 </>
-              ) }
-              { activeTab === SettingsTab.Appearance && (
+              )}
+              {activeTab === SettingsTab.Appearance && (
                 <>
                   <SettingsCard title="Layout">
-                    <label
-                      className={ styles.field }
-                      htmlFor="settings-viewMode"
-                    >
-                      <span className={ styles.fieldLabel }>Request view</span>
+                    <label className={styles.field} htmlFor="settings-viewMode">
+                      <span className={styles.fieldLabel}>Request view</span>
                       <Select<ViewMode>
                         id="settings-viewMode"
                         name="viewMode"
-                        className={ styles.fieldControl }
-                        options={ viewModeOptions }
-                        value={ isViewModeOverridden ? effectiveViewMode : viewMode }
-                        isDisabled={ isViewModeOverridden }
-                        onChange={ handleViewModeChange }
+                        className={styles.fieldControl}
+                        options={viewModeOptions}
+                        value={isViewModeOverridden ? effectiveViewMode : viewMode}
+                        isDisabled={isViewModeOverridden}
+                        onChange={handleViewModeChange}
                       />
-                      { viewMode === ViewMode.Auto && (
-                        <span className={ styles.fieldHint }>
-                          Showing { viewModeLabels[effectiveViewMode] }. Auto follows the panel&apos;s shape:
-                          Panes when wide, Stacked when tall or narrow, Drill-down when very narrow.
+                      {viewMode === ViewMode.Auto && (
+                        <span className={styles.fieldHint}>
+                          Showing {viewModeLabels[effectiveViewMode]}. Auto follows the panel&apos;s shape: Panes when
+                          wide, Stacked when tall or narrow, Drill-down when very narrow.
                         </span>
-                      ) }
-                      { isViewModeOverridden && (
-                        <span className={ styles.fieldHint }>
-                          The panel is too narrow to show a request beside the list, so Stacked is in
-                          use. Widen it - or undock DevTools - to choose again. Your saved choice is kept.
+                      )}
+                      {isViewModeOverridden && (
+                        <span className={styles.fieldHint}>
+                          The panel is too narrow to show a request beside the list, so Stacked is in use. Widen it - or
+                          undock DevTools - to choose again. Your saved choice is kept.
                         </span>
-                      ) }
+                      )}
                     </label>
-                    <label
-                      className={ styles.field }
-                      htmlFor="settings-extensionTheme"
-                    >
-                      <span className={ styles.fieldLabel }>Theme</span>
+                    <label className={styles.field} htmlFor="settings-extensionTheme">
+                      <span className={styles.fieldLabel}>Theme</span>
                       <Select<ExtensionTheme>
                         id="settings-extensionTheme"
                         name="extensionTheme"
-                        className={ styles.fieldControl }
-                        options={ extensionThemeOptions }
-                        value={ extensionTheme }
-                        onChange={ handleExtensionThemeChange }
+                        className={styles.fieldControl}
+                        options={extensionThemeOptions}
+                        value={extensionTheme}
+                        onChange={handleExtensionThemeChange}
                       />
                     </label>
-                    <label
-                      className={ styles.field }
-                      htmlFor="settings-serverGroupState"
-                    >
-                      <span className={ styles.fieldLabel }>Server calls group</span>
+                    <label className={styles.field} htmlFor="settings-serverGroupState">
+                      <span className={styles.fieldLabel}>Server calls group</span>
                       <Select<ServerGroupState>
                         id="settings-serverGroupState"
                         name="serverGroupState"
-                        className={ styles.fieldControl }
-                        options={ serverGroupStateOptions }
-                        value={ serverGroupState }
-                        onChange={ handleServerGroupStateChange }
+                        className={styles.fieldControl}
+                        options={serverGroupStateOptions}
+                        value={serverGroupState}
+                        onChange={handleServerGroupStateChange}
                       />
-                      <span className={ styles.fieldHint }>
+                      <span className={styles.fieldHint}>
                         How the group of server-side calls starts. Clicking the group still toggles it.
                       </span>
                     </label>
@@ -403,184 +376,168 @@ const Settings = ({ onClose }: IComponentProps) => {
                     <Input
                       name="compactRows"
                       label="Compact rows"
-                      wrapperClassName={ styles.checkboxRow }
-                      type={ Type.Checkbox }
-                      checked={ compactRows }
-                      onChange={ handleCompactRowsChange }
+                      wrapperClassName={styles.checkboxRow}
+                      type={Type.Checkbox}
+                      checked={compactRows}
+                      onChange={handleCompactRowsChange}
                     />
                     <Input
                       name="showRequestUrl"
                       label="Show url for each request"
-                      title={ compactRows ? 'Compact rows have no url line' : undefined }
-                      wrapperClassName={ styles.checkboxRow }
-                      type={ Type.Checkbox }
-                      checked={ showRequestUrl && !compactRows }
-                      isDisabled={ compactRows }
-                      onChange={ handleShowRequestUrlChange }
+                      title={compactRows ? 'Compact rows have no url line' : undefined}
+                      wrapperClassName={styles.checkboxRow}
+                      type={Type.Checkbox}
+                      checked={showRequestUrl && !compactRows}
+                      isDisabled={compactRows}
+                      onChange={handleShowRequestUrlChange}
                     />
-                    <div className={ styles.dependentRows }>
+                    <div className={styles.dependentRows}>
                       <Input
                         name="showCorsBadge"
                         label="CORS badge"
-                        title={ urlDependentTitle }
-                        wrapperClassName={ styles.checkboxRow }
-                        type={ Type.Checkbox }
-                        checked={ showCorsBadge }
-                        isDisabled={ !isUrlLineShown }
-                        onChange={ handleShowCorsBadgeChange }
+                        title={urlDependentTitle}
+                        wrapperClassName={styles.checkboxRow}
+                        type={Type.Checkbox}
+                        checked={showCorsBadge}
+                        isDisabled={!isUrlLineShown}
+                        onChange={handleShowCorsBadgeChange}
                       />
                       <Input
                         name="showWebsocketBadge"
                         label="Websocket badge"
-                        title={ urlDependentTitle }
-                        wrapperClassName={ styles.checkboxRow }
-                        type={ Type.Checkbox }
-                        checked={ showWebsocketBadge }
-                        isDisabled={ !isUrlLineShown }
-                        onChange={ handleShowWebsocketBadgeChange }
+                        title={urlDependentTitle}
+                        wrapperClassName={styles.checkboxRow}
+                        type={Type.Checkbox}
+                        checked={showWebsocketBadge}
+                        isDisabled={!isUrlLineShown}
+                        onChange={handleShowWebsocketBadgeChange}
                       />
                     </div>
                   </SettingsCard>
-                  <SettingsCard
-                    title="Columns"
-                    description={ columnsDescription }
-                  >
+                  <SettingsCard title="Columns" description={columnsDescription}>
                     <Input
                       name="showWaterfallColumn"
                       label="Waterfall"
-                      wrapperClassName={ styles.checkboxRow }
-                      type={ Type.Checkbox }
-                      checked={ showWaterfallColumn }
-                      onChange={ handleShowWaterfallColumnChange }
+                      wrapperClassName={styles.checkboxRow}
+                      type={Type.Checkbox}
+                      checked={showWaterfallColumn}
+                      onChange={handleShowWaterfallColumnChange}
                     />
                     <Input
                       name="showStatusColumn"
                       label="Status"
-                      wrapperClassName={ styles.checkboxRow }
-                      type={ Type.Checkbox }
-                      checked={ showStatusColumn }
-                      onChange={ handleShowStatusColumnChange }
+                      wrapperClassName={styles.checkboxRow}
+                      type={Type.Checkbox}
+                      checked={showStatusColumn}
+                      onChange={handleShowStatusColumnChange}
                     />
                     <Input
                       name="showSizeColumn"
                       label="Size"
-                      wrapperClassName={ styles.checkboxRow }
-                      type={ Type.Checkbox }
-                      checked={ showSizeColumn }
-                      onChange={ handleShowSizeColumnChange }
+                      wrapperClassName={styles.checkboxRow}
+                      type={Type.Checkbox}
+                      checked={showSizeColumn}
+                      onChange={handleShowSizeColumnChange}
                     />
                     <Input
                       name="showTimeColumn"
                       label="Time (ms)"
-                      wrapperClassName={ styles.checkboxRow }
-                      type={ Type.Checkbox }
-                      checked={ showTimeColumn }
-                      onChange={ handleShowTimeColumnChange }
+                      wrapperClassName={styles.checkboxRow}
+                      type={Type.Checkbox}
+                      checked={showTimeColumn}
+                      onChange={handleShowTimeColumnChange}
                     />
                   </SettingsCard>
                 </>
-              ) }
-              { activeTab === SettingsTab.JsonViewer && (
+              )}
+              {activeTab === SettingsTab.JsonViewer && (
                 <>
                   <SettingsCard title="JSON tree">
-                    <label
-                      className={ styles.field }
-                      htmlFor="settings-jsonViewerTheme"
-                    >
-                      <span className={ styles.fieldLabel }>Theme</span>
+                    <label className={styles.field} htmlFor="settings-jsonViewerTheme">
+                      <span className={styles.fieldLabel}>Theme</span>
                       <Select<JsonViewerTheme>
                         id="settings-jsonViewerTheme"
                         name="jsonViewerTheme"
-                        className={ styles.fieldControl }
-                        options={ jsonViewerThemeOptions }
-                        value={ jsonViewerTheme }
-                        onChange={ handleJsonViewerThemeChange }
+                        className={styles.fieldControl}
+                        options={jsonViewerThemeOptions}
+                        value={jsonViewerTheme}
+                        onChange={handleJsonViewerThemeChange}
                       />
                     </label>
-                    <label
-                      className={ styles.field }
-                      htmlFor="settings-expandedTreeState"
-                    >
-                      <span className={ styles.fieldLabel }>Open state</span>
+                    <label className={styles.field} htmlFor="settings-expandedTreeState">
+                      <span className={styles.fieldLabel}>Open state</span>
                       <Select<ExpandTreeState>
                         id="settings-expandedTreeState"
                         name="expandedTreeState"
-                        className={ styles.fieldControl }
-                        options={ expandedTreeStateOptions }
-                        value={ expandTreeState }
-                        onChange={ handleExpandTreeStateChange }
+                        className={styles.fieldControl}
+                        options={expandedTreeStateOptions}
+                        value={expandTreeState}
+                        onChange={handleExpandTreeStateChange}
                       />
                     </label>
-                    { expandTreeState === ExpandTreeState.Expanded && (
-                      <label
-                        className={ cn(styles.field, styles.dependentRows) }
-                        htmlFor="settings-expandLevel"
-                      >
-                        <span className={ styles.fieldLabel }>Expand level</span>
+                    {expandTreeState === ExpandTreeState.Expanded && (
+                      <label className={cn(styles.field, styles.dependentRows)} htmlFor="settings-expandLevel">
+                        <span className={styles.fieldLabel}>Expand level</span>
                         <Select<number>
                           id="settings-expandLevel"
                           name="expandLevel"
-                          className={ styles.fieldControl }
-                          options={ expandLevelOptions }
-                          value={ expandLevel }
-                          onChange={ handleExpandLevelChange }
+                          className={styles.fieldControl}
+                          options={expandLevelOptions}
+                          value={expandLevel}
+                          onChange={handleExpandLevelChange}
                         />
                       </label>
-                    ) }
+                    )}
                     <Input
                       name="showCollapsedPreview"
                       label="Preview collapsed nodes"
                       title="Show the first entry of a collapsed object or array instead of an ellipsis"
-                      wrapperClassName={ styles.checkboxRow }
-                      type={ Type.Checkbox }
-                      checked={ showCollapsedPreview }
-                      onChange={ handleShowCollapsedPreviewChange }
+                      wrapperClassName={styles.checkboxRow}
+                      type={Type.Checkbox}
+                      checked={showCollapsedPreview}
+                      onChange={handleShowCollapsedPreviewChange}
                     />
                   </SettingsCard>
                   <SettingsCard title="Websocket messages">
-                    <label
-                      className={ styles.field }
-                      htmlFor="settings-expandedWebsocketTreeState"
-                    >
-                      <span className={ styles.fieldLabel }>Open state</span>
+                    <label className={styles.field} htmlFor="settings-expandedWebsocketTreeState">
+                      <span className={styles.fieldLabel}>Open state</span>
                       <Select<ExpandTreeState>
                         id="settings-expandedWebsocketTreeState"
                         name="expandedWebsocketTreeState"
-                        className={ styles.fieldControl }
-                        options={ expandedTreeStateOptions }
-                        value={ expandedWebsocketMessagesState }
-                        onChange={ handleExpandedWebsocketMessagesStateChange }
+                        className={styles.fieldControl}
+                        options={expandedTreeStateOptions}
+                        value={expandedWebsocketMessagesState}
+                        onChange={handleExpandedWebsocketMessagesStateChange}
                       />
                     </label>
                   </SettingsCard>
                 </>
-              ) }
-              { activeTab === SettingsTab.Troubleshooting && (
+              )}
+              {activeTab === SettingsTab.Troubleshooting && (
                 <SettingsCard title="Resilient capture">
                   <Input
                     name="resilientCapture"
                     label="Resilient capture (patch fetch in page)"
-                    wrapperClassName={ styles.checkboxRow }
-                    type={ Type.Checkbox }
-                    checked={ resilientCapture }
-                    onChange={ handleResilientCaptureChange }
+                    wrapperClassName={styles.checkboxRow}
+                    type={Type.Checkbox}
+                    checked={resilientCapture}
+                    onChange={handleResilientCaptureChange}
                   />
-                  <p className={ styles.hint }>
-                    <strong>Turn this on if requests appear in the Network tab but not here.</strong> Another
-                    DevTools extension patching <code>window.fetch</code> makes Chrome credit it as the
-                    request&apos;s initiator, which stops this panel from being told about the request at all.{ ' ' }
+                  <p className={styles.hint}>
+                    <strong>Turn this on if requests appear in the Network tab but not here.</strong> Another DevTools
+                    extension patching <code>window.fetch</code> makes Chrome credit it as the request&apos;s initiator,
+                    which stops this panel from being told about the request at all.{' '}
                     <strong>React DevTools 7.0.1 does this</strong> - if it is installed, this is almost certainly why.
                   </p>
-                  <p className={ styles.hint }>
-                    This works around it by reading requests inside the page instead of relying on Chrome to
-                    report them, and also shows each call while it is still in flight. Costs: this patches{ ' ' }
-                    <code>window.fetch</code> on every page, so <code>fetch.toString()</code> no longer reads as
-                    native and other DevTools extensions may stop seeing these requests. Only{ ' ' }
-                    <code>fetch</code> is covered - not XHR - and a page that captured <code>fetch</code>{ ' ' }
-                    before this loads is missed.
+                  <p className={styles.hint}>
+                    This works around it by reading requests inside the page instead of relying on Chrome to report
+                    them, and also shows each call while it is still in flight. Costs: this patches{' '}
+                    <code>window.fetch</code> on every page, so <code>fetch.toString()</code> no longer reads as native
+                    and other DevTools extensions may stop seeing these requests. Only <code>fetch</code> is covered -
+                    not XHR - and a page that captured <code>fetch</code> before this loads is missed.
                   </p>
                 </SettingsCard>
-              ) }
+              )}
             </div>
           </div>
         </div>

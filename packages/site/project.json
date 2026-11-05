@@ -8,7 +8,7 @@
       "executor": "nx:run-commands",
       "options": {
         "cwd": "{projectRoot}",
-        "command": "eslint --cache=true --cache-location=./.cache/eslint ./"
+        "command": "oxlint"
       }
     },
     "typecheck": {
@@ -20,12 +20,7 @@
     },
     "build": {
       "executor": "nx:run-commands",
-      "inputs": [
-        "production",
-        "^production",
-        { "env": "NEXT_PUBLIC_SITE_URL" },
-        { "env": "NEXT_PUBLIC_GA_ID" }
-      ],
+      "inputs": ["production", "^production", { "env": "NEXT_PUBLIC_SITE_URL" }, { "env": "NEXT_PUBLIC_GA_ID" }],
       "outputs": ["{projectRoot}/.next", "{projectRoot}/public/demo"],
       "options": {
         "cwd": "{projectRoot}",

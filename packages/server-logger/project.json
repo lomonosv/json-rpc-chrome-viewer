@@ -8,7 +8,7 @@
       "executor": "nx:run-commands",
       "options": {
         "cwd": "{projectRoot}",
-        "command": "eslint --cache=true --cache-location=./.cache/eslint ./"
+        "command": "oxlint"
       }
     },
     "typecheck": {

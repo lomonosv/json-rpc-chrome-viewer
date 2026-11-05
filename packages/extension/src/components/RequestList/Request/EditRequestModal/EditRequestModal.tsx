@@ -8,9 +8,9 @@ import JsonViewer from '~/components/common/JsonViewer';
 import { ExpandTreeState } from '~/components/common/JsonViewer/ExpandTreeState';
 
 interface IProps {
-  isVisible: boolean,
-  item: IRequest,
-  close: () => void,
+  isVisible: boolean;
+  item: IRequest;
+  close: () => void;
 }
 
 const EditRequestModal = ({ isVisible, item, close }: IProps) => {
@@ -29,21 +29,32 @@ const EditRequestModal = ({ isVisible, item, close }: IProps) => {
 
     await chrome.scripting.executeScript({
       target: { tabId: tab.id },
-      func: (item: IRequest, params: JSONValue & {
-        headers?: IJSONObject,
-        payload?: IJSONObject,
-      }) => {
-        const { url, method, headers, postData: { text: body } } = item.request;
+      func: (
+        item: IRequest,
+        params: JSONValue & {
+          headers?: IJSONObject;
+          payload?: IJSONObject;
+        }
+      ) => {
+        const {
+          url,
+          method,
+          headers,
+          postData: { text: body }
+        } = item.request;
         const json = JSON.parse(body);
 
         fetch(url, {
           method,
-          headers: headers.filter(
-            ({ name }) => !name.startsWith(':')
-          ).reduce((acc, header: { name: string, value: string }) => ({
-            ...acc,
-            [header.name]: header.value
-          }), {}),
+          headers: headers
+            .filter(({ name }) => !name.startsWith(':'))
+            .reduce(
+              (acc, header: { name: string; value: string }) => ({
+                ...acc,
+                [header.name]: header.value
+              }),
+              {}
+            ),
           body: JSON.stringify({
             ...json,
             params: {
@@ -60,50 +71,36 @@ const EditRequestModal = ({ isVisible, item, close }: IProps) => {
     close();
   };
 
-  const handleEditParams = ({ updated_src } : { updated_src: JSONValue }) => {
+  const handleEditParams = ({ updated_src }: { updated_src: JSONValue }) => {
     setParams(updated_src);
   };
 
   const header = (
-    <div className={ styles.header }>
-      <span>
-        { `Resend "${ item.requestJSON.method }" request` }
-      </span>
-      <Button className={ styles.closeButton } title="Close" onClick={ close }>
-        <Icon type={ IconType.Close } />
+    <div className={styles.header}>
+      <span>{`Resend "${item.requestJSON.method}" request`}</span>
+      <Button className={styles.closeButton} title="Close" onClick={close}>
+        <Icon type={IconType.Close} />
       </Button>
     </div>
   );
 
   const footer = (
     <>
-      <Button
-        className={ styles.cancel }
-        onClick={ close }
-      >
+      <Button className={styles.cancel} onClick={close}>
         Cancel
       </Button>
-      <Button
-        className={ styles.button }
-        onClick={ resend }
-      >
+      <Button className={styles.button} onClick={resend}>
         Resend
       </Button>
     </>
   );
 
   return (
-    <Modal
-      isVisible={ isVisible }
-      className={ styles.editRequestModal }
-      close={ close }
-      header={ header }
-      footer={ footer }
-    >
+    <Modal isVisible={isVisible} className={styles.editRequestModal} close={close} header={header} footer={footer}>
       <JsonViewer
-        src={ item.requestJSON.params || {} }
-        expandTreeState={ ExpandTreeState.Expanded }
-        onEdit={ handleEditParams }
+        src={item.requestJSON.params || {}}
+        expandTreeState={ExpandTreeState.Expanded}
+        onEdit={handleEditParams}
       />
     </Modal>
   );

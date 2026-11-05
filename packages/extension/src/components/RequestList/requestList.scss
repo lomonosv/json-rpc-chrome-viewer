@@ -1,4 +1,4 @@
-@use "../common/variables";
+@use '../common/variables';
 
 .requestListWrapper {
   flex-grow: 1;
@@ -22,7 +22,7 @@
   user-select: none;
 
   > span:not(:first-child)::before {
-    content: "·";
+    content: '·';
     margin-right: 6px;
     opacity: 0.6;
   }
@@ -128,7 +128,7 @@
 }
 
 .paneResizeHandle::after {
-  content: "";
+  content: '';
   position: absolute;
   top: 0;
   bottom: 0;
@@ -149,7 +149,7 @@
 }
 
 .stackedResizeHandle::after {
-  content: "";
+  content: '';
   position: absolute;
   top: 50%;
   left: 0;
@@ -186,7 +186,7 @@
 }
 
 .accordionDetail::before {
-  content: "";
+  content: '';
   position: absolute;
   top: -1px;
   bottom: -1px;
@@ -205,7 +205,7 @@
 }
 
 .accordionResizeHandle::after {
-  content: "";
+  content: '';
   position: absolute;
   top: 0;
   left: 0;
@@ -231,7 +231,9 @@
   border: none;
   border-bottom: 1px solid variables.$borderColor;
   background: linear-gradient(90deg, variables.$serverBandHover, variables.$serverBand 45%, transparent);
-  box-shadow: inset 3px 0 0 variables.$accent, inset 60px 0 40px -40px variables.$selectGlow;
+  box-shadow:
+    inset 3px 0 0 variables.$accent,
+    inset 60px 0 40px -40px variables.$selectGlow;
   font: inherit;
   font-family: variables.$fontMono;
   font-size: 12px;
@@ -240,7 +242,12 @@
   cursor: pointer;
 
   &:hover {
-    background: linear-gradient(90deg, variables.$serverBandHover, variables.$serverBandHover 45%, variables.$serverBand);
+    background: linear-gradient(
+      90deg,
+      variables.$serverBandHover,
+      variables.$serverBandHover 45%,
+      variables.$serverBand
+    );
   }
 }
 
@@ -252,7 +259,7 @@
   transition: transform 0.15s ease-out;
 
   &::before {
-    content: "";
+    content: '';
     position: absolute;
     top: 50%;
     left: 50%;

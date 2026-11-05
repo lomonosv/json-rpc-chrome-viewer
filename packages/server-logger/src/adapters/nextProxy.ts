@@ -11,7 +11,7 @@ import { instrumentFetch } from '../instrument/fetch.js';
 type ProxyResult = Awaited<ReturnType<NextMiddleware>>;
 
 interface IHeaderStore {
-  get(name: string): string | null,
+  get(name: string): string | null;
 }
 
 type HeadersFn = () => Promise<IHeaderStore>;
@@ -26,7 +26,7 @@ const rewriteHeader = 'x-middleware-rewrite';
 const overrideListHeader = 'x-middleware-override-headers';
 const requestHeaderPrefix = 'x-middleware-request-';
 
-const drainPrefix = `${ drainPath }/`;
+const drainPrefix = `${drainPath}/`;
 
 let headersFn: HeadersFn | null = null;
 
@@ -85,31 +85,28 @@ const armFetch = (): void => {
  * exclusions are therefore applied here at runtime. Without them every static
  * chunk would carry an id, and the panel would drain an empty log for each.
  */
-const isUntaggedPath = (pathname: string): boolean => (
-  pathname.startsWith(drainPath)
-  || pathname.startsWith('/_next/static')
-  || pathname.startsWith('/_next/image')
-  || pathname === '/favicon.ico'
-);
+const isUntaggedPath = (pathname: string): boolean =>
+  pathname.startsWith(drainPath) ||
+  pathname.startsWith('/_next/static') ||
+  pathname.startsWith('/_next/image') ||
+  pathname === '/favicon.ico';
 
-const getDrainLogId = (pathname: string): string | null => (
-  pathname.startsWith(drainPrefix) ? pathname.slice(drainPrefix.length) : null
-);
+const getDrainLogId = (pathname: string): string | null =>
+  pathname.startsWith(drainPrefix) ? pathname.slice(drainPrefix.length) : null;
 
 /**
  * Answers `/__jsonrpc-log/<id>`. Draining consumes the log, so a second read of
  * the same id returns nothing rather than replaying one render's calls onto
  * another.
  */
-const drain = (logId: string): Response => (
+const drain = (logId: string): Response =>
   new Response(JSON.stringify(drainLog(logId)), {
     status: 200,
     headers: {
       'content-type': 'application/json',
       'cache-control': 'no-store'
     }
-  })
-);
+  });
 
 /**
  * Mints the id before the render starts: an App Router page cannot set a
@@ -168,14 +165,14 @@ const tagResponse = (request: NextRequest, response: Response): Response => {
 
       requestHeaders.set(logIdRequestHeader, logId);
       requestHeaders.forEach((value, key) => {
-        headers.set(`${ requestHeaderPrefix }${ key }`, value);
+        headers.set(`${requestHeaderPrefix}${key}`, value);
         keys.push(key);
       });
       headers.set(overrideListHeader, keys.join(','));
     } else {
       const keys = overrides ? overrides.split(',') : [];
 
-      headers.set(`${ requestHeaderPrefix }${ logIdRequestHeader }`, logId);
+      headers.set(`${requestHeaderPrefix}${logIdRequestHeader}`, logId);
 
       if (!keys.includes(logIdRequestHeader)) {
         headers.set(overrideListHeader, [...keys, logIdRequestHeader].join(','));
@@ -198,22 +195,21 @@ const tagResponse = (request: NextRequest, response: Response): Response => {
  * tagged (see `tagResponse`). Returning nothing means "continue", as it does to
  * Next itself.
  */
-export const withJsonRpcLogger = (handler: NextMiddleware) => async (
-  request: NextRequest,
-  event?: NextFetchEvent
-): Promise<ProxyResult> => {
-  if (!isEnabled()) return handler(request, event as NextFetchEvent);
+export const withJsonRpcLogger =
+  (handler: NextMiddleware) =>
+  async (request: NextRequest, event?: NextFetchEvent): Promise<ProxyResult> => {
+    if (!isEnabled()) return handler(request, event as NextFetchEvent);
 
-  armFetch();
+    armFetch();
 
-  const logId = getDrainLogId(request.nextUrl.pathname);
+    const logId = getDrainLogId(request.nextUrl.pathname);
 
-  if (logId !== null) return drain(logId);
+    if (logId !== null) return drain(logId);
 
-  const response = (await handler(request, event as NextFetchEvent)) as Response | null | undefined;
+    const response = (await handler(request, event as NextFetchEvent)) as Response | null | undefined;
 
-  return response ? tagResponse(request, response) : tagRequest(request);
-};
+    return response ? tagResponse(request, response) : tagRequest(request);
+  };
 
 /**
  * The whole integration: re-exported from a `proxy.ts`, it patches `fetch`, tags

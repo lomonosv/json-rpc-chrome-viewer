@@ -10,12 +10,12 @@ const tabbedBelowHeight = 360;
 
 enum DetailTab {
   Request = 'Request',
-  Response = 'Response',
+  Response = 'Response'
 }
 
 interface IComponentProps {
-  isClosable?: boolean,
-  isAlwaysTabbed?: boolean,
+  isClosable?: boolean;
+  isAlwaysTabbed?: boolean;
 }
 
 const RequestDetail = ({ isClosable = true, isAlwaysTabbed = false }: IComponentProps) => {
@@ -38,44 +38,46 @@ const RequestDetail = ({ isClosable = true, isAlwaysTabbed = false }: IComponent
   const isTabbed = isAlwaysTabbed || isShort;
 
   const renderTabs = () => (
-    <span className={ styles.tabs } role="tablist">
-      { Object.values(DetailTab).map((tab) => (
+    <span className={styles.tabs} role="tablist">
+      {Object.values(DetailTab).map((tab) => (
         <button
-          key={ tab }
+          key={tab}
           type="button"
           role="tab"
-          aria-selected={ tab === activeTab }
-          className={ cn(styles.tab, { [styles.isActive]: tab === activeTab }) }
-          onClick={ () => setActiveTab(tab) }
+          aria-selected={tab === activeTab}
+          className={cn(styles.tab, { [styles.isActive]: tab === activeTab })}
+          onClick={() => setActiveTab(tab)}
         >
-          { tab }
+          {tab}
         </button>
-      )) }
+      ))}
     </span>
   );
 
   const renderContent = () => {
     if (selected.isWebSocket) {
-      return <MessageInfo isClosable={ isClosable } />;
+      return <MessageInfo isClosable={isClosable} />;
     }
 
     if (!isTabbed) {
       return (
         <>
-          <RequestInfo isClosable={ isClosable } />
+          <RequestInfo isClosable={isClosable} />
           <ResponseInfo />
         </>
       );
     }
 
-    return activeTab === DetailTab.Request
-      ? <RequestInfo label={ renderTabs() } isFill isClosable={ isClosable } />
-      : <ResponseInfo label={ renderTabs() } isClosable={ isClosable } />;
+    return activeTab === DetailTab.Request ? (
+      <RequestInfo label={renderTabs()} isFill isClosable={isClosable} />
+    ) : (
+      <ResponseInfo label={renderTabs()} isClosable={isClosable} />
+    );
   };
 
   return (
-    <div ref={ wrapperRef } className={ styles.requestDetail }>
-      { renderContent() }
+    <div ref={wrapperRef} className={styles.requestDetail}>
+      {renderContent()}
     </div>
   );
 };

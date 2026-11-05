@@ -10,11 +10,11 @@ import useCollapsedPreview from './useCollapsedPreview';
 import styles from './jsonViewer.scss';
 
 interface IComponentProps {
-  src: JSONValue,
-  defaultOpenNodesDepth?: number,
-  expandTreeState: ExpandTreeState,
-  expandLevel?: number,
-  onEdit?: (edit: any) => void,
+  src: JSONValue;
+  defaultOpenNodesDepth?: number;
+  expandTreeState: ExpandTreeState;
+  expandLevel?: number;
+  onEdit?: (edit: any) => void;
 }
 
 const getCollapsed = (
@@ -57,33 +57,29 @@ const JsonViewer = ({
   }, [src]);
 
   return (
-    <div
-      ref={ containerRef }
-      className={ styles.jsonViewer }
-    >
-      { isInitialized && (
-        typeof src === 'object' ? (
+    <div ref={containerRef} className={styles.jsonViewer}>
+      {isInitialized &&
+        (typeof src === 'object' ? (
           <ReactJsonView
-            name={ false }
-            src={ src as object }
-            theme={ systemJsonViewerTheme === JsonViewerTheme.System
-              ? panelJsonTheme
-              : systemJsonViewerTheme.toLowerCase() as ThemeKeys }
-            collapsed={ collapsed }
-            enableClipboard={ false }
-            indentWidth={ 2 }
-            displayDataTypes={ false }
+            name={false}
+            src={src as object}
+            theme={
+              systemJsonViewerTheme === JsonViewerTheme.System
+                ? panelJsonTheme
+                : (systemJsonViewerTheme.toLowerCase() as ThemeKeys)
+            }
+            collapsed={collapsed}
+            enableClipboard={false}
+            indentWidth={2}
+            displayDataTypes={false}
             iconStyle="square"
-            quotesOnKeys={ false }
-            displayObjectSize={ false }
-            onEdit={ onEdit }
+            quotesOnKeys={false}
+            displayObjectSize={false}
+            onEdit={onEdit}
           />
         ) : (
-          <div className="react-json-view">
-            { src }
-          </div>
-        )
-      ) }
+          <div className="react-json-view">{src}</div>
+        ))}
     </div>
   );
 };

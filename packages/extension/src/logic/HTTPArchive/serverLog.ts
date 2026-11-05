@@ -32,26 +32,24 @@ export const serverLoggerPackageName = '@json-rpc-chrome-viewer/server-logger';
 export const serverLoggerPackageUrl = 'https://www.npmjs.com/package/@json-rpc-chrome-viewer/server-logger';
 
 export interface IServerRpcCall {
-  url: string,
-  startTime: number,
-  time: number,
-  status: number,
-  rawRequest: string,
-  rawResponse: string,
+  url: string;
+  startTime: number;
+  time: number;
+  status: number;
+  rawRequest: string;
+  rawResponse: string;
 }
 
 interface IResponseHeader {
-  name: string,
-  value: string,
+  name: string;
+  value: string;
 }
 
-const getResponseHeaders = (request: chrome.devtools.network.Request): IResponseHeader[] => (
-  (request.response?.headers as IResponseHeader[]) || []
-);
+const getResponseHeaders = (request: chrome.devtools.network.Request): IResponseHeader[] =>
+  (request.response?.headers as IResponseHeader[]) || [];
 
-const findHeader = (request: chrome.devtools.network.Request, name: string): string | undefined => (
-  getResponseHeaders(request).find((header) => header.name.toLowerCase() === name)?.value
-);
+const findHeader = (request: chrome.devtools.network.Request, name: string): string | undefined =>
+  getResponseHeaders(request).find((header) => header.name.toLowerCase() === name)?.value;
 
 /**
  * The navigation's own document — the request whose response carries the calls
@@ -65,17 +63,15 @@ export const isDocumentRequest = (request: chrome.devtools.network.Request): boo
   return resourceType === 'document';
 };
 
-export const hasServerLog = (request: chrome.devtools.network.Request): boolean => (
+export const hasServerLog = (request: chrome.devtools.network.Request): boolean =>
   getResponseHeaders(request).some(({ name }) => {
     const lowerName = name.toLowerCase();
 
     return lowerName === inlineLogHeader || lowerName === deferredLogHeader;
-  })
-);
+  });
 
-const toFiniteNumber = (value: unknown, fallback: number): number => (
-  typeof value === 'number' && Number.isFinite(value) ? value : fallback
-);
+const toFiniteNumber = (value: unknown, fallback: number): number =>
+  typeof value === 'number' && Number.isFinite(value) ? value : fallback;
 
 /**
  * Rebuilds each call field by field, the same reflex as `normaliseRules()`:
@@ -103,7 +99,7 @@ const normaliseCall = (call: unknown): IServerRpcCall | null => {
 const normaliseLog = (log: unknown): IServerRpcCall[] => {
   if (!log || typeof log !== 'object') return [];
 
-  const { v, calls } = log as { v?: unknown, calls?: unknown };
+  const { v, calls } = log as { v?: unknown; calls?: unknown };
 
   if (v !== wireFormatVersion || !Array.isArray(calls)) return [];
 
@@ -131,7 +127,7 @@ const fetchDeferredLog = async (logId: string, responseUrl: string): Promise<unk
 
   if (protocol !== 'http:' && protocol !== 'https:') return null;
 
-  const response = await fetch(new URL(`${ drainPath }/${ logId }`, origin), {
+  const response = await fetch(new URL(`${drainPath}/${logId}`, origin), {
     cache: 'no-store',
     credentials: 'omit',
     signal: AbortSignal.timeout(drainTimeoutMs)

@@ -4,7 +4,7 @@ export enum ViewMode {
   Stacked = 'stacked',
   Drawer = 'drawer',
   DrillDown = 'drillDown',
-  Accordion = 'accordion',
+  Accordion = 'accordion'
 }
 
 export const viewModeLabels: Record<ViewMode, string> = {
@@ -16,9 +16,9 @@ export const viewModeLabels: Record<ViewMode, string> = {
   [ViewMode.Accordion]: 'Accordion'
 };
 
-export const viewModeOptions: { key: ViewMode, value: string }[] = Object.values(ViewMode)
-  .map((key) => ({ key, value: viewModeLabels[key] }));
+export const viewModeOptions: { key: ViewMode; value: string }[] = Object.values(ViewMode).map((key) => ({
+  key,
+  value: viewModeLabels[key]
+}));
 
-export const isViewMode = (value: unknown): value is ViewMode => (
-  Object.values(ViewMode).includes(value as ViewMode)
-);
+export const isViewMode = (value: unknown): value is ViewMode => Object.values(ViewMode).includes(value as ViewMode);

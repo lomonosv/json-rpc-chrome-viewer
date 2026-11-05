@@ -6,12 +6,12 @@ import SentryIntegration from './SentryIntegration';
 import Fallback from './Fallback';
 
 interface IProps {
-  container: Container,
-  children: React.ReactElement,
+  container: Container;
+  children: React.ReactElement;
 }
 
 interface IState {
-  hasError: boolean,
+  hasError: boolean;
 }
 
 class ErrorBoundary extends React.Component<IProps, IState> {
@@ -38,9 +38,7 @@ export default ({ children }: Omit<IProps, 'container'>) => {
 
   return (
     <SentryIntegration>
-      <ErrorBoundary container={ container }>
-        { children }
-      </ErrorBoundary>
+      <ErrorBoundary container={container}>{children}</ErrorBoundary>
     </SentryIntegration>
   );
 };

@@ -5,9 +5,7 @@ const comfortableFilterWidth = 130;
 const getOuterWidth = (element: Element): number => {
   const { marginLeft, marginRight } = getComputedStyle(element);
 
-  return element.getBoundingClientRect().width
-    + Number.parseFloat(marginLeft)
-    + Number.parseFloat(marginRight);
+  return element.getBoundingClientRect().width + Number.parseFloat(marginLeft) + Number.parseFloat(marginRight);
 };
 
 const useToolbarFit = (
@@ -35,17 +33,18 @@ const useToolbarFit = (
         return total + (child === filterWrapper ? comfortableFilterWidth : getOuterWidth(child));
       }, 0);
       const availableWidth = section.clientWidth;
-      const { count } = optionalItems.reduce((fit, item) => {
-        if (fit.isFull) {
-          return fit;
-        }
+      const { count } = optionalItems.reduce(
+        (fit, item) => {
+          if (fit.isFull) {
+            return fit;
+          }
 
-        const used = fit.used + getOuterWidth(item);
+          const used = fit.used + getOuterWidth(item);
 
-        return used > availableWidth
-          ? { ...fit, isFull: true }
-          : { used, count: fit.count + 1, isFull: false };
-      }, { used: fixedWidth, count: 0, isFull: false });
+          return used > availableWidth ? { ...fit, isFull: true } : { used, count: fit.count + 1, isFull: false };
+        },
+        { used: fixedWidth, count: 0, isFull: false }
+      );
 
       setVisibleCount(count);
     };

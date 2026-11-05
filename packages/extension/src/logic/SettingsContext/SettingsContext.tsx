@@ -36,7 +36,7 @@ const defaultResilientCaptureValue = true;
 
 const useSettings = () => {
   const [isDevtoolsDarkTheme, setIsDevtoolsDarkTheme] = useState<boolean>(
-    chrome.devtools.panels.themeName === DevToolsTheme.Dark,
+    chrome.devtools.panels.themeName === DevToolsTheme.Dark
   );
   const [preserveLog, setPreserveLog] = useState<boolean>(defaultPreserveLogValue);
   const [includeJsonRpcLogs, setIncludeJsonRpcLogs] = useState<boolean>(defaultIncludeJsonRpcLogsValue);
@@ -87,8 +87,9 @@ const useSettings = () => {
     getConfig('settings_expandTreeState', defaultExpandTreeStateValue).then(setExpandTreeState);
     getConfig('settings_expandLevel', defaultExpandLevelValue).then(setExpandLevel);
     getConfig('settings_showCollapsedPreview', defaultShowCollapsedPreviewValue).then(setShowCollapsedPreview);
-    getConfig('settings_expandedWebsocketMessagesState', defaultExpandedWebsocketMessagesStateValue)
-      .then(setExpandedWebsocketMessagesState);
+    getConfig('settings_expandedWebsocketMessagesState', defaultExpandedWebsocketMessagesStateValue).then(
+      setExpandedWebsocketMessagesState
+    );
     getConfig('settings_extensionTheme', defaultExtensionThemeValue).then(setExtensionTheme);
     getConfig('settings_jsonViewerTheme', defaultJsonViewerThemeValue).then(setJsonViewerTheme);
     getConfig('settings_autoScroll', defaultAutoScrollValue).then(setAutoScroll);
@@ -96,8 +97,9 @@ const useSettings = () => {
     getConfig('settings_showStatusColumn', defaultShowStatusColumnValue).then(setShowStatusColumn);
     getConfig('settings_showSizeColumn', defaultShowSizeColumnValue).then(setShowSizeColumn);
     getConfig('settings_showTimeColumn', defaultShowTimeColumnValue).then(setShowTimeColumn);
-    getConfig('settings_viewMode', defaultViewModeValue)
-      .then((stored) => setViewMode(isViewMode(stored) ? stored : defaultViewModeValue));
+    getConfig('settings_viewMode', defaultViewModeValue).then((stored) =>
+      setViewMode(isViewMode(stored) ? stored : defaultViewModeValue)
+    );
     getConfig('settings_serverGroupState', defaultServerGroupStateValue).then(setServerGroupState);
     getConfig('settings_resilientCapture', defaultResilientCaptureValue).then(setResilientCapture);
   }, []);
@@ -248,8 +250,8 @@ const useSettings = () => {
     serverGroupState,
     resilientCapture,
     systemJsonViewerTheme: jsonViewerTheme,
-    isDarkTheme: (isDevtoolsDarkTheme && extensionTheme === ExtensionTheme.System)
-      || extensionTheme === ExtensionTheme.Dark,
+    isDarkTheme:
+      (isDevtoolsDarkTheme && extensionTheme === ExtensionTheme.System) || extensionTheme === ExtensionTheme.Dark,
     setPreserveLog: handlePreserveLogChange,
     setIncludeJsonRpcLogs: handleIncludeJsonRpcLogsChange,
     setIncludeWebsocketLogs: handleIncludeWebsocketLogsChange,
@@ -281,18 +283,14 @@ type SettingsContextType = ReturnType<typeof useSettings>;
 
 export const SettingsContext = createContext<SettingsContextType>(null);
 
-export const useSettingsContext = (): SettingsContextType => (
-  useContext<SettingsContextType>(SettingsContext)
-);
+export const useSettingsContext = (): SettingsContextType => useContext<SettingsContextType>(SettingsContext);
 
 interface IComponentProps {
-  children: React.ReactElement,
+  children: React.ReactElement;
 }
 
 const SettingsContextProvider: React.FC<IComponentProps> = ({ children }) => (
-  <SettingsContext.Provider value={ useSettings() }>
-    { children }
-  </SettingsContext.Provider>
+  <SettingsContext.Provider value={useSettings()}>{children}</SettingsContext.Provider>
 );
 
 export default SettingsContextProvider;

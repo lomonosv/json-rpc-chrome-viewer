@@ -2,10 +2,10 @@ export enum SearchScope {
   Method = 'method',
   Request = 'request',
   Response = 'response',
-  All = 'all',
+  All = 'all'
 }
 
-export const searchScopeOptions: { key: SearchScope, value: string }[] = [
+export const searchScopeOptions: { key: SearchScope; value: string }[] = [
   { key: SearchScope.Method, value: 'Method' },
   { key: SearchScope.Request, value: 'Request' },
   { key: SearchScope.Response, value: 'Response' },

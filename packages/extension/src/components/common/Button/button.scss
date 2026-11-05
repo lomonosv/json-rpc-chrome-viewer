@@ -1,10 +1,12 @@
-@use "../variables";
+@use '../variables';
 
 .button {
   display: inline-block;
   color: variables.$mutedColor;
   fill: variables.$mutedColor;
-  transition: color 0.15s, fill 0.15s;
+  transition:
+    color 0.15s,
+    fill 0.15s;
 
   &:hover {
     color: variables.$highLightedColor;

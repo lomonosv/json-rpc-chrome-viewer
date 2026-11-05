@@ -1,8 +1,8 @@
 import { IRequest } from '~/logic/HTTPArchive/IRequest';
 
 export interface ITimeline {
-  start: number,
-  span: number,
+  start: number;
+  span: number;
 }
 
 export const getRequestEnd = (request: IRequest, now: number) => {

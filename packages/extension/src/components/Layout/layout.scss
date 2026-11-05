@@ -1,4 +1,4 @@
-@use "../common/variables";
+@use '../common/variables';
 
 .layoutWrapper {
   position: relative;
@@ -7,9 +7,7 @@
   min-width: 0;
   flex-direction: column;
   height: 100%;
-  background:
-    radial-gradient(ellipse 85% 420px at 50% -40px, variables.$wash, transparent 72%),
-    variables.$background;
+  background: radial-gradient(ellipse 85% 420px at 50% -40px, variables.$wash, transparent 72%), variables.$background;
   color: variables.$color;
 }
 
@@ -22,7 +20,7 @@
   box-shadow: variables.$barShadow;
 
   &::after {
-    content: "";
+    content: '';
     position: absolute;
     right: 0;
     bottom: -1px;
@@ -89,7 +87,7 @@
 }
 
 .drawerResizeHandle::after {
-  content: "";
+  content: '';
   position: absolute;
   top: 0;
   bottom: 0;

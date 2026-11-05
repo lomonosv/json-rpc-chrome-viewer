@@ -1,4 +1,4 @@
-@use "../common/variables";
+@use '../common/variables';
 
 .requestInfoWrapper {
   display: flex;
@@ -49,7 +49,7 @@
 }
 
 .resizableBottomHandlerWrapper::before {
-  content: "";
+  content: '';
   position: absolute;
   top: 27px;
   left: -30px;
@@ -58,7 +58,7 @@
 }
 
 .resizableBottomHandlerWrapper::after {
-  content: "";
+  content: '';
   position: absolute;
   top: 0;
   left: -30px;

@@ -11,16 +11,14 @@ import InterceptorRule from './InterceptorRule';
 import styles from './interceptor.scss';
 
 interface IComponentProps {
-  onClose: () => void,
+  onClose: () => void;
 }
 
-const isRuleActive = (rule: IInterceptorRule): boolean => (
-  rule.isEnabled && !!rule.method && isValidRuleBody(rule.body)
-);
+const isRuleActive = (rule: IInterceptorRule): boolean => rule.isEnabled && !!rule.method && isValidRuleBody(rule.body);
 
-const pluralRules = (count: number) => `${ count } rule${ count === 1 ? '' : 's' }`;
+const pluralRules = (count: number) => `${count} rule${count === 1 ? '' : 's'}`;
 
-const getStatus = (isEnabled: boolean, activeCount: number): { title: string, text: string } => {
+const getStatus = (isEnabled: boolean, activeCount: number): { title: string; text: string } => {
   if (!isEnabled) {
     return {
       title: 'Interception is off',
@@ -36,20 +34,13 @@ const getStatus = (isEnabled: boolean, activeCount: number): { title: string, te
   }
 
   return {
-    title: `Armed — ${ pluralRules(activeCount) } answering locally`,
+    title: `Armed — ${pluralRules(activeCount)} answering locally`,
     text: 'Matching calls are answered here and never reach the network.'
   };
 };
 
 const Interceptor = ({ onClose }: IComponentProps) => {
-  const {
-    rules,
-    isEnabled,
-    setIsEnabled,
-    addRule,
-    updateRule,
-    removeRule
-  } = useInterceptorContext();
+  const { rules, isEnabled, setIsEnabled, addRule, updateRule, removeRule } = useInterceptorContext();
 
   const activeCount = rules.filter(isRuleActive).length;
   const isArmed = isEnabled && activeCount > 0;
@@ -62,95 +53,83 @@ const Interceptor = ({ onClose }: IComponentProps) => {
 
   return (
     <Portal>
-      <div className={ styles.interceptorWrapper }>
-        <Header className={ styles.pageHeader }>
-          <span className={ styles.pageTitle }>
-            <span className={ styles.titleMark } aria-hidden="true">
-              <Icon type={ IconType.Interceptor } />
+      <div className={styles.interceptorWrapper}>
+        <Header className={styles.pageHeader}>
+          <span className={styles.pageTitle}>
+            <span className={styles.titleMark} aria-hidden="true">
+              <Icon type={IconType.Interceptor} />
             </span>
             Response Interceptor
-            { !!rules.length && <span className={ styles.ruleCount }>{ pluralRules(rules.length) }</span> }
+            {!!rules.length && <span className={styles.ruleCount}>{pluralRules(rules.length)}</span>}
           </span>
-          <span className={ styles.pageActions }>
-            <button type="button" className={ `${ styles.primaryButton } ${ styles.addButton }` } onClick={ addRule }>
+          <span className={styles.pageActions}>
+            <button type="button" className={`${styles.primaryButton} ${styles.addButton}`} onClick={addRule}>
               Add rule
             </button>
-            <Button
-              className={ styles.closeButton }
-              title="Close"
-              onClick={ onClose }
-            >
-              <Icon type={ IconType.Close } />
+            <Button className={styles.closeButton} title="Close" onClick={onClose}>
+              <Icon type={IconType.Close} />
             </Button>
           </span>
         </Header>
-        <div className={ styles.interceptorContainer }>
-          <div className={ styles.interceptorContent }>
+        <div className={styles.interceptorContainer}>
+          <div className={styles.interceptorContent}>
             <section
-              className={ cn(styles.statusCard, {
+              className={cn(styles.statusCard, {
                 [styles.isArmed]: isArmed,
                 [styles.isIncomplete]: isIncomplete
-              }) }
+              })}
             >
-              <label className={ styles.switch }>
-                <input
-                  type="checkbox"
-                  name="interceptorEnabled"
-                  checked={ isEnabled }
-                  onChange={ handleIsEnabledChange }
-                />
-                <span className={ styles.switchTrack } aria-hidden="true" />
-                <span className={ styles.visuallyHidden }>Enable interception</span>
+              <label className={styles.switch}>
+                <input type="checkbox" name="interceptorEnabled" checked={isEnabled} onChange={handleIsEnabledChange} />
+                <span className={styles.switchTrack} aria-hidden="true" />
+                <span className={styles.visuallyHidden}>Enable interception</span>
               </label>
-              <div className={ styles.statusCopy }>
-                <strong className={ styles.statusTitle }>
-                  <span className={ styles.statusDot } aria-hidden="true" />
-                  { status.title }
+              <div className={styles.statusCopy}>
+                <strong className={styles.statusTitle}>
+                  <span className={styles.statusDot} aria-hidden="true" />
+                  {status.title}
                 </strong>
-                <span className={ styles.statusText }>{ status.text }</span>
+                <span className={styles.statusText}>{status.text}</span>
               </div>
             </section>
 
-            <p className={ styles.hint }>
-              <span className={ styles.hintIcon } aria-hidden="true">i</span>
+            <p className={styles.hint}>
+              <span className={styles.hintIcon} aria-hidden="true">
+                i
+              </span>
               <span>
-                Matched calls are answered locally and never reach the network - in this tab only, and
-                only while DevTools is open. <code>fetch</code> only: XHR, WebSocket and worker
-                requests are unaffected.
+                Matched calls are answered locally and never reach the network - in this tab only, and only while
+                DevTools is open. <code>fetch</code> only: XHR, WebSocket and worker requests are unaffected.
               </span>
             </p>
 
-            { !rules.length ? (
-              <div className={ styles.empty }>
-                <span className={ styles.emptyMark } aria-hidden="true">
-                  <Icon type={ IconType.Interceptor } />
+            {!rules.length ? (
+              <div className={styles.empty}>
+                <span className={styles.emptyMark} aria-hidden="true">
+                  <Icon type={IconType.Interceptor} />
                 </span>
-                <strong className={ styles.emptyTitle }>No rules yet</strong>
-                <span className={ styles.emptyText }>
-                  A rule matches a JSON-RPC method and answers it with a response of your own.
-                  Or use the mock button on any row to start from its real response.
+                <strong className={styles.emptyTitle}>No rules yet</strong>
+                <span className={styles.emptyText}>
+                  A rule matches a JSON-RPC method and answers it with a response of your own. Or use the mock button on
+                  any row to start from its real response.
                 </span>
-                <button
-                  type="button"
-                  className={ `${ styles.primaryButton } ${ styles.addButton }` }
-                  onClick={ addRule }
-                >
+                <button type="button" className={`${styles.primaryButton} ${styles.addButton}`} onClick={addRule}>
                   Add your first rule
                 </button>
               </div>
             ) : (
-              <div className={ styles.rules }>
-                { rules.map((rule) => (
+              <div className={styles.rules}>
+                {rules.map((rule) => (
                   <InterceptorRule
-                    key={ rule.id }
-                    rule={ rule }
-                    isDisabled={ !isEnabled }
-                    onChange={ updateRule }
-                    onRemove={ removeRule }
+                    key={rule.id}
+                    rule={rule}
+                    isDisabled={!isEnabled}
+                    onChange={updateRule}
+                    onRemove={removeRule}
                   />
-                )) }
+                ))}
               </div>
-            ) }
+            )}
           </div>
         </div>
       </div>

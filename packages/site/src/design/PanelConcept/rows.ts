@@ -1,26 +1,26 @@
 export type RowKind = 'http' | 'socket' | 'server' | 'mock';
 
 export interface IPhases {
-  idle: number,
-  send: number,
-  wait: number,
-  download: number,
+  idle: number;
+  send: number;
+  wait: number;
+  download: number;
 }
 
 export interface IMockRow {
-  id: string,
-  kind: RowKind,
-  method: string,
-  url: string,
-  status: number | string,
-  size: string,
+  id: string;
+  kind: RowKind;
+  method: string;
+  url: string;
+  status: number | string;
+  size: string;
   // Offset and duration in ms on one shared timeline.
-  start: number,
-  time: number,
-  phases?: IPhases,
-  error?: { code: number, message: string },
-  request: unknown,
-  response: unknown,
+  start: number;
+  time: number;
+  phases?: IPhases;
+  error?: { code: number; message: string };
+  request: unknown;
+  response: unknown;
 }
 
 export const timelineMs = 1900;

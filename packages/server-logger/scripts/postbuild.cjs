@@ -6,8 +6,5 @@ const path = require('path');
 const cjsDir = path.join(__dirname, '..', 'dist', 'cjs');
 
 if (fs.existsSync(cjsDir)) {
-  fs.writeFileSync(
-    path.join(cjsDir, 'package.json'),
-    `${ JSON.stringify({ type: 'commonjs' }, null, 2) }\n`
-  );
+  fs.writeFileSync(path.join(cjsDir, 'package.json'), `${JSON.stringify({ type: 'commonjs' }, null, 2)}\n`);
 }

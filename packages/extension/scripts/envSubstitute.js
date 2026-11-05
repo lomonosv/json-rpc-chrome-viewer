@@ -10,7 +10,7 @@ dotenv.config({ path: path.join(__dirname, '../.env'), quiet: true });
 const BUILD_DIR = path.join(__dirname, '../build');
 
 function walkDir(dir, callback) {
-  fs.readdirSync(dir).forEach(file => {
+  fs.readdirSync(dir).forEach((file) => {
     const fullPath = path.join(dir, file);
     if (fs.statSync(fullPath).isDirectory()) {
       walkDir(fullPath, callback);
@@ -30,7 +30,7 @@ function replaceEnvVariables(filePath) {
   let content = fs.readFileSync(filePath, 'utf8');
   const originalContent = content;
 
-  PUBLIC_KEYS.forEach(key => {
+  PUBLIC_KEYS.forEach((key) => {
     const value = process.env[key];
     const regex = new RegExp(`process\\.env\\.${key}\\b`, 'g');
     content = content.replace(regex, value ? JSON.stringify(value) : 'undefined');
@@ -43,4 +43,6 @@ function replaceEnvVariables(filePath) {
 
 walkDir(BUILD_DIR, replaceEnvVariables);
 
-console.log(`ENV variable substitute: ${ PUBLIC_KEYS.map(key => `${ key }=${ process.env[key] ? 'set' : 'unset' }`).join(', ') }`);
+console.log(
+  `ENV variable substitute: ${PUBLIC_KEYS.map((key) => `${key}=${process.env[key] ? 'set' : 'unset'}`).join(', ')}`
+);

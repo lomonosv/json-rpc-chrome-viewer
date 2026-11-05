@@ -4,9 +4,9 @@ import type { IServerRpcCall, IServerRpcLog } from './types.js';
 import { wireFormatVersion } from './types.js';
 
 interface ILogEntry {
-  logId: string,
-  calls: IServerRpcCall[],
-  expiresAt: number,
+  logId: string;
+  calls: IServerRpcCall[];
+  expiresAt: number;
 }
 
 type LogIdResolver = () => string | undefined | Promise<string | undefined>;
@@ -18,14 +18,14 @@ interface ICollectorState {
    * Next.js App Router page, where the id arrives on the incoming request
    * headers instead — go through `resolveFromHost`.
    */
-  storage: AsyncLocalStorage<string>,
+  storage: AsyncLocalStorage<string>;
   /**
    * Insertion-ordered, which is what makes the oldest entry the first key.
    * Sweeping is lazy: a dev server that stops receiving requests should not
    * keep a timer alive, and there is nothing to reclaim while nothing arrives.
    */
-  logs: Map<string, ILogEntry>,
-  resolveFromHost: LogIdResolver,
+  logs: Map<string, ILogEntry>;
+  resolveFromHost: LogIdResolver;
 }
 
 /**
@@ -40,7 +40,7 @@ interface ICollectorState {
 const stateKey = Symbol.for('json-rpc-chrome-viewer.server-logger.collector.v1');
 
 interface IStateGlobal {
-  [stateKey]?: ICollectorState,
+  [stateKey]?: ICollectorState;
 }
 
 const getState = (): ICollectorState => {
@@ -131,9 +131,7 @@ export const resolveLogIdAsync = async (): Promise<string | undefined> => {
 };
 
 /** Runs `fn` with every recorded call attributed to `logId`. */
-export const runWithLog = <T>(logId: string, fn: () => T): T => (
-  getState().storage.run(logId, fn)
-);
+export const runWithLog = <T>(logId: string, fn: () => T): T => getState().storage.run(logId, fn);
 
 export const recordCall = (call: IServerRpcCall, logId = resolveLogId()) => {
   if (!isEnabled() || !logId) return;

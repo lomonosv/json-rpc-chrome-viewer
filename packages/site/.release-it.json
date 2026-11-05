@@ -1,8 +1,6 @@
 {
   "hooks": {
-    "after:init": [
-      "pnpm exec nx run-many -t lint typecheck build -p site"
-    ]
+    "after:init": ["pnpm exec nx run-many -t lint typecheck build -p site"]
   },
   "git": {
     "requireCleanWorkingDir": true,

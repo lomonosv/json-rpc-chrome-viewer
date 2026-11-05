@@ -19,11 +19,7 @@ import { IListRow } from '~/logic/HTTPArchive/IListRow';
 import { SortDirection, SortField } from '~/logic/HTTPArchive/SortField';
 import { ServerGroupState } from '~/logic/SettingsContext/ServerGroupState';
 import { MessageType } from '~/logic/common/messages';
-import {
-  getServerLogCalls,
-  hasServerLog,
-  isDocumentRequest
-} from '~/logic/HTTPArchive/serverLog';
+import { getServerLogCalls, hasServerLog, isDocumentRequest } from '~/logic/HTTPArchive/serverLog';
 import { getDocumentTimeOrigin } from '~/logic/HTTPArchive/documentTimeOrigin';
 import {
   IInterceptedRequestPayload,
@@ -37,18 +33,18 @@ const findPendingIndex = (requests: IRequest[], item: IRequest): number => {
   }
 
   if (item.callId) {
-    return requests.findIndex((existing) => (
-      existing.isPending &&
-      existing.callId === item.callId &&
-      existing.requestJSON?.id === item.requestJSON.id
-    ));
+    return requests.findIndex(
+      (existing) =>
+        existing.isPending && existing.callId === item.callId && existing.requestJSON?.id === item.requestJSON.id
+    );
   }
 
-  return requests.findIndex((existing) => (
-    existing.isPending &&
-    existing.request.url === item.request.url &&
-    existing.requestJSON?.id === item.requestJSON.id
-  ));
+  return requests.findIndex(
+    (existing) =>
+      existing.isPending &&
+      existing.request.url === item.request.url &&
+      existing.requestJSON?.id === item.requestJSON.id
+  );
 };
 
 const duplicateCompletionWindowMs = 5000;
@@ -57,17 +53,17 @@ const duplicateCompletionWindowMs = 5000;
 // with small incrementing ids would otherwise match a browser call to the same
 // url and id moments later, and the browser's real row would be dropped as a
 // duplicate of the server's.
-const findCompletedIndex = (requests: IRequest[], url: string, id: unknown, startTime: number): number => (
-  requests.findIndex((existing) => (
-    !existing.isPending &&
-    !existing.isServerSide &&
-    existing.request.url === url &&
-    existing.requestJSON?.id === id &&
-    Math.abs(existing.startTime - startTime) < duplicateCompletionWindowMs
-  ))
-);
+const findCompletedIndex = (requests: IRequest[], url: string, id: unknown, startTime: number): number =>
+  requests.findIndex(
+    (existing) =>
+      !existing.isPending &&
+      !existing.isServerSide &&
+      existing.request.url === url &&
+      existing.requestJSON?.id === id &&
+      Math.abs(existing.startTime - startTime) < duplicateCompletionWindowMs
+  );
 
-const mergeCompletedRequests = (requests: IRequest[], completed: IRequest[]): IRequest[] => (
+const mergeCompletedRequests = (requests: IRequest[], completed: IRequest[]): IRequest[] =>
   completed.reduce((acc, item) => {
     const pendingIndex = findPendingIndex(acc, item);
 
@@ -84,17 +80,15 @@ const mergeCompletedRequests = (requests: IRequest[], completed: IRequest[]): IR
     }
 
     return [...acc, item];
-  }, requests)
-);
+  }, requests);
 
 /**
  * Server rows are appended directly rather than through `mergeCompletedRequests`:
  * they are never pending, and the (url, id) de-duplication there is a heuristic
  * for the browser's own reports, which a server's calls must not take part in.
  */
-const getServerRequests = async (request: chrome.devtools.network.Request): Promise<IRequest[]> => (
-  (await getServerLogCalls(request)).flatMap(getPreparedServerRequests)
-);
+const getServerRequests = async (request: chrome.devtools.network.Request): Promise<IRequest[]> =>
+  (await getServerLogCalls(request)).flatMap(getPreparedServerRequests);
 
 // Slack between the renderer's `timeOrigin` and the wall clock HAR stamps
 // `startedDateTime` with. Erring wide can keep a few rows from the page being
@@ -113,16 +107,16 @@ const getCarrierLabel = (request: chrome.devtools.network.Request): string => {
   try {
     const { pathname, search } = new URL(request.request.url);
 
-    return `${ method } ${ pathname }${ search }`;
+    return `${method} ${pathname}${search}`;
   } catch (e) {
-    return `${ method } ${ request.request.url }`;
+    return `${method} ${request.request.url}`;
   }
 };
 
 interface ICarrierGroup {
-  id: string,
-  carrierStart: number,
-  label: string,
+  id: string;
+  carrierStart: number;
+  label: string;
 }
 
 const getSortValue = (request: IRequest, field: SortField): string | number => {
@@ -150,8 +144,8 @@ const useRequest = () => {
   const [serverRequestsCount, setServerRequestsCount] = useState<number>(0);
   const [listRows, setListRows] = useState<IListRow[]>([]);
   const [serverGroupToggles, setServerGroupToggles] = useState<{
-    basis: ServerGroupState,
-    expanded: Record<string, boolean>,
+    basis: ServerGroupState;
+    expanded: Record<string, boolean>;
   }>(null);
   const requestsRef = useRef<IRequest[]>([]);
   const [serverGroups, setServerGroups] = useState<ICarrierGroup[]>([]);
@@ -182,11 +176,10 @@ const useRequest = () => {
   const fallbackSortField = showWaterfallColumn ? SortField.Waterfall : SortField.Method;
   const effectiveSortField = isColumnVisible[sortField] ? sortField : fallbackSortField;
 
-  const isGroupExpanded = (id: string): boolean => (
+  const isGroupExpanded = (id: string): boolean =>
     serverGroupToggles?.basis === serverGroupState && id in serverGroupToggles.expanded
       ? serverGroupToggles.expanded[id]
-      : serverGroupState === ServerGroupState.Expanded
-  );
+      : serverGroupState === ServerGroupState.Expanded;
 
   const toggleServerGroup = (id: string) => {
     const expanded = serverGroupToggles?.basis === serverGroupState ? serverGroupToggles.expanded : {};
@@ -230,28 +223,31 @@ const useRequest = () => {
     setSortDirection(SortDirection.Asc);
   };
 
-  const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    // Arrows only: re-selecting on other keys would undo the overlay layouts' Escape.
-    if (!selected || (e.key !== 'ArrowUp' && e.key !== 'ArrowDown')) {
-      return;
-    }
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      // Arrows only: re-selecting on other keys would undo the overlay layouts' Escape.
+      if (!selected || (e.key !== 'ArrowUp' && e.key !== 'ArrowDown')) {
+        return;
+      }
 
-    let index = filteredRequests.findIndex(({ uuid }) => selected.uuid === uuid);
+      let index = filteredRequests.findIndex(({ uuid }) => selected.uuid === uuid);
 
-    if (e.key === 'ArrowUp') {
-      index -= 1;
-    } else if (e.key === 'ArrowDown') {
-      index += 1;
-    }
+      if (e.key === 'ArrowUp') {
+        index -= 1;
+      } else if (e.key === 'ArrowDown') {
+        index += 1;
+      }
 
-    if (index < 0) {
-      setSelected(filteredRequests[filteredRequests.length - 1]);
-    } else if (index > filteredRequests.length - 1) {
-      setSelected(filteredRequests[0]);
-    } else {
-      setSelected(filteredRequests[index]);
-    }
-  }, [filteredRequests, selected]);
+      if (index < 0) {
+        setSelected(filteredRequests[filteredRequests.length - 1]);
+      } else if (index > filteredRequests.length - 1) {
+        setSelected(filteredRequests[0]);
+      } else {
+        setSelected(filteredRequests[index]);
+      }
+    },
+    [filteredRequests, selected]
+  );
 
   const appendServerRequests = (request: chrome.devtools.network.Request, serverRequests: IRequest[]) => {
     if (!serverRequests.length) return;
@@ -273,33 +269,37 @@ const useRequest = () => {
     setRequests(requestsRef.current);
   };
 
-  const handleInitialRequestsData = useCallback(async (e: CustomEvent<{
-    request: chrome.devtools.network.Request,
-    responseContent: string,
-  }[]>) => {
-    const requests = await Promise.all(
-      e.detail.filter(({ request }) => isJsonRpcRequest(request)).map(
-        ({ request, responseContent }) => getPreparedHttpRequest(request, responseContent)
-      )
-    );
+  const handleInitialRequestsData = useCallback(
+    async (
+      e: CustomEvent<
+        {
+          request: chrome.devtools.network.Request;
+          responseContent: string;
+        }[]
+      >
+    ) => {
+      const requests = await Promise.all(
+        e.detail
+          .filter(({ request }) => isJsonRpcRequest(request))
+          .map(({ request, responseContent }) => getPreparedHttpRequest(request, responseContent))
+      );
 
-    requestsRef.current = [
-      ...requestsRef.current,
-      ...requests.flat()
-    ];
+      requestsRef.current = [...requestsRef.current, ...requests.flat()];
 
-    setRequests(requestsRef.current);
+      setRequests(requestsRef.current);
 
-    // After the browser rows, not alongside them: a slow drain endpoint must
-    // not hold back the backlog that was already in hand.
-    const carriers = await Promise.all(
-      e.detail.filter(({ request }) => hasServerLog(request)).map(
-        async ({ request }) => ({ request, serverRequests: await getServerRequests(request) })
-      )
-    );
+      // After the browser rows, not alongside them: a slow drain endpoint must
+      // not hold back the backlog that was already in hand.
+      const carriers = await Promise.all(
+        e.detail
+          .filter(({ request }) => hasServerLog(request))
+          .map(async ({ request }) => ({ request, serverRequests: await getServerRequests(request) }))
+      );
 
-    carriers.forEach(({ request, serverRequests }) => appendServerRequests(request, serverRequests));
-  }, [requestsRef.current, setRequests]);
+      carriers.forEach(({ request, serverRequests }) => appendServerRequests(request, serverRequests));
+    },
+    [requestsRef.current, setRequests]
+  );
 
   /**
    * Drops every row that started before the inspected document did, and keeps
@@ -319,9 +319,10 @@ const useRequest = () => {
 
     const threshold = timeOrigin - documentClockSkewMs;
     const groupStarts = new Map(serverGroupsRef.current.map(({ id, carrierStart }) => [id, carrierStart]));
-    const kept = requestsRef.current.filter(({ serverGroupId, startTime }) => (
-      (serverGroupId ? groupStarts.get(serverGroupId) : undefined) ?? startTime
-    ) >= threshold);
+    const kept = requestsRef.current.filter(
+      ({ serverGroupId, startTime }) =>
+        ((serverGroupId ? groupStarts.get(serverGroupId) : undefined) ?? startTime) >= threshold
+    );
 
     if (kept.length !== requestsRef.current.length) {
       serverGroupsRef.current = serverGroupsRef.current.filter(({ carrierStart }) => carrierStart >= threshold);
@@ -343,96 +344,96 @@ const useRequest = () => {
     setRequests(requestsRef.current);
   }, []);
 
-  const handleRequest = useCallback(async (request: chrome.devtools.network.Request) => {
-    if (isJsonRpcRequest(request)) {
-      const preparedRequest = await getPreparedHttpRequest(request);
+  const handleRequest = useCallback(
+    async (request: chrome.devtools.network.Request) => {
+      if (isJsonRpcRequest(request)) {
+        const preparedRequest = await getPreparedHttpRequest(request);
 
-      requestsRef.current = mergeCompletedRequests(requestsRef.current, preparedRequest);
-
-      setRequests(requestsRef.current);
-    }
-
-    // Not an `else`: a response can be both a browser JSON-RPC call and the
-    // carrier of the server calls made while answering it — a route handler
-    // that forwards upstream, for one.
-    if (hasServerLog(request)) {
-      appendServerRequests(request, await getServerRequests(request));
-    }
-
-    // Again on a document's finish: the `onNavigated` eval can still land in
-    // the outgoing document, which cuts at the old origin and keeps everything.
-    if (!preserveLog && isDocumentRequest(request)) {
-      pruneToCurrentDocument();
-    }
-  }, [requestsRef.current, setRequests, preserveLog]);
-
-  const handleRuntimeMessage = useCallback((
-    message: {
-      type: MessageType,
-      payload: (IInterceptedRequestPayload | IPendingRequestPayload) & {
-        type?: 'income' | 'outcome',
-        message?: string,
-      },
-    },
-    sender: chrome.runtime.MessageSender
-  ) => {
-    if (sender?.tab?.id !== chrome.devtools.inspectedWindow.tabId) {
-      return;
-    }
-
-    if (message.type === MessageType.InterceptedRequest) {
-      requestsRef.current = [
-        ...requestsRef.current,
-        ...getPreparedInterceptedRequest(message.payload as IInterceptedRequestPayload)
-      ];
-
-      setRequests(requestsRef.current);
-
-      return;
-    }
-
-    if (message.type === MessageType.PendingRequest) {
-      const payload = message.payload as IPendingRequestPayload;
-      const isAlreadyCompleted =
-        findCompletedIndex(requestsRef.current, payload.url, payload.id, payload.startTime) !== -1;
-
-      if (!isAlreadyCompleted) {
-        requestsRef.current = [
-          ...requestsRef.current,
-          getPreparedPendingRequest(payload)
-        ];
+        requestsRef.current = mergeCompletedRequests(requestsRef.current, preparedRequest);
 
         setRequests(requestsRef.current);
       }
 
-      return;
-    }
+      // Not an `else`: a response can be both a browser JSON-RPC call and the
+      // carrier of the server calls made while answering it — a route handler
+      // that forwards upstream, for one.
+      if (hasServerLog(request)) {
+        appendServerRequests(request, await getServerRequests(request));
+      }
 
-    if (message.type === MessageType.ObservedRequest) {
-      const completed = getPreparedObservedRequest(message.payload as IObservedRequestPayload);
+      // Again on a document's finish: the `onNavigated` eval can still land in
+      // the outgoing document, which cuts at the old origin and keeps everything.
+      if (!preserveLog && isDocumentRequest(request)) {
+        pruneToCurrentDocument();
+      }
+    },
+    [requestsRef.current, setRequests, preserveLog]
+  );
 
-      requestsRef.current = mergeCompletedRequests(requestsRef.current, completed);
+  const handleRuntimeMessage = useCallback(
+    (
+      message: {
+        type: MessageType;
+        payload: (IInterceptedRequestPayload | IPendingRequestPayload) & {
+          type?: 'income' | 'outcome';
+          message?: string;
+        };
+      },
+      sender: chrome.runtime.MessageSender
+    ) => {
+      if (sender?.tab?.id !== chrome.devtools.inspectedWindow.tabId) {
+        return;
+      }
 
-      setRequests(requestsRef.current);
+      if (message.type === MessageType.InterceptedRequest) {
+        requestsRef.current = [
+          ...requestsRef.current,
+          ...getPreparedInterceptedRequest(message.payload as IInterceptedRequestPayload)
+        ];
 
-      return;
-    }
+        setRequests(requestsRef.current);
 
-    if (message.type === MessageType.WebsocketMessage && isJsonRpcMessage(message.payload.message)) {
-      const json = parseJsonRpcMessage(message.payload.message);
+        return;
+      }
 
-      if (!json) return;
+      if (message.type === MessageType.PendingRequest) {
+        const payload = message.payload as IPendingRequestPayload;
+        const isAlreadyCompleted =
+          findCompletedIndex(requestsRef.current, payload.url, payload.id, payload.startTime) !== -1;
 
-      const preparedRequest = getPreparedMessage(message.payload.type, message.payload.url, json);
+        if (!isAlreadyCompleted) {
+          requestsRef.current = [...requestsRef.current, getPreparedPendingRequest(payload)];
 
-      requestsRef.current = [
-        ...requestsRef.current,
-        preparedRequest
-      ];
+          setRequests(requestsRef.current);
+        }
 
-      setRequests(requestsRef.current);
-    }
-  }, []);
+        return;
+      }
+
+      if (message.type === MessageType.ObservedRequest) {
+        const completed = getPreparedObservedRequest(message.payload as IObservedRequestPayload);
+
+        requestsRef.current = mergeCompletedRequests(requestsRef.current, completed);
+
+        setRequests(requestsRef.current);
+
+        return;
+      }
+
+      if (message.type === MessageType.WebsocketMessage && isJsonRpcMessage(message.payload.message)) {
+        const json = parseJsonRpcMessage(message.payload.message);
+
+        if (!json) return;
+
+        const preparedRequest = getPreparedMessage(message.payload.type, message.payload.url, json);
+
+        requestsRef.current = [...requestsRef.current, preparedRequest];
+
+        setRequests(requestsRef.current);
+      }
+    },
+    []
+  );
 
   useEffect(() => {
     chrome.devtools.network.onRequestFinished.addListener(handleRequest);
@@ -458,34 +459,36 @@ const useRequest = () => {
   }, [requests, filteredRequests, selected]);
 
   useEffect(() => {
-    const filteredRequests = requests.filter((request) => {
-      if (request.isWebSocket) {
-        return includeWebsocketLogs && matchesFilter(request, filter, searchScope, caseSensitiveSearch);
-      }
+    const filteredRequests = requests
+      .filter((request) => {
+        if (request.isWebSocket) {
+          return includeWebsocketLogs && matchesFilter(request, filter, searchScope, caseSensitiveSearch);
+        }
 
-      // Before the `requestJSON` branch, since server rows carry one too and
-      // would otherwise be governed by the browser JSON-RPC toggle.
-      if (request.isServerSide) {
-        return includeServerLogs && matchesFilter(request, filter, searchScope, caseSensitiveSearch);
-      }
+        // Before the `requestJSON` branch, since server rows carry one too and
+        // would otherwise be governed by the browser JSON-RPC toggle.
+        if (request.isServerSide) {
+          return includeServerLogs && matchesFilter(request, filter, searchScope, caseSensitiveSearch);
+        }
 
-      if (request.requestJSON) {
-        return includeJsonRpcLogs && matchesFilter(request, filter, searchScope, caseSensitiveSearch);
-      }
+        if (request.requestJSON) {
+          return includeJsonRpcLogs && matchesFilter(request, filter, searchScope, caseSensitiveSearch);
+        }
 
-      return true;
-    }).sort((a, b) => {
-      const aValue = getSortValue(a, effectiveSortField);
-      const bValue = getSortValue(b, effectiveSortField);
+        return true;
+      })
+      .sort((a, b) => {
+        const aValue = getSortValue(a, effectiveSortField);
+        const bValue = getSortValue(b, effectiveSortField);
 
-      if (aValue === bValue) {
-        return a.startTime - b.startTime;
-      }
+        if (aValue === bValue) {
+          return a.startTime - b.startTime;
+        }
 
-      const result = aValue > bValue ? 1 : -1;
+        const result = aValue > bValue ? 1 : -1;
 
-      return sortDirection === SortDirection.Asc ? result : -result;
-    });
+        return sortDirection === SortDirection.Asc ? result : -result;
+      });
 
     const serverRequests = filteredRequests.filter(({ isServerSide }) => isServerSide);
     const browserRequests = filteredRequests.filter(({ isServerSide }) => !isServerSide);
@@ -503,9 +506,7 @@ const useRequest = () => {
     };
 
     const pushBrowserRequests = (from: number, to: number) => {
-      browserRequests
-        .filter(({ startTime }) => startTime >= from && startTime < to)
-        .forEach(pushRequest);
+      browserRequests.filter(({ startTime }) => startTime >= from && startTime < to).forEach(pushRequest);
     };
 
     pushBrowserRequests(-Infinity, orderedGroups[0]?.carrierStart ?? Infinity);
@@ -570,18 +571,14 @@ type RequestContextType = ReturnType<typeof useRequest>;
 
 export const RequestContext = createContext<RequestContextType>(null);
 
-export const useRequestContext = (): RequestContextType => (
-  useContext<RequestContextType>(RequestContext)
-);
+export const useRequestContext = (): RequestContextType => useContext<RequestContextType>(RequestContext);
 
 interface IComponentProps {
-  children: React.ReactElement,
+  children: React.ReactElement;
 }
 
 const RequestContextProvider: React.FC<IComponentProps> = ({ children }) => (
-  <RequestContext.Provider value={ useRequest() }>
-    { children }
-  </RequestContext.Provider>
+  <RequestContext.Provider value={useRequest()}>{children}</RequestContext.Provider>
 );
 
 export default RequestContextProvider;

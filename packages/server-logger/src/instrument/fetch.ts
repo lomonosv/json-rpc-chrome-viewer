@@ -16,19 +16,19 @@ type Fetch = typeof globalThis.fetch;
  */
 interface IFetchPatchState {
   /** Identity is how we recognise our own patch on `globalThis`. */
-  patched: Fetch,
+  patched: Fetch;
   /** The function the wrapper hands a call to. Re-pointed on every re-arm. */
-  native: Fetch,
+  native: Fetch;
   /**
    * The very first function we ever replaced — the real fetch, or whatever
    * chain sat under us at install, which by construction cannot call back into
    * us. A re-entered call goes straight here; see `createPatchedFetch`.
    */
-  root: Fetch,
+  root: Fetch;
   /** Marks a call that is already inside the wrapper; see `createPatchedFetch`. */
-  reentry: AsyncLocalStorage<true>,
+  reentry: AsyncLocalStorage<true>;
   /** Delegates displaced by later assignments, newest last; see the setter. */
-  history: Fetch[],
+  history: Fetch[];
 }
 
 /**
@@ -41,7 +41,7 @@ const maxDelegateHistory = 16;
 const stateKey = Symbol.for('json-rpc-chrome-viewer.server-logger.fetch.v1');
 
 interface IPatchedGlobal {
-  [stateKey]?: IFetchPatchState,
+  [stateKey]?: IFetchPatchState;
 }
 
 /**
@@ -87,16 +87,19 @@ const report = (
   const request = truncateJsonRpcBody(rawRequest, maxBodyBytes);
   const response = truncateJsonRpcBody(rawResponse, maxBodyBytes);
 
-  recordCall({
-    callId,
-    url,
-    startTime,
-    time: Date.now() - startTime,
-    status,
-    rawRequest: request.body,
-    rawResponse: response.body,
-    ...(request.isTruncated || response.isTruncated ? { isTruncated: true } : {})
-  }, logId);
+  recordCall(
+    {
+      callId,
+      url,
+      startTime,
+      time: Date.now() - startTime,
+      status,
+      rawRequest: request.body,
+      rawResponse: response.body,
+      ...(request.isTruncated || response.isTruncated ? { isTruncated: true } : {})
+    },
+    logId
+  );
 };
 
 /**
@@ -205,34 +208,35 @@ const observeFetch = async (
  * straight back to the delegate for anything that is not a JSON-RPC call, and
  * only then goes to the async observer.
  */
-const createPatchedFetch = (state: IFetchPatchState): Fetch => ((input, init) => {
-  if (state.reentry.getStore()) return state.root(input, init);
+const createPatchedFetch = (state: IFetchPatchState): Fetch =>
+  ((input, init) => {
+    if (state.reentry.getStore()) return state.root(input, init);
 
-  return state.reentry.run(true, () => {
-    const { native } = state;
+    return state.reentry.run(true, () => {
+      const { native } = state;
 
-    if (!isEnabled()) return native(input, init);
+      if (!isEnabled()) return native(input, init);
 
-    let url = '';
-    let rawRequest: string | null = null;
+      let url = '';
+      let rawRequest: string | null = null;
 
-    try {
-      url = getUrl(input);
+      try {
+        url = getUrl(input);
 
-      if (isDrainRequest(url)) return native(input, init);
+        if (isDrainRequest(url)) return native(input, init);
 
-      rawRequest = readRequestBody(init?.body);
+        rawRequest = readRequestBody(init?.body);
 
-      if (rawRequest === null || !isJsonRpcBody(rawRequest)) {
+        if (rawRequest === null || !isJsonRpcBody(rawRequest)) {
+          return native(input, init);
+        }
+      } catch (e) {
         return native(input, init);
       }
-    } catch (e) {
-      return native(input, init);
-    }
 
-    return observeFetch(native, input, init, url, rawRequest);
-  });
-}) as Fetch;
+      return observeFetch(native, input, init, url, rawRequest);
+    });
+  }) as Fetch;
 
 const bind = (fetchFn: Fetch): Fetch => {
   try {

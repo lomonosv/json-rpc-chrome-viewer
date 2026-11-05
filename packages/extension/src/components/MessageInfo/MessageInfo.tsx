@@ -13,7 +13,7 @@ import { ExpandTreeState } from '~/components/common/JsonViewer/ExpandTreeState'
 import styles from './messageInfo.scss';
 
 interface IComponentProps {
-  isClosable?: boolean,
+  isClosable?: boolean;
 }
 
 const MessageInfo = ({ isClosable = true }: IComponentProps) => {
@@ -33,35 +33,25 @@ const MessageInfo = ({ isClosable = true }: IComponentProps) => {
   const json = selectedRequest.websocketJSON || {};
 
   return (
-    <div className={ styles.messageInfoWrapper }>
-      <Header className={ styles.messageInfoHeader }>
-        <div className={ styles.messageInfoHeaderLeftSide }>
-          { isClosable && (
-            <Button
-              onClick={ clearSelection }
-              className={ styles.closeButton }
-              title="Close"
-            >
-              <Icon type={ IconType.Close } />
+    <div className={styles.messageInfoWrapper}>
+      <Header className={styles.messageInfoHeader}>
+        <div className={styles.messageInfoHeaderLeftSide}>
+          {isClosable && (
+            <Button onClick={clearSelection} className={styles.closeButton} title="Close">
+              <Icon type={IconType.Close} />
             </Button>
-          ) }
+          )}
           <ExpandButton
-            className={ styles.expandButton }
-            expandedState={ expandTreeStateValue }
-            onChangeState={ setExpandTreeStateValue }
+            className={styles.expandButton}
+            expandedState={expandTreeStateValue}
+            onChangeState={setExpandTreeStateValue}
           />
           <span>Websocket Message</span>
         </div>
-        <CopyButton text={ JSON.stringify(json, null, 2) } />
+        <CopyButton text={JSON.stringify(json, null, 2)} />
       </Header>
-      <div
-        ref={ containerRef }
-        className={ styles.messageInfoContainer }
-      >
-        <JsonViewer
-          src={ json }
-          expandTreeState={ expandTreeStateValue }
-        />
+      <div ref={containerRef} className={styles.messageInfoContainer}>
+        <JsonViewer src={json} expandTreeState={expandTreeStateValue} />
       </div>
     </div>
   );

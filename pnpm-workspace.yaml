@@ -24,7 +24,7 @@ trustPolicy: no-downgrade
 trustPolicyExclude:
   # 6.3.1 is the maintainers' 2023 ReDoS backport (CVE-2022-25883) to the 6.x
   # line, published after 7.x had moved to provenance. Legitimate, and still
-  # required by eslint-plugin-react and the babel toolchain.
+  # required by the babel toolchain (via next).
   - semver@6.3.1
 
 # Transitive dependencies may only come from the registry. A git, tarball-URL
@@ -37,13 +37,12 @@ blockExoticSubdeps: true
 strictDepBuilds: true
 dangerouslyAllowAllBuilds: false
 allowBuilds:
-  # All four ship their native binary as a per-platform optionalDependency;
+  # All three ship their native binary as a per-platform optionalDependency;
   # the script is only a fallback that downloads or compiles one when that
   # package is missing. Denied, so nothing is fetched outside the lockfile.
   '@parcel/watcher': false
   '@sentry/cli': false
   esbuild: false
-  unrs-resolver: false
   # Postinstall only fetches the Nx Cloud client, which is not used.
   nx: false
 

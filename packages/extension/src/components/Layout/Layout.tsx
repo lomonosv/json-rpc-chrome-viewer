@@ -18,12 +18,7 @@ const minDrawerWidth = 280;
 
 const Layout = () => {
   const layoutRef = useRef<HTMLDivElement>(null);
-  const {
-    selected,
-    requests,
-    serverRequestsCount,
-    clearSelection
-  } = useRequestContext();
+  const { selected, requests, serverRequestsCount, clearSelection } = useRequestContext();
   const hasRows = !!requests.length || !!serverRequestsCount;
   const { isDarkTheme } = useSettingsContext();
   const { drawerWidth, updateDrawerWidth } = useCacheContext();
@@ -69,7 +64,7 @@ const Layout = () => {
 
     if (viewMode === ViewMode.Stacked) {
       return (
-        <div className={ styles.bottomContainer }>
+        <div className={styles.bottomContainer}>
           <RequestDetail isAlwaysTabbed />
         </div>
       );
@@ -78,8 +73,8 @@ const Layout = () => {
     if (viewMode === ViewMode.Drawer) {
       return (
         <Resizable
-          className={ styles.drawer }
-          enable={ {
+          className={styles.drawer}
+          enable={{
             top: false,
             right: false,
             bottom: false,
@@ -88,17 +83,17 @@ const Layout = () => {
             bottomRight: false,
             bottomLeft: false,
             topLeft: false
-          } }
-          minWidth={ minDrawerWidth }
+          }}
+          minWidth={minDrawerWidth}
           maxWidth="90%"
-          defaultSize={ {
+          defaultSize={{
             width: drawerWidth,
             height: '100%'
-          } }
-          onResizeStop={ handleDrawerResizeStop }
-          handleClasses={ {
+          }}
+          onResizeStop={handleDrawerResizeStop}
+          handleClasses={{
             left: styles.drawerResizeHandle
-          } }
+          }}
         >
           <RequestDetail />
         </Resizable>
@@ -107,44 +102,41 @@ const Layout = () => {
 
     if (viewMode === ViewMode.DrillDown) {
       return (
-        <div className={ styles.drillDown }>
+        <div className={styles.drillDown}>
           <DrillDownNav />
-          <RequestDetail isClosable={ false } />
+          <RequestDetail isClosable={false} />
         </div>
       );
     }
 
     return (
-      <div className={ styles.rightSideContainer }>
+      <div className={styles.rightSideContainer}>
         <RequestDetail />
       </div>
     );
   };
 
   return (
-    <div
-      ref={ layoutRef }
-      className={ styles.layoutWrapper }
-    >
-      <Header className={ styles.toolbarHeader }>
+    <div ref={layoutRef} className={styles.layoutWrapper}>
+      <Header className={styles.toolbarHeader}>
         <Toolbar />
       </Header>
       <div
-        className={ cn(styles.layoutContainer, {
+        className={cn(styles.layoutContainer, {
           [styles.isStacked]: viewMode === ViewMode.Stacked
-        }) }
+        })}
       >
-        { !hasRows && <ZeroCase /> }
-        { hasRows && (
+        {!hasRows && <ZeroCase />}
+        {hasRows && (
           <>
             <RequestList
-              className={ cn(styles.leftSideContainer, {
+              className={cn(styles.leftSideContainer, {
                 [styles.isBesideDetail]: !!selected && viewMode === ViewMode.Panes
-              }) }
+              })}
             />
-            { renderDetail() }
+            {renderDetail()}
           </>
-        ) }
+        )}
       </div>
     </div>
   );

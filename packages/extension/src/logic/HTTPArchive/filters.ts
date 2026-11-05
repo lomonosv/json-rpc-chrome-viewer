@@ -10,17 +10,16 @@ import type { IServerRpcCall } from '~/logic/HTTPArchive/serverLog';
 
 const jsonRPCRegex = /jsonrpc\\?["']?\s*:\s*\\?["']?2\.0\\?["']?/;
 
-export const isJsonRpcRequest = (request: chrome.devtools.network.Request) => (
+export const isJsonRpcRequest = (request: chrome.devtools.network.Request) =>
   request.request &&
   request.request.postData &&
   request.request.postData.mimeType &&
   request.request.postData.mimeType.match(/application\/json/) &&
-  request.request.postData.text && request.request.postData.text.match(jsonRPCRegex)
-);
+  request.request.postData.text &&
+  request.request.postData.text.match(jsonRPCRegex);
 
-export const isJsonRpcMessage = (message: unknown): message is string => (
-  typeof message === 'string' && jsonRPCRegex.test(message)
-);
+export const isJsonRpcMessage = (message: unknown): message is string =>
+  typeof message === 'string' && jsonRPCRegex.test(message);
 
 const parse = (message: string) => {
   try {
@@ -42,22 +41,18 @@ export const parseJsonRpcMessage = (message: string) => {
   return json;
 };
 
-export const getRequestLabel = (request: IRequest): string => String(
-  (
-    request.isWebSocket
+export const getRequestLabel = (request: IRequest): string =>
+  String(
+    (request.isWebSocket
       ? request.websocketJSON.method ||
         request.websocketJSON.id ||
         request.websocketJSON.error?.message ||
-        `${ request.websocketMessageType } message`
-      : request.requestJSON?.method
-  ) ?? ''
-);
+        `${request.websocketMessageType} message`
+      : request.requestJSON?.method) ?? ''
+  );
 
-const includes = (text: string, filter: string, isCaseSensitive: boolean): boolean => (
-  isCaseSensitive
-    ? text.includes(filter)
-    : text.toLowerCase().includes(filter.toLowerCase())
-);
+const includes = (text: string, filter: string, isCaseSensitive: boolean): boolean =>
+  isCaseSensitive ? text.includes(filter) : text.toLowerCase().includes(filter.toLowerCase());
 
 const stringify = (value: JSONValue): string => {
   if (value === undefined || value === null) {
@@ -71,9 +66,9 @@ const stringify = (value: JSONValue): string => {
   }
 };
 
-const searchTextCache = new WeakMap<IRequest, { request: string, response: string }>();
+const searchTextCache = new WeakMap<IRequest, { request: string; response: string }>();
 
-const getSearchText = (request: IRequest): { request: string, response: string } => {
+const getSearchText = (request: IRequest): { request: string; response: string } => {
   const cached = searchTextCache.get(request);
 
   if (cached) {
@@ -84,12 +79,10 @@ const getSearchText = (request: IRequest): { request: string, response: string }
   const responseJSON = request.isWebSocket ? request.websocketJSON : request.responseJSON;
 
   const text = {
-    request: [requestJSON?.method, stringify(requestJSON?.params as JSONValue)]
-      .filter(Boolean)
-      .join(' '),
+    request: [requestJSON?.method, stringify(requestJSON?.params as JSONValue)].filter(Boolean).join(' '),
     response: responseJSON
       ? [stringify(responseJSON.result), stringify(responseJSON.error)].filter(Boolean).join(' ')
-      : request.rawResponse ?? ''
+      : (request.rawResponse ?? '')
   };
 
   searchTextCache.set(request, text);
@@ -102,12 +95,10 @@ const matchesLabel = (request: IRequest, filter: string, isCaseSensitive: boolea
     ? request.websocketJSON.method ||
       request.websocketJSON.id ||
       request.websocketJSON.error?.message ||
-      `${ request.websocketMessageType } message`
+      `${request.websocketMessageType} message`
     : request.requestJSON?.method;
 
-  return isCaseSensitive
-    ? !!label?.includes?.(filter)
-    : !!label?.toLowerCase?.().includes(filter.toLowerCase());
+  return isCaseSensitive ? !!label?.includes?.(filter) : !!label?.toLowerCase?.().includes(filter.toLowerCase());
 };
 
 export const matchesFilter = (
@@ -130,15 +121,17 @@ export const matchesFilter = (
     return includes(searchText.response, filter, isCaseSensitive);
   }
 
-  return matchesLabel(request, filter, isCaseSensitive) ||
+  return (
+    matchesLabel(request, filter, isCaseSensitive) ||
     includes(searchText.request, filter, isCaseSensitive) ||
-    includes(searchText.response, filter, isCaseSensitive);
+    includes(searchText.response, filter, isCaseSensitive)
+  );
 };
 
 export const getPreparedMessage = (
   type: 'income' | 'outcome',
   url: string,
-  json: JSONValue & { method: string, id: string }
+  json: JSONValue & { method: string; id: string }
 ): IRequest => ({
   uuid: uuid(),
   startTime: Date.now(),
@@ -196,15 +189,15 @@ export const getPreparedPendingRequest = (payload: IPendingRequestPayload): IReq
 };
 
 interface IPreparedRequestBase {
-  startTime: number,
-  time: number,
-  timings: IRequestTimings,
-  isCors: boolean,
-  isIntercepted?: boolean,
-  isServerSide?: boolean,
-  callId?: string,
-  request: IRequest['request'],
-  response: IRequest['response'],
+  startTime: number;
+  time: number;
+  timings: IRequestTimings;
+  isCors: boolean;
+  isIntercepted?: boolean;
+  isServerSide?: boolean;
+  callId?: string;
+  request: IRequest['request'];
+  response: IRequest['response'];
 }
 
 const getPreparedJsonRpcRequests = (
@@ -245,53 +238,59 @@ const getPreparedJsonRpcRequests = (
   return requestJSON.map((item) => build(item, responseJSONIndex[item?.id]));
 };
 
-export const getPreparedInterceptedRequest = (payload: IInterceptedRequestPayload): IRequest[] => (
-  getPreparedJsonRpcRequests({
-    startTime: payload.startTime,
-    time: payload.time,
-    timings: null,
-    isCors: false,
-    isIntercepted: true,
-    request: {
-      url: payload.url,
-      method: payload.method,
-      headers: payload.headers,
-      postData: {
-        text: payload.rawRequest
+export const getPreparedInterceptedRequest = (payload: IInterceptedRequestPayload): IRequest[] =>
+  getPreparedJsonRpcRequests(
+    {
+      startTime: payload.startTime,
+      time: payload.time,
+      timings: null,
+      isCors: false,
+      isIntercepted: true,
+      request: {
+        url: payload.url,
+        method: payload.method,
+        headers: payload.headers,
+        postData: {
+          text: payload.rawRequest
+        }
+      },
+      response: {
+        status: payload.status,
+        content: {
+          size: payload.rawResponse?.length || 0
+        }
       }
     },
-    response: {
-      status: payload.status,
-      content: {
-        size: payload.rawResponse?.length || 0
-      }
-    }
-  }, payload.rawRequest, payload.rawResponse)
-);
+    payload.rawRequest,
+    payload.rawResponse
+  );
 
-export const getPreparedObservedRequest = (payload: IObservedRequestPayload): IRequest[] => (
-  getPreparedJsonRpcRequests({
-    callId: payload.callId,
-    startTime: payload.startTime,
-    time: payload.time,
-    timings: payload.timings || null,
-    isCors: false,
-    request: {
-      url: payload.url,
-      method: payload.method,
-      headers: payload.headers,
-      postData: {
-        text: payload.rawRequest
+export const getPreparedObservedRequest = (payload: IObservedRequestPayload): IRequest[] =>
+  getPreparedJsonRpcRequests(
+    {
+      callId: payload.callId,
+      startTime: payload.startTime,
+      time: payload.time,
+      timings: payload.timings || null,
+      isCors: false,
+      request: {
+        url: payload.url,
+        method: payload.method,
+        headers: payload.headers,
+        postData: {
+          text: payload.rawRequest
+        }
+      },
+      response: {
+        status: payload.status,
+        content: {
+          size: payload.rawResponse?.length || 0
+        }
       }
     },
-    response: {
-      status: payload.status,
-      content: {
-        size: payload.rawResponse?.length || 0
-      }
-    }
-  }, payload.rawRequest, payload.rawResponse)
-);
+    payload.rawRequest,
+    payload.rawResponse
+  );
 
 /**
  * A server-side call has no HAR entry, so `timings` is null and the row draws a
@@ -299,29 +298,32 @@ export const getPreparedObservedRequest = (payload: IObservedRequestPayload): IR
  * intercepted row takes. `headers` is an empty list rather than absent because
  * `EditRequestModal` filters it unguarded.
  */
-export const getPreparedServerRequests = (call: IServerRpcCall): IRequest[] => (
-  getPreparedJsonRpcRequests({
-    startTime: call.startTime,
-    time: call.time,
-    timings: null,
-    isCors: false,
-    isServerSide: true,
-    request: {
-      url: call.url,
-      method: 'POST',
-      headers: [],
-      postData: {
-        text: call.rawRequest
+export const getPreparedServerRequests = (call: IServerRpcCall): IRequest[] =>
+  getPreparedJsonRpcRequests(
+    {
+      startTime: call.startTime,
+      time: call.time,
+      timings: null,
+      isCors: false,
+      isServerSide: true,
+      request: {
+        url: call.url,
+        method: 'POST',
+        headers: [],
+        postData: {
+          text: call.rawRequest
+        }
+      },
+      response: {
+        status: call.status,
+        content: {
+          size: call.rawResponse.length
+        }
       }
     },
-    response: {
-      status: call.status,
-      content: {
-        size: call.rawResponse.length
-      }
-    }
-  }, call.rawRequest, call.rawResponse)
-);
+    call.rawRequest,
+    call.rawResponse
+  );
 
 const getPreparedTimings = (request: chrome.devtools.network.Request): IRequestTimings => {
   const timings = request.timings as IRequestTimings & { _blocked_queueing?: number };
@@ -347,32 +349,39 @@ const getPreparedTimings = (request: chrome.devtools.network.Request): IRequestT
 export const getPreparedHttpRequest = async (
   request: chrome.devtools.network.Request,
   responseContent?: string
-): Promise<IRequest[]> => new Promise((resolve) => {
-  request.getContent((body) => {
-    const referer = request.request.headers.find(({ name }) => name.toLowerCase() === 'referer');
-    const host = referer ? referer.value.replace(/(.+:\/\/)([^/]+)(\/?.*)/, '$2') : '';
-    // Guarded against NaN, which would corrupt both the sort order and the bar geometry.
-    const startedAt = Date.parse(request.startedDateTime);
+): Promise<IRequest[]> =>
+  new Promise((resolve) => {
+    request.getContent((body) => {
+      const referer = request.request.headers.find(({ name }) => name.toLowerCase() === 'referer');
+      const host = referer ? referer.value.replace(/(.+:\/\/)([^/]+)(\/?.*)/, '$2') : '';
+      // Guarded against NaN, which would corrupt both the sort order and the bar geometry.
+      const startedAt = Date.parse(request.startedDateTime);
 
-    resolve(getPreparedJsonRpcRequests({
-      startTime: Number.isNaN(startedAt) ? Date.now() : startedAt,
-      time: request.time,
-      timings: getPreparedTimings(request),
-      isCors: !request.request.url.includes(host),
-      request: {
-        url: request.request.url,
-        method: request.request.method,
-        headers: request.request.headers,
-        postData: {
-          text: request.request.postData.text
-        }
-      },
-      response: {
-        status: request.response.status,
-        content: {
-          size: request.response.content.size
-        }
-      }
-    }, request.request.postData.text, responseContent || body));
+      resolve(
+        getPreparedJsonRpcRequests(
+          {
+            startTime: Number.isNaN(startedAt) ? Date.now() : startedAt,
+            time: request.time,
+            timings: getPreparedTimings(request),
+            isCors: !request.request.url.includes(host),
+            request: {
+              url: request.request.url,
+              method: request.request.method,
+              headers: request.request.headers,
+              postData: {
+                text: request.request.postData.text
+              }
+            },
+            response: {
+              status: request.response.status,
+              content: {
+                size: request.response.content.size
+              }
+            }
+          },
+          request.request.postData.text,
+          responseContent || body
+        )
+      );
+    });
   });
-});

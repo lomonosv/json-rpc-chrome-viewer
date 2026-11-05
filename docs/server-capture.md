@@ -13,20 +13,20 @@ does not understand rather than half-parsing it.
 
 ```ts
 interface IServerRpcCall {
-  callId: string,        // minted once, at the point of the call
-  url: string,           // the endpoint the server called
-  startTime: number,     // epoch ms, server clock
-  time: number,          // duration in ms
-  status: number,        // 0 when the call threw before a response arrived
-  rawRequest: string,    // request body verbatim, or with oversized members replaced
-  rawResponse: string,   // response body verbatim, or with oversized members replaced
-  isTruncated?: boolean,
+  callId: string; // minted once, at the point of the call
+  url: string; // the endpoint the server called
+  startTime: number; // epoch ms, server clock
+  time: number; // duration in ms
+  status: number; // 0 when the call threw before a response arrived
+  rawRequest: string; // request body verbatim, or with oversized members replaced
+  rawResponse: string; // response body verbatim, or with oversized members replaced
+  isTruncated?: boolean;
 }
 
 interface IServerRpcLog {
-  v: 1,
-  logId: string,
-  calls: IServerRpcCall[],
+  v: 1;
+  logId: string;
+  calls: IServerRpcCall[];
 }
 ```
 
@@ -43,7 +43,7 @@ strictly less useful than a row that says its params were dropped.
 
 ## Delivery modes
 
-Both attach to the response of the browser request that *caused* the calls,
+Both attach to the response of the browser request that _caused_ the calls,
 which is what lets the panel nest server calls under the request they belong to.
 
 ### Inline — `X-Json-Rpc-Log`
@@ -63,7 +63,7 @@ The response carries only an id; the payload is pulled afterwards from
 `GET /__jsonrpc-log/<logId>`.
 
 This is the mode that makes **Next.js App Router pages work at all**. RSC calls
-happen *during* the response, and a Server Component cannot set a response
+happen _during_ the response, and a Server Component cannot set a response
 header — so the id is minted by the Next 16 `proxy.ts`, which runs before the render,
 and placed on both the request (where the render reads it) and the response
 (where the extension reads it). The same id serves Pages Router renders, where

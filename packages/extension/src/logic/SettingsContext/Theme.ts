@@ -6,7 +6,7 @@ export enum DevToolsTheme {
 export enum ExtensionTheme {
   System = 'System',
   Dark = 'Dark',
-  Light = 'Light',
+  Light = 'Light'
 }
 
 export enum JsonViewerTheme {

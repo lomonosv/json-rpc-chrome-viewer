@@ -118,18 +118,14 @@ type CacheContextType = ReturnType<typeof useCache>;
 
 export const CacheContext = createContext<CacheContextType>(null);
 
-export const useCacheContext = (): CacheContextType => (
-  useContext<CacheContextType>(CacheContext)
-);
+export const useCacheContext = (): CacheContextType => useContext<CacheContextType>(CacheContext);
 
 interface IComponentProps {
-  children: React.ReactElement,
+  children: React.ReactElement;
 }
 
 const CacheContextProvider: React.FC<IComponentProps> = ({ children }) => (
-  <CacheContext.Provider value={ useCache() }>
-    { children }
-  </CacheContext.Provider>
+  <CacheContext.Provider value={useCache()}>{children}</CacheContext.Provider>
 );
 
 export default CacheContextProvider;

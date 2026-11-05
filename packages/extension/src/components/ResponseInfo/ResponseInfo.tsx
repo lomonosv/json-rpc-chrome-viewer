@@ -16,8 +16,8 @@ import useSearchHighlight, { HighlightName } from '~/logic/common/useSearchHighl
 import styles from './responseInfo.scss';
 
 interface IComponentProps {
-  label?: React.ReactNode,
-  isClosable?: boolean,
+  label?: React.ReactNode;
+  isClosable?: boolean;
 }
 
 const ResponseInfo = ({ label = 'Response', isClosable = false }: IComponentProps) => {
@@ -47,57 +47,51 @@ const ResponseInfo = ({ label = 'Response', isClosable = false }: IComponentProp
   const rawResponseText = selectedRequest.isPending ? 'Waiting for response…' : selectedRequest.rawResponse;
 
   return (
-    <div className={ styles.responseInfoWrapper }>
-      <Header className={ styles.responseInfoHeader }>
-        <div className={ styles.responseInfoHeaderLeftSide }>
-          { isClosable && (
-            <Button
-              onClick={ clearSelection }
-              className={ styles.closeButton }
-              title="Close"
-            >
-              <Icon type={ IconType.Close } />
+    <div className={styles.responseInfoWrapper}>
+      <Header className={styles.responseInfoHeader}>
+        <div className={styles.responseInfoHeaderLeftSide}>
+          {isClosable && (
+            <Button onClick={clearSelection} className={styles.closeButton} title="Close">
+              <Icon type={IconType.Close} />
             </Button>
-          ) }
-          { isJsonResponse && (
+          )}
+          {isJsonResponse && (
             <ExpandButton
-              className={ styles.expandButton }
-              expandedState={ expandTreeStateValue }
-              onChangeState={ handleExpandTreeStateChange }
+              className={styles.expandButton}
+              expandedState={expandTreeStateValue}
+              onChangeState={handleExpandTreeStateChange}
             />
-          ) }
-          <span>{ label }</span>
+          )}
+          <span>{label}</span>
         </div>
-        <div className={ styles.responseInfoHeaderRightSide }>
-          { jsonTSRepresentation && (
+        <div className={styles.responseInfoHeaderRightSide}>
+          {jsonTSRepresentation && (
             <CopyButton
-              text={ convertJsonToTS(json) }
-              className={ styles.convertToTSButton }
+              text={convertJsonToTS(json)}
+              className={styles.convertToTSButton}
               hint="Convert to TS and Copy to clipboard"
-              iconType={ IconType.Typescript }
+              iconType={IconType.Typescript}
             />
-          ) }
-          <CopyButton text={ isJsonResponse ? formatJson(json) : selectedRequest.rawResponse } />
+          )}
+          <CopyButton text={isJsonResponse ? formatJson(json) : selectedRequest.rawResponse} />
         </div>
       </Header>
       <div
-        ref={ containerRef }
-        className={ cn(styles.responseInfoContainer, {
+        ref={containerRef}
+        className={cn(styles.responseInfoContainer, {
           [styles.responseNotParsed]: selectedRequest.isWarning || selectedRequest.isPending
-        }) }
+        })}
       >
-        { isJsonResponse ? (
+        {isJsonResponse ? (
           <JsonViewer
-            src={ json }
-            expandTreeState={ expandTreeStateValue }
-            expandLevel={ expandLevelValue }
-            defaultOpenNodesDepth={ 2 }
+            src={json}
+            expandTreeState={expandTreeStateValue}
+            expandLevel={expandLevelValue}
+            defaultOpenNodesDepth={2}
           />
         ) : (
-          <div className={ styles.rawResponseWrapper }>
-            <pre>
-              {rawResponseText}
-            </pre>
+          <div className={styles.rawResponseWrapper}>
+            <pre>{rawResponseText}</pre>
           </div>
         )}
       </div>

@@ -6,18 +6,13 @@ import Icon, { IconType } from '~/components/common/Icon';
 import styles from './copyButton.scss';
 
 interface IComponentProps {
-  text: string,
-  className?: string,
-  hint?: string,
-  iconType?: IconType,
+  text: string;
+  className?: string;
+  hint?: string;
+  iconType?: IconType;
 }
 
-const CopyButton = ({
-  text,
-  className,
-  hint = 'Copy to clipboard',
-  iconType = IconType.Copy,
-}: IComponentProps) => {
+const CopyButton = ({ text, className, hint = 'Copy to clipboard', iconType = IconType.Copy }: IComponentProps) => {
   const [isCopied, setIsCopied] = useState<boolean>(false);
 
   const handleCopy = () => {
@@ -31,27 +26,15 @@ const CopyButton = ({
 
   if (isCopied) {
     return (
-      <Button
-        title="Copied"
-        className={ cn(className, styles.isCopied) }
-      >
-        <Icon
-          className={ styles.icon }
-          type={ iconType } />
+      <Button title="Copied" className={cn(className, styles.isCopied)}>
+        <Icon className={styles.icon} type={iconType} />
       </Button>
     );
   }
 
   return (
-    <Button
-      title={ hint }
-      className={ className }
-      onClick={ handleCopy }
-    >
-      <Icon
-        className={ styles.icon }
-        type={ iconType }
-      />
+    <Button title={hint} className={className} onClick={handleCopy}>
+      <Icon className={styles.icon} type={iconType} />
     </Button>
   );
 };

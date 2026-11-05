@@ -6,12 +6,7 @@ import { ResizableColumn } from './columns';
 
 const useVisibleColumns = (): ResizableColumn[] => {
   const { columnOrder } = useCacheContext();
-  const {
-    showWaterfallColumn,
-    showStatusColumn,
-    showSizeColumn,
-    showTimeColumn
-  } = useSettingsContext();
+  const { showWaterfallColumn, showStatusColumn, showSizeColumn, showTimeColumn } = useSettingsContext();
   const isNarrowLayout = useIsNarrowLayout();
 
   const isColumnVisible: Record<ResizableColumn, boolean> = {

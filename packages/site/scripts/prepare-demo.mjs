@@ -10,8 +10,10 @@ const panelBundle = join(site, '..', 'extension', 'build', 'application.js');
 const out = join(site, 'public', 'demo');
 
 if (!existsSync(panelBundle)) {
-  console.error(`prepare-demo: ${ panelBundle } is missing. Build the extension first `
-    + '(`pnpm exec nx run site:build` from the repo root does both).');
+  console.error(
+    `prepare-demo: ${panelBundle} is missing. Build the extension first ` +
+      '(`pnpm exec nx run site:build` from the repo root does both).'
+  );
   process.exit(1);
 }
 

@@ -1,4 +1,4 @@
-@use "../../common/variables";
+@use '../../common/variables';
 
 // Every row state is the same three inset shadows (edge, glow, separator), so
 // states transition and no state changes the row's geometry.
@@ -93,15 +93,24 @@ $noGlow: inset 0 0 0 0 transparent;
 }
 
 .isServerRow {
-  box-shadow: inset 3px 0 0 0 variables.$serverEdge, $noGlow, $separator;
+  box-shadow:
+    inset 3px 0 0 0 variables.$serverEdge,
+    $noGlow,
+    $separator;
 }
 
 .isMockRow {
-  box-shadow: inset 3px 0 0 0 var(--jr-mock-bg), inset 160px 0 110px -110px variables.$amberSoft, $separator;
+  box-shadow:
+    inset 3px 0 0 0 var(--jr-mock-bg),
+    inset 160px 0 110px -110px variables.$amberSoft,
+    $separator;
 }
 
 .error {
-  box-shadow: inset 3px 0 0 0 variables.$error, inset 160px 0 110px -110px variables.$redRow, $separator;
+  box-shadow:
+    inset 3px 0 0 0 variables.$error,
+    inset 160px 0 110px -110px variables.$redRow,
+    $separator;
 }
 
 .isSelected,
@@ -109,14 +118,20 @@ $noGlow: inset 0 0 0 0 transparent;
 .isSelected.isMockRow,
 .isSelected.error {
   background-color: variables.$selectedBackground !important;
-  box-shadow: inset 2px 0 0 0 variables.$accent, inset 160px 0 110px -110px variables.$selectGlow, $separator;
+  box-shadow:
+    inset 2px 0 0 0 variables.$accent,
+    inset 160px 0 110px -110px variables.$selectGlow,
+    $separator;
 }
 
 .isAccordionSelected,
 .isAccordionSelected.isServerRow,
 .isAccordionSelected.isMockRow,
 .isAccordionSelected.error {
-  box-shadow: inset 3px 0 0 0 variables.$accent, inset 160px 0 110px -110px variables.$selectGlow, $separator;
+  box-shadow:
+    inset 3px 0 0 0 variables.$accent,
+    inset 160px 0 110px -110px variables.$selectGlow,
+    $separator;
 }
 
 .isDimmed {
@@ -204,27 +219,27 @@ $noGlow: inset 0 0 0 0 transparent;
   }
 
   &.isCors::before {
-    content: "CORS";
+    content: 'CORS';
     box-shadow: inset 0 0 0 1px variables.$borderStrongColor;
     color: variables.$dimColor;
     font-weight: 600;
   }
 
   &.isWebsocket::before {
-    content: "WS";
+    content: 'WS';
     background: variables.$successSoft;
     color: variables.$success;
   }
 
   &.isIntercepted::before {
-    content: "MOCK";
+    content: 'MOCK';
     background: variables.$mockBadge;
     box-shadow: 0 0 12px variables.$amberGlow;
     color: variables.$mockBadgeText;
   }
 
   &.isServerSide::before {
-    content: "SERVER";
+    content: 'SERVER';
     background: linear-gradient(135deg, variables.$accent, variables.$cyan);
     box-shadow: 0 0 12px variables.$accentGlow;
     color: #fff;
@@ -270,7 +285,9 @@ $noGlow: inset 0 0 0 0 transparent;
   &.serverError {
     background: variables.$errorSoft;
     color: variables.$error;
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, currentcolor 22%, transparent), 0 0 10px variables.$redGlow;
+    box-shadow:
+      inset 0 0 0 1px color-mix(in srgb, currentcolor 22%, transparent),
+      0 0 10px variables.$redGlow;
   }
 
   &.isPending {
@@ -290,7 +307,8 @@ $noGlow: inset 0 0 0 0 transparent;
 }
 
 @keyframes pending-pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
 

@@ -1,6 +1,7 @@
 {
   "name": "json-rpc-chrome-viewer",
   "private": true,
+  "type": "module",
   "description": "Workspace root for the JSON-RPC Chrome Viewer extension, its server logger and its site",
   "devEngines": {
     "runtime": {
@@ -18,6 +19,8 @@
     "build": "nx run-many -t build",
     "lint": "nx run-many -t lint",
     "typecheck": "nx run-many -t typecheck",
+    "format": "oxfmt",
+    "format:check": "oxfmt --check",
     "dev:site": "nx run site:dev",
     "graph": "nx graph",
     "release:extension": "cd packages/extension && release-it",
@@ -36,14 +39,10 @@
   "homepage": "https://json-rpc-chrome-viewer.lomonos.com.ua/",
   "devDependencies": {
     "@release-it/bumper": "^8.0.1",
-    "@stylistic/eslint-plugin": "^5.10.0",
-    "eslint": "^9.39.5",
-    "eslint-config-airbnb-extended": "^3.3.0",
-    "eslint-plugin-react": "^7.37.5",
-    "eslint-plugin-react-hooks": "^7.1.1",
     "nx": "^24.0.2",
-    "release-it": "^21.1.1",
-    "typescript": "^6.0.3",
-    "typescript-eslint": "^8.72.1"
+    "oxfmt": "^0.75.0",
+    "oxlint": "^1.90.0",
+    "oxlint-tsgolint": "^7.0.2005",
+    "release-it": "^21.1.1"
   }
 }

@@ -4,12 +4,12 @@ export enum JsonTokenType {
   Number = 'number',
   Literal = 'literal',
   Punctuation = 'punctuation',
-  Plain = 'plain',
+  Plain = 'plain'
 }
 
 export interface IJsonToken {
-  type: JsonTokenType,
-  text: string,
+  type: JsonTokenType;
+  text: string;
 }
 
 const tokenPattern = /("(?:\\.|[^"\\])*")(\s*:)?|(-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)|\b(?:true|false|null)\b|[{}[\],:]/g;
@@ -25,9 +25,7 @@ const getTokenType = (match: RegExpExecArray): JsonTokenType => {
     return JsonTokenType.Number;
   }
 
-  return text === 'true' || text === 'false' || text === 'null'
-    ? JsonTokenType.Literal
-    : JsonTokenType.Punctuation;
+  return text === 'true' || text === 'false' || text === 'null' ? JsonTokenType.Literal : JsonTokenType.Punctuation;
 };
 
 const tokenizeJson = (source: string): IJsonToken[] => {

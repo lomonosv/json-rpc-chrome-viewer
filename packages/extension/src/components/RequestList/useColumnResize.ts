@@ -4,10 +4,10 @@ import { ResizableColumn, clampColumnWidth } from './columns';
 const dragThresholdPx = 3;
 
 interface IDragState {
-  field: ResizableColumn,
-  startX: number,
-  startWidth: number,
-  hasMoved: boolean,
+  field: ResizableColumn;
+  startX: number;
+  startWidth: number;
+  hasMoved: boolean;
 }
 
 const useColumnResize = (

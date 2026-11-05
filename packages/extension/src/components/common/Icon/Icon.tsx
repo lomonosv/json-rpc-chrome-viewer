@@ -4,15 +4,12 @@ import { IconType, IconMap } from '~/components/common/Icon/IconType';
 import styles from './icon.scss';
 
 interface IComponentProps {
-  type: IconType,
-  className?: string,
+  type: IconType;
+  className?: string;
 }
 
 const Icon = ({ type, className }: IComponentProps) => (
-  <i
-    className={ cn(styles.icon, className) }
-    dangerouslySetInnerHTML={ { __html: IconMap[type] } }
-  />
+  <i className={cn(styles.icon, className)} dangerouslySetInnerHTML={{ __html: IconMap[type] }} />
 );
 
 export default Icon;

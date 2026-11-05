@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const { sassPlugin, postcssModules } = require('esbuild-sass-plugin');
-const { sentryEsbuildPlugin } = require("@sentry/esbuild-plugin");
+const { sentryEsbuildPlugin } = require('@sentry/esbuild-plugin');
 
 // Sentry upload only for `extension:build:production`; the default build is cached and embedded by the site.
 const isRelease = process.argv.includes('--release');
@@ -17,20 +17,21 @@ const shared = {
 };
 
 const contentEntryPoints = Object.fromEntries(
-  fs.readdirSync('src/content')
-    .filter(file => file.endsWith('.ts'))
-    .map(file => [`content/${file.replace('.ts', '')}`, `src/content/${file}`])
+  fs
+    .readdirSync('src/content')
+    .filter((file) => file.endsWith('.ts'))
+    .map((file) => [`content/${file.replace('.ts', '')}`, `src/content/${file}`])
 );
 
 const hashContentScripts = () => {
   const dir = 'build/content';
-  const files = Object.keys(contentEntryPoints).map(entry => `${path.basename(entry)}.js`);
+  const files = Object.keys(contentEntryPoints).map((entry) => `${path.basename(entry)}.js`);
   const renames = new Map();
 
   // drop hashed leftovers from a previous build that skipped `npm run clean`
   fs.readdirSync(dir)
-    .filter(file => !files.includes(file.replace(/\.map$/, '')))
-    .forEach(file => fs.unlinkSync(path.join(dir, file)));
+    .filter((file) => !files.includes(file.replace(/\.map$/, '')))
+    .forEach((file) => fs.unlinkSync(path.join(dir, file)));
 
   const hashFile = (file) => {
     let source = fs.readFileSync(path.join(dir, file), 'utf8');
@@ -51,7 +52,7 @@ const hashContentScripts = () => {
     renames.set(file, renamed);
   };
 
-  files.filter(file => file !== 'background.js').forEach(hashFile);
+  files.filter((file) => file !== 'background.js').forEach(hashFile);
 
   const backgroundPath = path.join(dir, 'background.js');
   let backgroundSource = fs.readFileSync(backgroundPath, 'utf8');
@@ -72,35 +73,43 @@ const hashContentScripts = () => {
 };
 
 (async () => {
-  await require('esbuild').build({
-    ...shared,
-    entryPoints: { 'application': 'src/index.tsx' },
-    plugins: [
-      await require('esbuild-plugin-copy').copy({
-        resolveFrom: 'cwd',
-        assets: {
-          from: ['./static/**/*'],
-          to: ['./build'],
-          keepStructure: true
-        }
-      }),
-      sassPlugin({
-        type: 'style',
-        transform: postcssModules({})
-      }),
-      ...(isRelease ? [sentryEsbuildPlugin({
-        authToken: process.env.SENTRY_AUTH_TOKEN,
-        org: "json-rpc-chrome-viewer",
-        project: "json-rpc-chrome-viewer",
-      })] : [])
-    ]
-  }).catch(() => process.exit(1));
+  await require('esbuild')
+    .build({
+      ...shared,
+      entryPoints: { application: 'src/index.tsx' },
+      plugins: [
+        await require('esbuild-plugin-copy').copy({
+          resolveFrom: 'cwd',
+          assets: {
+            from: ['./static/**/*'],
+            to: ['./build'],
+            keepStructure: true
+          }
+        }),
+        sassPlugin({
+          type: 'style',
+          transform: postcssModules({})
+        }),
+        ...(isRelease
+          ? [
+              sentryEsbuildPlugin({
+                authToken: process.env.SENTRY_AUTH_TOKEN,
+                org: 'json-rpc-chrome-viewer',
+                project: 'json-rpc-chrome-viewer'
+              })
+            ]
+          : [])
+      ]
+    })
+    .catch(() => process.exit(1));
 
-  await require('esbuild').build({
-    ...shared,
-    entryPoints: contentEntryPoints,
-    plugins: []
-  }).catch(() => process.exit(1));
+  await require('esbuild')
+    .build({
+      ...shared,
+      entryPoints: contentEntryPoints,
+      plugins: []
+    })
+    .catch(() => process.exit(1));
 
   hashContentScripts();
 })();

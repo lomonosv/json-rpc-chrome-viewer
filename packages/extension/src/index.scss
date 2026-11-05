@@ -1,9 +1,9 @@
-@use "./components/common/variables";
+@use './components/common/variables';
 
 // Design tokens: light on body, dark on body.isDark.
 :global(body) {
-  --jr-font-sans: "Geist", system-ui, sans-serif;
-  --jr-font-mono: "Geist Mono", ui-monospace, menlo, consolas, monospace;
+  --jr-font-sans: 'Geist', system-ui, sans-serif;
+  --jr-font-mono: 'Geist Mono', ui-monospace, menlo, consolas, monospace;
   --jr-bg: #fff;
   --jr-surface: #eceff5;
   --jr-surface-raised: #fff;

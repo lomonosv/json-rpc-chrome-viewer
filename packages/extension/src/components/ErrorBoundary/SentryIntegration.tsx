@@ -6,7 +6,7 @@ import {
   rewriteFramesIntegration,
   makeFetchTransport,
   setCurrentClient,
-  Scope,
+  Scope
 } from '@sentry/browser';
 import { useDIContext } from '~/logic/DI/DIContext';
 import { DITypes } from '~/logic/DI/DITypes';
@@ -19,9 +19,7 @@ const SentryIntegration = ({ children }) => {
     // (wraps addEventListener & timer callbacks) are what capture errors outside of
     // React rendering. Breadcrumbs stays disabled to keep devtools noise out of events.
     const integrations = getDefaultIntegrations({}).filter(
-      (defaultIntegration) => !['Breadcrumbs'].includes(
-        defaultIntegration.name
-      )
+      (defaultIntegration) => !['Breadcrumbs'].includes(defaultIntegration.name)
     );
 
     const client = new BrowserClient({
@@ -35,10 +33,10 @@ const SentryIntegration = ({ children }) => {
           iteratee: (frame) => {
             if (frame.filename?.startsWith('chrome-extension://')) {
               const fileName = frame.filename.split('/').pop();
-              frame.filename = `app:///${ fileName }`;
+              frame.filename = `app:///${fileName}`;
             }
             return frame;
-          },
+          }
         })
       ]
     });

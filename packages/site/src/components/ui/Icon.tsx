@@ -32,25 +32,25 @@ const paths = {
 export type IconName = keyof typeof paths;
 
 interface IIconProps extends SVGProps<SVGSVGElement> {
-  name: IconName,
-  size?: number,
+  name: IconName;
+  size?: number;
 }
 
 export default function Icon({ name, size = 20, ...props }: IIconProps) {
   return (
     <svg
-      width={ size }
-      height={ size }
+      width={size}
+      height={size}
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth={ 1.7 }
+      strokeWidth={1.7}
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden="true"
-      { ...props }
+      {...props}
     >
-      <path d={ paths[name] } />
+      <path d={paths[name]} />
     </svg>
   );
 }

@@ -25,7 +25,7 @@
       "cache": true
     },
     "lint": {
-      "inputs": ["default", "{workspaceRoot}/eslint.config.mjs"],
+      "inputs": ["default", "{workspaceRoot}/oxlint.config.ts"],
       "cache": true
     }
   }

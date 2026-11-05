@@ -22,10 +22,10 @@ plays scripted traffic into the extension's own `packages/extension/build/applic
 `src/design/PanelConcept/` is a redesign concept for the panel, kept on purpose
 and not rendered — see its README.
 
-| Variable | Used for |
-| --- | --- |
+| Variable               | Used for                                                                |
+| ---------------------- | ----------------------------------------------------------------------- |
 | `NEXT_PUBLIC_SITE_URL` | Absolute base for Open Graph urls (defaults to `http://localhost:3000`) |
-| `NEXT_PUBLIC_GA_ID` | Google Analytics measurement id (`G-…`); unset loads no analytics |
+| `NEXT_PUBLIC_GA_ID`    | Google Analytics measurement id (`G-…`); unset loads no analytics       |
 
 Both are inlined at build time.
 

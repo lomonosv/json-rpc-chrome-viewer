@@ -4,18 +4,18 @@ import { Type } from './Type';
 import styles from './input.scss';
 
 interface IComponentProps {
-  name: string,
-  label?: string,
-  type?: Type,
-  className?: string,
-  wrapperClassName?: string,
-  placeholder?: string,
-  title?: string,
-  value?: string,
-  checked?: boolean,
-  onChange: ChangeEventHandler<HTMLInputElement>,
-  isDisabled?: boolean,
-  clearComponent?: React.ReactElement,
+  name: string;
+  label?: string;
+  type?: Type;
+  className?: string;
+  wrapperClassName?: string;
+  placeholder?: string;
+  title?: string;
+  value?: string;
+  checked?: boolean;
+  onChange: ChangeEventHandler<HTMLInputElement>;
+  isDisabled?: boolean;
+  clearComponent?: React.ReactElement;
 }
 
 const Input = ({
@@ -33,35 +33,32 @@ const Input = ({
   inputRef,
   clearComponent
 }: IComponentProps & {
-  inputRef: ForwardedRef<HTMLInputElement>,
+  inputRef: ForwardedRef<HTMLInputElement>;
 }) => (
   <label
-    htmlFor={ name }
-    title={ title }
-    className={ cn(styles.inputWrapper, wrapperClassName, {
+    htmlFor={name}
+    title={title}
+    className={cn(styles.inputWrapper, wrapperClassName, {
       [styles.checkboxWrapper]: type === Type.Checkbox
-    }) }
+    })}
   >
     <input
-      name={ name }
-      id={ name }
-      ref={ inputRef }
-      className={ cn(styles.input, className) }
-      type={ type }
-      placeholder={ placeholder }
-      onChange={ onChange }
-      disabled={ isDisabled }
-      { ...(type === Type.Text ? { value } : {}) }
-      { ...(type === Type.Checkbox ? { checked } : {}) }
+      name={name}
+      id={name}
+      ref={inputRef}
+      className={cn(styles.input, className)}
+      type={type}
+      placeholder={placeholder}
+      onChange={onChange}
+      disabled={isDisabled}
+      {...(type === Type.Text ? { value } : {})}
+      {...(type === Type.Checkbox ? { checked } : {})}
     />
-    { !!value && clearComponent }
-    { label && <span className={ styles.label }>{ label }</span> }
+    {!!value && clearComponent}
+    {label && <span className={styles.label}>{label}</span>}
   </label>
 );
 
 export default React.forwardRef((props: IComponentProps, ref: ForwardedRef<HTMLInputElement>) => (
-  <Input
-    { ...props }
-    inputRef={ ref }
-  />
+  <Input {...props} inputRef={ref} />
 ));

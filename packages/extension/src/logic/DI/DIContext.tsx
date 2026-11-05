@@ -9,19 +9,15 @@ type DIContextType = ReturnType<typeof useDI>;
 
 export const DIContext = createContext<DIContextType>(null);
 
-export const useDIContext = (): DIContextType => (
-  useContext<DIContextType>(DIContext)
-);
+export const useDIContext = (): DIContextType => useContext<DIContextType>(DIContext);
 
 interface IComponentProps {
-  children: React.ReactElement,
-  container: Container,
+  children: React.ReactElement;
+  container: Container;
 }
 
 const DIContextProvider: React.FC<IComponentProps> = ({ children, container }) => (
-  <DIContext.Provider value={ useDI(container) }>
-    { children }
-  </DIContext.Provider>
+  <DIContext.Provider value={useDI(container)}>{children}</DIContext.Provider>
 );
 
 export default DIContextProvider;

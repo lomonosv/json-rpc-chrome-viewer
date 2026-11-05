@@ -2,9 +2,9 @@ import Icon, { type IconName } from '~/components/ui/Icon';
 import styles from './features.module.css';
 
 interface IFeature {
-  icon: IconName,
-  title: string,
-  text: string,
+  icon: IconName;
+  title: string;
+  text: string;
 }
 
 // One sentence each: the live panel above already shows what these look like.
@@ -12,8 +12,9 @@ const features: IFeature[] = [
   {
     icon: 'layers',
     title: 'Calls by method',
-    text: 'Zero config for any JSON-RPC 2.0 API. Batches split into one row per call, each paired with its '
-      + 'response by id.'
+    text:
+      'Zero config for any JSON-RPC 2.0 API. Batches split into one row per call, each paired with its ' +
+      'response by id.'
   },
   {
     icon: 'socket',
@@ -44,19 +45,21 @@ const features: IFeature[] = [
 
 export default function Features() {
   return (
-    <section id="features" className={ styles.section }>
+    <section id="features" className={styles.section}>
       <div className="container">
-        <h2 className={ styles.heading }>What it does</h2>
-        <ul className={ styles.grid }>
-          { features.map((feature) => (
-            <li key={ feature.title } className={ styles.item }>
-              <span className={ styles.icon }><Icon name={ feature.icon } size={ 18 } /></span>
+        <h2 className={styles.heading}>What it does</h2>
+        <ul className={styles.grid}>
+          {features.map((feature) => (
+            <li key={feature.title} className={styles.item}>
+              <span className={styles.icon}>
+                <Icon name={feature.icon} size={18} />
+              </span>
               <div>
-                <h3 className={ styles.title }>{ feature.title }</h3>
-                <p className={ styles.text }>{ feature.text }</p>
+                <h3 className={styles.title}>{feature.title}</h3>
+                <p className={styles.text}>{feature.text}</p>
               </div>
             </li>
-          )) }
+          ))}
         </ul>
       </div>
     </section>

@@ -29,9 +29,8 @@ import { findRule, getRuleResponse, getRuleStatus } from '~/logic/Interceptor/ru
     }
   };
 
-  const getAbortError = (signal: AbortSignal): unknown => (
-    signal.reason ?? new DOMException('The user aborted a request.', 'AbortError')
-  );
+  const getAbortError = (signal: AbortSignal): unknown =>
+    signal.reason ?? new DOMException('The user aborted a request.', 'AbortError');
 
   const throwIfAborted = (signal: AbortSignal) => {
     if (signal?.aborted) {
@@ -39,14 +38,19 @@ import { findRule, getRuleResponse, getRuleStatus } from '~/logic/Interceptor/ru
     }
   };
 
-  const sleep = (ms: number, signal: AbortSignal) => new Promise<void>((resolve, reject) => {
-    const timer = setTimeout(resolve, ms);
+  const sleep = (ms: number, signal: AbortSignal) =>
+    new Promise<void>((resolve, reject) => {
+      const timer = setTimeout(resolve, ms);
 
-    signal?.addEventListener('abort', () => {
-      clearTimeout(timer);
-      reject(getAbortError(signal));
-    }, { once: true });
-  });
+      signal?.addEventListener(
+        'abort',
+        () => {
+          clearTimeout(timer);
+          reject(getAbortError(signal));
+        },
+        { once: true }
+      );
+    });
 
   const getUrl = (input: RequestInfo | URL): string => {
     const rawUrl = input instanceof Request ? input.url : String(input);
@@ -58,21 +62,25 @@ import { findRule, getRuleResponse, getRuleStatus } from '~/logic/Interceptor/ru
     }
   };
 
-  const getMethod = (input: RequestInfo | URL, init: RequestInit): string => (
-    init?.method || (input instanceof Request ? input.method : 'POST')
-  );
+  const getMethod = (input: RequestInfo | URL, init: RequestInit): string =>
+    init?.method || (input instanceof Request ? input.method : 'POST');
 
   const getBody = async (input: RequestInfo | URL, init: RequestInit): Promise<string> => {
     if (typeof init?.body === 'string') {
       return init.body;
     }
 
-    return input instanceof Request ? input.clone().text().catch(() => null) : null;
+    return input instanceof Request
+      ? input
+          .clone()
+          .text()
+          .catch(() => null)
+      : null;
   };
 
-  const getHeaders = (input: RequestInfo | URL, init: RequestInit): { name: string, value: string }[] => {
+  const getHeaders = (input: RequestInfo | URL, init: RequestInit): { name: string; value: string }[] => {
     const source = init?.headers || (input instanceof Request ? input.headers : null);
-    const headers: { name: string, value: string }[] = [];
+    const headers: { name: string; value: string }[] = [];
 
     try {
       if (source) {
@@ -115,17 +123,14 @@ import { findRule, getRuleResponse, getRuleStatus } from '~/logic/Interceptor/ru
   };
 
   interface IInterceptionPlan {
-    url: string,
-    isBatch: boolean,
-    items: IJsonRpcItem[],
-    intercepted: { item: IJsonRpcItem, rule: IInterceptorRule }[],
-    passthroughItems: IJsonRpcItem[],
+    url: string;
+    isBatch: boolean;
+    items: IJsonRpcItem[];
+    intercepted: { item: IJsonRpcItem; rule: IInterceptorRule }[];
+    passthroughItems: IJsonRpcItem[];
   }
 
-  const planInterception = async (
-    input: RequestInfo | URL,
-    init: RequestInit
-  ): Promise<IInterceptionPlan> => {
+  const planInterception = async (input: RequestInfo | URL, init: RequestInit): Promise<IInterceptionPlan> => {
     try {
       const rawRequest = await getBody(input, init);
 
@@ -165,15 +170,12 @@ import { findRule, getRuleResponse, getRuleStatus } from '~/logic/Interceptor/ru
   };
 
   interface IPendingObservationPlan {
-    url: string,
-    isBatch: boolean,
-    items: IJsonRpcItem[],
+    url: string;
+    isBatch: boolean;
+    items: IJsonRpcItem[];
   }
 
-  const planObservation = async (
-    input: RequestInfo | URL,
-    init: RequestInit
-  ): Promise<IPendingObservationPlan> => {
+  const planObservation = async (input: RequestInfo | URL, init: RequestInit): Promise<IPendingObservationPlan> => {
     try {
       const rawRequest = await getBody(input, init);
 
@@ -218,9 +220,9 @@ import { findRule, getRuleResponse, getRuleStatus } from '~/logic/Interceptor/ru
       }
 
       const toEpoch = (entry: PerformanceResourceTiming) => performance.timeOrigin + entry.startTime;
-      const entry = entries.reduce((closest, candidate) => (
+      const entry = entries.reduce((closest, candidate) =>
         Math.abs(toEpoch(candidate) - startTime) < Math.abs(toEpoch(closest) - startTime) ? candidate : closest
-      ));
+      );
 
       if (!entry.responseEnd || !entry.requestStart) {
         return null;
@@ -233,9 +235,7 @@ import { findRule, getRuleResponse, getRuleStatus } from '~/logic/Interceptor/ru
         queueing: -1,
         dns: applicable(entry.domainLookupEnd - entry.domainLookupStart),
         connect: applicable(entry.connectEnd - entry.connectStart),
-        ssl: entry.secureConnectionStart
-          ? applicable(entry.connectEnd - entry.secureConnectionStart)
-          : -1,
+        ssl: entry.secureConnectionStart ? applicable(entry.connectEnd - entry.secureConnectionStart) : -1,
         // Resource Timing does not separate time spent sending; it is folded into the wait below.
         send: -1,
         wait: Math.max(entry.responseStart - entry.requestStart, 0),
@@ -248,9 +248,7 @@ import { findRule, getRuleResponse, getRuleStatus } from '~/logic/Interceptor/ru
 
   const observeFetch = async (input: RequestInfo | URL, init: RequestInit): Promise<Response> => {
     const plan = await planObservation(input, init);
-    const trackedItems = plan
-      ? plan.items.filter((item) => item?.id !== undefined && item?.id !== null)
-      : [];
+    const trackedItems = plan ? plan.items.filter((item) => item?.id !== undefined && item?.id !== null) : [];
 
     if (!trackedItems.length) {
       return nativeFetch(input, init);
@@ -260,7 +258,7 @@ import { findRule, getRuleResponse, getRuleStatus } from '~/logic/Interceptor/ru
 
     callCounter += 1;
 
-    const callId = `${ startTime }-${ callCounter }`;
+    const callId = `${startTime}-${callCounter}`;
 
     trackedItems.forEach((item) => {
       reportPending({
@@ -278,33 +276,37 @@ import { findRule, getRuleResponse, getRuleStatus } from '~/logic/Interceptor/ru
     try {
       const response = await nativeFetch(input, init);
 
-      response.clone().text().then((rawResponse) => {
-        reportObserved({
-          url: plan.url,
-          method: getMethod(input, init),
-          headers: getHeaders(input, init),
-          status: response.status,
-          startTime,
-          time: Date.now() - startTime,
-          rawRequest,
-          rawResponse,
-          callId,
-          timings: getResourceTimings(plan.url, startTime)
+      response
+        .clone()
+        .text()
+        .then((rawResponse) => {
+          reportObserved({
+            url: plan.url,
+            method: getMethod(input, init),
+            headers: getHeaders(input, init),
+            status: response.status,
+            startTime,
+            time: Date.now() - startTime,
+            rawRequest,
+            rawResponse,
+            callId,
+            timings: getResourceTimings(plan.url, startTime)
+          });
+        })
+        .catch(() => {
+          reportObserved({
+            url: plan.url,
+            method: getMethod(input, init),
+            headers: getHeaders(input, init),
+            status: response.status,
+            startTime,
+            time: Date.now() - startTime,
+            rawRequest,
+            rawResponse: '',
+            callId,
+            timings: getResourceTimings(plan.url, startTime)
+          });
         });
-      }).catch(() => {
-        reportObserved({
-          url: plan.url,
-          method: getMethod(input, init),
-          headers: getHeaders(input, init),
-          status: response.status,
-          startTime,
-          time: Date.now() - startTime,
-          rawRequest,
-          rawResponse: '',
-          callId,
-          timings: getResourceTimings(plan.url, startTime)
-        });
-      });
 
       return response;
     } catch (e) {
@@ -352,9 +354,7 @@ import { findRule, getRuleResponse, getRuleStatus } from '~/logic/Interceptor/ru
     throwIfAborted(signal);
 
     const responsesById = new Map(
-      [...passthroughResponses, ...interceptedResponses].map(
-        (item): [unknown, IJsonRpcItem] => [item?.id, item]
-      )
+      [...passthroughResponses, ...interceptedResponses].map((item): [unknown, IJsonRpcItem] => [item?.id, item])
     );
 
     const responses = items.map((item) => responsesById.get(item?.id)).filter(Boolean);
@@ -400,4 +400,4 @@ import { findRule, getRuleResponse, getRuleStatus } from '~/logic/Interceptor/ru
 
     applyPatch();
   });
-}());
+})();

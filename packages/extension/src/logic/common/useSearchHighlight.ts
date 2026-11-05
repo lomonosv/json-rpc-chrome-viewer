@@ -4,19 +4,14 @@ export enum HighlightName {
   List = 'json-rpc-search-list',
   Request = 'json-rpc-search-request',
   Response = 'json-rpc-search-response',
-  Message = 'json-rpc-search-message',
+  Message = 'json-rpc-search-message'
 }
 
 const maxRanges = 2000;
 
 const isSupported = () => typeof Highlight !== 'undefined' && !!CSS?.highlights;
 
-const collectRanges = (
-  root: Node,
-  needle: string,
-  isCaseSensitive: boolean,
-  skipSelector?: string
-): Range[] => {
+const collectRanges = (root: Node, needle: string, isCaseSensitive: boolean, skipSelector?: string): Range[] => {
   const ranges: Range[] = [];
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
   const target = isCaseSensitive ? needle : needle.toLowerCase();
@@ -24,7 +19,7 @@ const collectRanges = (
   let node = walker.nextNode();
 
   while (node && ranges.length < maxRanges) {
-    const isSkipped = skipSelector && (node.parentElement?.closest(skipSelector));
+    const isSkipped = skipSelector && node.parentElement?.closest(skipSelector);
     const content = node.textContent || '';
     const haystack = isCaseSensitive ? content : content.toLowerCase();
 
@@ -61,9 +56,7 @@ const useSearchHighlight = (
     let frame = 0;
 
     const apply = () => {
-      const ranges = ref.current && needle
-        ? collectRanges(ref.current, needle, isCaseSensitive, skipSelector)
-        : [];
+      const ranges = ref.current && needle ? collectRanges(ref.current, needle, isCaseSensitive, skipSelector) : [];
 
       if (!ranges.length) {
         CSS.highlights.delete(name);

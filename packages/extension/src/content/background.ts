@@ -3,13 +3,15 @@ import { enabledStorageKey, normaliseRules, rulesStorageKey } from '~/logic/Inte
 import RegisteredContentScript = chrome.scripting.RegisteredContentScript;
 
 chrome.runtime.onInstalled.addListener(async () => {
-  const scripts = [{
-    id: 'main-world',
-    js: ['content/websockets.js', 'content/interceptor.js'],
-    matches: ['*://*/*'],
-    runAt: 'document_start',
-    world: 'MAIN'
-  }];
+  const scripts = [
+    {
+      id: 'main-world',
+      js: ['content/websockets.js', 'content/interceptor.js'],
+      matches: ['*://*/*'],
+      runAt: 'document_start',
+      world: 'MAIN'
+    }
+  ];
 
   await chrome.scripting.unregisterContentScripts().catch(() => {});
   await chrome.scripting.registerContentScripts(scripts as RegisteredContentScript[]).catch(() => {});
@@ -67,9 +69,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 });
 
 chrome.storage.onChanged.addListener((changes, area) => {
-  const isRelevantChange = rulesStorageKey in changes ||
-    enabledStorageKey in changes ||
-    resilientCaptureStorageKey in changes;
+  const isRelevantChange =
+    rulesStorageKey in changes || enabledStorageKey in changes || resilientCaptureStorageKey in changes;
 
   if (area !== 'local' || !isRelevantChange) {
     return;

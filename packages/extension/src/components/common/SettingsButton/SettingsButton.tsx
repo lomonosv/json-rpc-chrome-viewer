@@ -17,17 +17,10 @@ const SettingsButton = () => {
 
   return (
     <>
-      <Button
-        onClick={ handleSettingsModalShow }
-        className={ styles.settingsButton }
-        title="Settings"
-      >
-        <Icon
-          className={ styles.settingsIcon }
-          type={ IconType.Settings }
-        />
+      <Button onClick={handleSettingsModalShow} className={styles.settingsButton} title="Settings">
+        <Icon className={styles.settingsIcon} type={IconType.Settings} />
       </Button>
-      { isSettingsModalVisible && <Settings onClose={ handleSettingsModalHide }/> }
+      {isSettingsModalVisible && <Settings onClose={handleSettingsModalHide} />}
     </>
   );
 };

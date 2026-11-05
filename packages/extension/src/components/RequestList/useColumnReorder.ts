@@ -4,9 +4,9 @@ import { ResizableColumn } from './columns';
 const dragThresholdPx = 4;
 
 interface IDragState {
-  field: ResizableColumn,
-  startX: number,
-  hasMoved: boolean,
+  field: ResizableColumn;
+  startX: number;
+  hasMoved: boolean;
 }
 
 const useColumnReorder = (

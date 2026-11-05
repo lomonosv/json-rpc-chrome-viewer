@@ -6,7 +6,7 @@ const createContainer = (App: React.ElementType) => {
   const container = new Container();
 
   return () => (
-    <DIContext container={ container }>
+    <DIContext container={container}>
       <App />
     </DIContext>
   );

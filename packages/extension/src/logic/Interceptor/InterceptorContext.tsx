@@ -131,18 +131,15 @@ type InterceptorContextType = ReturnType<typeof useInterceptor>;
 
 export const InterceptorContext = createContext<InterceptorContextType>(null);
 
-export const useInterceptorContext = (): InterceptorContextType => (
-  useContext<InterceptorContextType>(InterceptorContext)
-);
+export const useInterceptorContext = (): InterceptorContextType =>
+  useContext<InterceptorContextType>(InterceptorContext);
 
 interface IComponentProps {
-  children: React.ReactElement,
+  children: React.ReactElement;
 }
 
 const InterceptorContextProvider: React.FC<IComponentProps> = ({ children }) => (
-  <InterceptorContext.Provider value={ useInterceptor() }>
-    { children }
-  </InterceptorContext.Provider>
+  <InterceptorContext.Provider value={useInterceptor()}>{children}</InterceptorContext.Provider>
 );
 
 export default InterceptorContextProvider;

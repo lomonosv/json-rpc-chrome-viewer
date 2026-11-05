@@ -5,9 +5,9 @@ import { ExpandTreeState } from '~/components/common/JsonViewer/ExpandTreeState'
 import styles from './expandButton.scss';
 
 interface IComponentProps {
-  className?: string,
-  expandedState: ExpandTreeState,
-  onChangeState: (expandedState: ExpandTreeState) => void,
+  className?: string;
+  expandedState: ExpandTreeState;
+  onChangeState: (expandedState: ExpandTreeState) => void;
 }
 
 const ExpandButton = ({ className, expandedState, onChangeState }: IComponentProps) => {
@@ -18,8 +18,8 @@ const ExpandButton = ({ className, expandedState, onChangeState }: IComponentPro
   }, [expandedState]);
 
   const handleExpandedStateChange = () => {
-    const expandedState = expandedStateValue === ExpandTreeState.Expanded
-      ? ExpandTreeState.Collapsed : ExpandTreeState.Expanded;
+    const expandedState =
+      expandedStateValue === ExpandTreeState.Expanded ? ExpandTreeState.Collapsed : ExpandTreeState.Expanded;
 
     setExpandedStateValue(expandedState);
     onChangeState(expandedState);
@@ -27,13 +27,13 @@ const ExpandButton = ({ className, expandedState, onChangeState }: IComponentPro
 
   return (
     <Button
-      className={ className }
-      onClick={ handleExpandedStateChange }
-      title={ expandedStateValue === ExpandTreeState.Expanded ? 'Collapse all' : 'Expand all' }
+      className={className}
+      onClick={handleExpandedStateChange}
+      title={expandedStateValue === ExpandTreeState.Expanded ? 'Collapse all' : 'Expand all'}
     >
       <Icon
-        className={ styles.expandButton }
-        type={ expandedStateValue === ExpandTreeState.Expanded ? IconType.Collapse : IconType.Expand }
+        className={styles.expandButton}
+        type={expandedStateValue === ExpandTreeState.Expanded ? IconType.Collapse : IconType.Expand}
       />
     </Button>
   );

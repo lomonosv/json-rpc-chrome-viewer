@@ -14,20 +14,20 @@ export default function GoogleAnalytics() {
 
   if (!gaIdPattern.test(gaId)) {
     // Runs at build time, so a mistyped Dokploy build arg shows in the build log.
-    // eslint-disable-next-line no-console
-    console.warn(`NEXT_PUBLIC_GA_ID has an unexpected format: "${ gaId }" - analytics disabled.`);
+    // oxlint-disable-next-line no-console
+    console.warn(`NEXT_PUBLIC_GA_ID has an unexpected format: "${gaId}" - analytics disabled.`);
 
     return null;
   }
 
   return (
     <>
-      <Script src={ `https://www.googletagmanager.com/gtag/js?id=${ gaId }` } strategy="afterInteractive" />
+      <Script src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`} strategy="afterInteractive" />
       <Script id="google-analytics" strategy="afterInteractive">
-        { `window.dataLayer = window.dataLayer || [];
+        {`window.dataLayer = window.dataLayer || [];
 function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());
-gtag('config', '${ gaId }');` }
+gtag('config', '${gaId}');`}
       </Script>
     </>
   );

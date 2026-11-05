@@ -30,9 +30,10 @@ const callback = (panel) => {
 
       getDocumentTimeOrigin((timeOrigin) => {
         // Unreadable document: fall back to the plain clear.
-        const kept = timeOrigin === null ? [] : httpArchiveRequests.filter(({ request }) => (
-          getStartedAt(request) >= timeOrigin - documentClockSkewMs
-        ));
+        const kept =
+          timeOrigin === null
+            ? []
+            : httpArchiveRequests.filter(({ request }) => getStartedAt(request) >= timeOrigin - documentClockSkewMs);
 
         httpArchiveRequests.splice(0, httpArchiveRequests.length, ...kept);
       });
@@ -60,10 +61,12 @@ const callback = (panel) => {
 
     // A copy: a prune still in flight must not splice the backlog out from
     // under the panel while it reads it.
-    panelWindow.dispatchEvent(new CustomEvent('INITIAL_REQUESTS_DATA', {
-      detail: [...httpArchiveRequests]
-    }));
+    panelWindow.dispatchEvent(
+      new CustomEvent('INITIAL_REQUESTS_DATA', {
+        detail: [...httpArchiveRequests]
+      })
+    );
   });
-}
+};
 
 panels.create('JSON-RPC Chrome Viewer', 'icons/16.png', 'application.html', callback);

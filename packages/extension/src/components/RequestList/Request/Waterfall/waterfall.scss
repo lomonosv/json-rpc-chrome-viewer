@@ -1,4 +1,4 @@
-@use "../../../common/variables";
+@use '../../../common/variables';
 
 // Taller than the bar so its glow has room.
 .waterfall {
@@ -18,7 +18,9 @@
   box-shadow: 0 0 8px variables.$accentGlow;
   // Linear and one clock tick long (RequestList), so in-flight growth is steady.
   @include variables.motion {
-    transition: left 0.1s linear, width 0.1s linear;
+    transition:
+      left 0.1s linear,
+      width 0.1s linear;
   }
 }
 

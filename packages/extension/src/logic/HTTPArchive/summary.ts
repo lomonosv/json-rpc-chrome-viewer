@@ -3,7 +3,7 @@ import { IRequest, JSONValue } from './IRequest';
 export enum Slowness {
   Normal = 'normal',
   Slow = 'slow',
-  VerySlow = 'verySlow',
+  VerySlow = 'verySlow'
 }
 
 const slowCallMs = 1000;
@@ -25,7 +25,7 @@ export enum StatusTone {
   Success = 'success',
   Redirect = 'redirect',
   ClientError = 'clientError',
-  ServerError = 'serverError',
+  ServerError = 'serverError'
 }
 
 // 0 (network failure, aborted fetch) reads as a server error.
@@ -42,14 +42,12 @@ export const getStatusTone = (status: number): StatusTone => {
 };
 
 export interface IRequestError {
-  code: string,
-  message: string,
+  code: string;
+  message: string;
 }
 
 export const getRequestError = (request: IRequest): IRequestError => {
-  const error: JSONValue = request.isWebSocket
-    ? request.websocketJSON?.error
-    : request.responseJSON?.error;
+  const error: JSONValue = request.isWebSocket ? request.websocketJSON?.error : request.responseJSON?.error;
 
   if (error === undefined || error === null) {
     return null;
@@ -76,44 +74,48 @@ export const getErrorSummary = (request: IRequest): string => {
 
 export const formatSize = (bytes: number): string => {
   if (bytes < 1000) {
-    return `${ Math.round(bytes) } B`;
+    return `${Math.round(bytes)} B`;
   }
 
   if (bytes < 1000 * 1000) {
-    return `${ (bytes / 1000).toFixed(1) } kB`;
+    return `${(bytes / 1000).toFixed(1)} kB`;
   }
 
-  return `${ (bytes / (1000 * 1000)).toFixed(1) } MB`;
+  return `${(bytes / (1000 * 1000)).toFixed(1)} MB`;
 };
 
 export const formatDuration = (ms: number): string => {
   if (ms < 1000) {
-    return `${ Math.round(ms) } ms`;
+    return `${Math.round(ms)} ms`;
   }
 
   if (ms < 60 * 1000) {
-    return `${ (ms / 1000).toFixed(1) } s`;
+    return `${(ms / 1000).toFixed(1)} s`;
   }
 
-  return `${ Math.floor(ms / 60000) } min ${ Math.round((ms % 60000) / 1000) } s`;
+  return `${Math.floor(ms / 60000)} min ${Math.round((ms % 60000) / 1000)} s`;
 };
 
 export interface IListSummary {
-  count: number,
-  errors: number,
-  slow: number,
-  size: number,
+  count: number;
+  errors: number;
+  slow: number;
+  size: number;
 }
 
-export const getListSummary = (requests: IRequest[]): IListSummary => requests.reduce((acc, request) => ({
-  count: acc.count + 1,
-  // Not `isError`: websocket frames never set it, but an error frame is one.
-  errors: acc.errors + (getRequestError(request) ? 1 : 0),
-  slow: acc.slow + (getSlowness(request) === Slowness.Normal ? 0 : 1),
-  size: acc.size + (request.isWebSocket || request.isPending ? 0 : request.response?.content?.size || 0)
-}), {
-  count: 0,
-  errors: 0,
-  slow: 0,
-  size: 0
-});
+export const getListSummary = (requests: IRequest[]): IListSummary =>
+  requests.reduce(
+    (acc, request) => ({
+      count: acc.count + 1,
+      // Not `isError`: websocket frames never set it, but an error frame is one.
+      errors: acc.errors + (getRequestError(request) ? 1 : 0),
+      slow: acc.slow + (getSlowness(request) === Slowness.Normal ? 0 : 1),
+      size: acc.size + (request.isWebSocket || request.isPending ? 0 : request.response?.content?.size || 0)
+    }),
+    {
+      count: 0,
+      errors: 0,
+      slow: 0,
+      size: 0
+    }
+  );

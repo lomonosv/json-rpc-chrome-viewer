@@ -17,12 +17,7 @@ import useColumnResize from './useColumnResize';
 import useColumnReorder from './useColumnReorder';
 import useVisibleColumns from './useVisibleColumns';
 import ListSummary from './ListSummary';
-import {
-  ResizableColumn,
-  columnLabels,
-  getColumnWidthProperties,
-  getColumnWidthStyle
-} from './columns';
+import { ResizableColumn, columnLabels, getColumnWidthProperties, getColumnWidthStyle } from './columns';
 import styles from './requestList.scss';
 
 const minLeftSideWidth = 200;
@@ -31,12 +26,12 @@ const pendingTickIntervalMs = 100;
 const groupRevealWindowMs = 500;
 
 interface ISortableHeaderProps {
-  field: SortField,
-  className?: string,
-  resizeHandle?: React.ReactElement,
-  shouldIgnoreClick?: () => boolean,
-  reorderProps?: object,
-  children: string,
+  field: SortField;
+  className?: string;
+  resizeHandle?: React.ReactElement;
+  shouldIgnoreClick?: () => boolean;
+  reorderProps?: object;
+  children: string;
 }
 
 const SortableHeader = ({
@@ -61,37 +56,27 @@ const SortableHeader = ({
   return (
     <button
       type="button"
-      title={ `Sort by ${ field }` }
-      className={ cn(styles.sortableHeader, className) }
-      style={ field === SortField.Method ? undefined : getColumnWidthStyle(field as ResizableColumn) }
-      onClick={ handleClick }
-      { ...reorderProps }
+      title={`Sort by ${field}`}
+      className={cn(styles.sortableHeader, className)}
+      style={field === SortField.Method ? undefined : getColumnWidthStyle(field as ResizableColumn)}
+      onClick={handleClick}
+      {...reorderProps}
     >
-      { resizeHandle }
-      { children }
-      { isSorted && (
-        <span className={ styles.sortIndicator }>
-          { sortDirection === SortDirection.Asc ? '▲' : '▼' }
-        </span>
-      ) }
+      {resizeHandle}
+      {children}
+      {isSorted && <span className={styles.sortIndicator}>{sortDirection === SortDirection.Asc ? '▲' : '▼'}</span>}
     </button>
   );
 };
 
 interface IComponentProps {
-  className?: string,
+  className?: string;
 }
 
 const RequestList = ({ className }: IComponentProps) => {
   const resizableRef = useRef<Resizable>(null);
   const requestsWrapperRef = useRef<HTMLDivElement>(null);
-  const {
-    requests,
-    rows,
-    selected,
-    filter,
-    toggleServerGroup
-  } = useRequestContext();
+  const { requests, rows, selected, filter, toggleServerGroup } = useRequestContext();
   const {
     requestListSectionWidth,
     updateRequestListSectionWidth,
@@ -118,11 +103,7 @@ const RequestList = ({ className }: IComponentProps) => {
     resizingField,
     getResizeHandleProps,
     consumeClickSuppression: consumeResizeClick
-  } = useColumnResize(
-    getColumnWidth,
-    setColumnWidth,
-    persistColumnWidths
-  );
+  } = useColumnResize(getColumnWidth, setColumnWidth, persistColumnWidths);
 
   const visibleColumns = useVisibleColumns();
 
@@ -136,8 +117,8 @@ const RequestList = ({ className }: IComponentProps) => {
   const renderResizeHandle = (field: ResizableColumn) => (
     <span
       aria-hidden="true"
-      className={ cn(styles.resizeHandle, { [styles.isResizing]: resizingField === field }) }
-      { ...getResizeHandleProps(field) }
+      className={cn(styles.resizeHandle, { [styles.isResizing]: resizingField === field })}
+      {...getResizeHandleProps(field)}
     />
   );
 
@@ -189,7 +170,7 @@ const RequestList = ({ className }: IComponentProps) => {
     HighlightName.List,
     filter,
     caseSensitiveSearch,
-    `.${ styles.requestsHeaderWrapper }`
+    `.${styles.requestsHeaderWrapper}`
   );
 
   useNamespaceHighlight(requestsWrapperRef);
@@ -209,9 +190,9 @@ const RequestList = ({ className }: IComponentProps) => {
   const lastGroupStatesRef = useRef(groupStates);
 
   useEffect(() => {
-    const isGroupToggle = [...groupStates].some(([id, isExpanded]) => (
-      lastGroupStatesRef.current.has(id) && lastGroupStatesRef.current.get(id) !== isExpanded
-    ));
+    const isGroupToggle = [...groupStates].some(
+      ([id, isExpanded]) => lastGroupStatesRef.current.has(id) && lastGroupStatesRef.current.get(id) !== isExpanded
+    );
 
     lastGroupStatesRef.current = groupStates;
 
@@ -262,8 +243,8 @@ const RequestList = ({ className }: IComponentProps) => {
 
   return (
     <Resizable
-      ref={ resizableRef }
-      enable={ {
+      ref={resizableRef}
+      enable={{
         top: false,
         right: isSideBySide,
         bottom: isStackedAbove,
@@ -272,88 +253,82 @@ const RequestList = ({ className }: IComponentProps) => {
         bottomRight: false,
         bottomLeft: false,
         topLeft: false
-      } }
-      className={ className }
-      minWidth={ isSideBySide ? minLeftSideWidth : undefined }
-      maxWidth={ isSideBySide ? '80%' : '100%' }
-      minHeight={ isStackedAbove ? minStackedListHeight : undefined }
-      maxHeight={ isStackedAbove ? '85%' : '100%' }
-      defaultSize={ listSize }
-      onResizeStop={ handleResize }
-      handleClasses={ {
+      }}
+      className={className}
+      minWidth={isSideBySide ? minLeftSideWidth : undefined}
+      maxWidth={isSideBySide ? '80%' : '100%'}
+      minHeight={isStackedAbove ? minStackedListHeight : undefined}
+      maxHeight={isStackedAbove ? '85%' : '100%'}
+      defaultSize={listSize}
+      onResizeStop={handleResize}
+      handleClasses={{
         right: styles.paneResizeHandle,
         bottom: styles.stackedResizeHandle
-      } }
+      }}
     >
-      <div
-        ref={ requestsWrapperRef }
-        className={ styles.requestListWrapper }
-      >
-        <div
-          className={ styles.requestList }
-          style={ getColumnWidthProperties(columnWidths) }
-        >
-          <div className={ styles.requestsHeaderWrapper }>
-            <Header className={ styles.requestsHeader }>
-              <SortableHeader field={ SortField.Method } className={ styles.methodHeader }>
+      <div ref={requestsWrapperRef} className={styles.requestListWrapper}>
+        <div className={styles.requestList} style={getColumnWidthProperties(columnWidths)}>
+          <div className={styles.requestsHeaderWrapper}>
+            <Header className={styles.requestsHeader}>
+              <SortableHeader field={SortField.Method} className={styles.methodHeader}>
                 Method
               </SortableHeader>
-              <div className={ styles.metaHeaders }>
-                { visibleColumns.map((field, index) => (
-                  <React.Fragment key={ field }>
-                    { dropIndex === index && <span className={ styles.dropIndicator } /> }
+              <div className={styles.metaHeaders}>
+                {visibleColumns.map((field, index) => (
+                  <React.Fragment key={field}>
+                    {dropIndex === index && <span className={styles.dropIndicator} />}
                     <SortableHeader
-                      field={ field }
-                      className={ cn({
+                      field={field}
+                      className={cn({
                         [styles.waterfallHeader]: field === SortField.Waterfall,
                         [styles.isDragging]: draggingField === field
-                      }) }
-                      resizeHandle={ renderResizeHandle(field) }
-                      shouldIgnoreClick={ shouldIgnoreHeaderClick }
-                      reorderProps={ getReorderProps(field) }
+                      })}
+                      resizeHandle={renderResizeHandle(field)}
+                      shouldIgnoreClick={shouldIgnoreHeaderClick}
+                      reorderProps={getReorderProps(field)}
                     >
-                      { columnLabels[field] }
+                      {columnLabels[field]}
                     </SortableHeader>
                   </React.Fragment>
-                )) }
-                { dropIndex === visibleColumns.length && <span className={ styles.dropIndicator } /> }
+                ))}
+                {dropIndex === visibleColumns.length && <span className={styles.dropIndicator} />}
               </div>
             </Header>
           </div>
-          {
-            rows.map((row) => (row.kind === 'group' ? (
+          {rows.map((row) =>
+            row.kind === 'group' ? (
               <button
-                key={ row.group.id }
+                key={row.group.id}
                 type="button"
-                className={ styles.serverGroup }
-                aria-expanded={ row.group.isExpanded }
-                title={ row.group.isExpanded ? 'Collapse server-side calls' : 'Expand server-side calls' }
-                onClick={ () => handleServerGroupClick(row.group.id, row.group.isExpanded) }
+                className={styles.serverGroup}
+                aria-expanded={row.group.isExpanded}
+                title={row.group.isExpanded ? 'Collapse server-side calls' : 'Expand server-side calls'}
+                onClick={() => handleServerGroupClick(row.group.id, row.group.isExpanded)}
               >
                 <span
                   aria-hidden="true"
-                  className={ cn(styles.serverGroupChevron, {
+                  className={cn(styles.serverGroupChevron, {
                     [styles.isGroupExpanded]: row.group.isExpanded
-                  }) }
+                  })}
                 />
-                <span className={ styles.serverGroupLabel }>{ row.group.label }</span>
-                <span className={ styles.serverGroupCount }>
-                  { row.group.count } { row.group.count === 1 ? 'call' : 'calls' }
+                <span className={styles.serverGroupLabel}>{row.group.label}</span>
+                <span className={styles.serverGroupCount}>
+                  {row.group.count} {row.group.count === 1 ? 'call' : 'calls'}
                 </span>
               </button>
             ) : (
               // Keyed by identity: a positional key moves row state to another request.
-              <React.Fragment key={ row.request.uuid }>
+              <React.Fragment key={row.request.uuid}>
                 <Request
-                  item={ row.request }
-                  timeline={ timeline }
-                  now={ now }
-                  revealIndex={ revealIndexes.get(row.request.uuid) }
+                  item={row.request}
+                  timeline={timeline}
+                  now={now}
+                  revealIndex={revealIndexes.get(row.request.uuid)}
                 />
-                { isAccordionView && selected?.uuid === row.request.uuid && (
+                {isAccordionView && selected?.uuid === row.request.uuid && (
                   <Resizable
-                    className={ styles.accordionDetail }
-                    enable={ {
+                    className={styles.accordionDetail}
+                    enable={{
                       top: false,
                       right: false,
                       bottom: true,
@@ -362,26 +337,26 @@ const RequestList = ({ className }: IComponentProps) => {
                       bottomRight: false,
                       bottomLeft: false,
                       topLeft: false
-                    } }
-                    minHeight={ 120 }
-                    defaultSize={ {
+                    }}
+                    minHeight={120}
+                    defaultSize={{
                       width: '100%',
                       height: accordionSectionHeight
-                    } }
-                    onResizeStop={ handleAccordionResizeStop }
-                    handleClasses={ {
+                    }}
+                    onResizeStop={handleAccordionResizeStop}
+                    handleClasses={{
                       bottom: styles.accordionResizeHandle
-                    } }
+                    }}
                   >
                     <RequestDetail />
                   </Resizable>
-                ) }
+                )}
               </React.Fragment>
-            )))
-          }
+            )
+          )}
         </div>
       </div>
-      <ListSummary requests={ requests } timelineSpan={ requests.length ? timeline.span : 0 } />
+      <ListSummary requests={requests} timelineSpan={requests.length ? timeline.span : 0} />
     </Resizable>
   );
 };

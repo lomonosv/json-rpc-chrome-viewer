@@ -9,10 +9,7 @@
       "options": {
         "cwd": "{projectRoot}",
         "parallel": false,
-        "commands": [
-          "eslint --cache=true --cache-location=./.cache/eslint ./",
-          "stylelint \"src/**/*.scss\""
-        ]
+        "commands": ["oxlint", "stylelint \"src/**/*.scss\""]
       }
     },
     "typecheck": {
@@ -24,12 +21,7 @@
     },
     "build": {
       "executor": "nx:run-commands",
-      "inputs": [
-        "production",
-        "^production",
-        { "env": "SENTRY_DSN" },
-        { "env": "ENVIRONMENT" }
-      ],
+      "inputs": ["production", "^production", { "env": "SENTRY_DSN" }, { "env": "ENVIRONMENT" }],
       "outputs": ["{projectRoot}/build"],
       "options": {
         "cwd": "{projectRoot}",

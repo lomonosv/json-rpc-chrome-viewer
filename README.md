@@ -53,7 +53,7 @@ Every JSON-RPC call to a given endpoint hits the same URL with the same method (
 
 **Troubleshoot**
 
-- **Resilient capture** - for when requests show up in Chrome's Network tab but not here. Another DevTools extension patching `window.fetch` makes Chrome credit *it* as the request's initiator, and this panel is then never told the request happened. **React DevTools 7.0.1 does this.** Turning this on reads requests inside the page instead of relying on Chrome to report them
+- **Resilient capture** - for when requests show up in Chrome's Network tab but not here. Another DevTools extension patching `window.fetch` makes Chrome credit _it_ as the request's initiator, and this panel is then never told the request happened. **React DevTools 7.0.1 does this.** Turning this on reads requests inside the page instead of relying on Chrome to report them
 - Also shows each call **while it is still in flight**, with a live-growing waterfall bar, so a slow or hanging request is visible immediately
 
 **Appearance**
@@ -99,12 +99,12 @@ A request is treated as JSON-RPC when it is a POST with an `application/json` bo
 
 The dialog is organised into tabs, each holding a couple of grouped panels.
 
-| Tab | Setting |
-| --- | --- |
-| Preferences | **General**: Preserve log · Autoscroll to the latest request<br>**Filters**: Include JSON-RPC logs · Include Websocket logs · Include server-side logs (needs [server-logger](https://www.npmjs.com/package/@json-rpc-chrome-viewer/server-logger)) |
-| Appearance | **Layout**: Request view (Panes / Accordion) · Theme · Server calls group (Collapsed / Expanded)<br>**Request row**: Show url for each request · CORS badge · Websocket badge<br>**Columns**: Waterfall, Status, Size, Time |
-| JSON Viewer | **JSON tree**: Theme · Open state · Expand level (shown only when Open state is Expanded) · Preview collapsed nodes<br>**Websocket messages**: Open state |
-| Troubleshooting | Resilient capture (patch fetch in page) |
+| Tab             | Setting                                                                                                                                                                                                                                             |
+| --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Preferences     | **General**: Preserve log · Autoscroll to the latest request<br>**Filters**: Include JSON-RPC logs · Include Websocket logs · Include server-side logs (needs [server-logger](https://www.npmjs.com/package/@json-rpc-chrome-viewer/server-logger)) |
+| Appearance      | **Layout**: Request view (Panes / Accordion) · Theme · Server calls group (Collapsed / Expanded)<br>**Request row**: Show url for each request · CORS badge · Websocket badge<br>**Columns**: Waterfall, Status, Size, Time                         |
+| JSON Viewer     | **JSON tree**: Theme · Open state · Expand level (shown only when Open state is Expanded) · Preview collapsed nodes<br>**Websocket messages**: Open state                                                                                           |
+| Troubleshooting | Resilient capture (patch fetch in page)                                                                                                                                                                                                             |
 
 Search scope and case sensitivity live in the toolbar rather than this dialog, but persist the same way.
 
@@ -118,12 +118,12 @@ Settings persist in `chrome.storage.local`, along with pane sizes and column wid
 
 ## Permissions
 
-| Permission | Why |
-| --- | --- |
-| `storage` | Persist settings, pane sizes and column widths/order |
-| `activeTab`, `scripting` | Register the WebSocket interceptor in the page |
-| `clipboardWrite` | Copy request/response payloads and method names |
-| `http://*/*`, `https://*/*` | Observe traffic on the inspected page |
+| Permission                  | Why                                                  |
+| --------------------------- | ---------------------------------------------------- |
+| `storage`                   | Persist settings, pane sizes and column widths/order |
+| `activeTab`, `scripting`    | Register the WebSocket interceptor in the page       |
+| `clipboardWrite`            | Copy request/response payloads and method names      |
+| `http://*/*`, `https://*/*` | Observe traffic on the inspected page                |
 
 Captured traffic stays local - it is held in memory in the DevTools panel and is not transmitted anywhere. The only outbound requests the extension makes are optional crash reports from its own panel code, sent when a `SENTRY_DSN` is configured at build time.
 
@@ -136,8 +136,9 @@ Tasks run through [Nx](https://nx.dev). Projects: `extension`, `server-logger`, 
 ```bash
 pnpm install
 pnpm run build
-pnpm run lint
+pnpm run lint       # oxlint (+ stylelint for the extension)
 pnpm run typecheck
+pnpm run format     # oxfmt
 pnpm run dev:site
 pnpm run graph
 
